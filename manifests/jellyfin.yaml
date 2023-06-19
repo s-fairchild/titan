@@ -1,0 +1,179 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: jellyfin-udp
+  annotations:
+    metallb.universe.tf/allow-shared-ip: jellyfin # # < annotation name to combine the Service IP, make sure it's same name as in the service UDP yaml
+spec:
+  ports:
+  - port: 1900             # < port to open on the outside on the server
+    targetPort: 1900       # < targetport. port on the pod to passthrough
+    name: dlna-udp         # < reference name for the port in the deployment yaml
+    protocol: UDP
+  - port: 7359
+    targetPort: 7359
+    name: discovery-udp
+    protocol: UDP
+  # sessionAffinity: ClientIP # This is necessary for multi-replica deployments
+  selector:
+    app: jellyfin
+  type: NodePort
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jellyfin-tcp
+  annotations:
+    metallb.universe.tf/allow-shared-ip: jellyfin # # < annotation name to combine the Service IP, make sure it's same name as in the service UDP yaml
+  labels:
+    app: jellyfin
+spec:
+  ports:
+  - name: 8096-8096
+    nodePort: 30096
+    port: 8096
+    protocol: TCP
+    targetPort: 8096
+  selector:
+    app: jellyfin
+  type: NodePort
+---
+# apiVersion: networking.k8s.io/v1beta1 # for k3s < v1.19
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jellyfin
+  annotations:
+    ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /jellyfin
+        pathType: Prefix
+        backend:
+          service:
+            name: jellyfin
+            port:
+              number: 8096
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: jellyfin-media
+spec:
+  capacity:
+    storage: 3Ti
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: /data/jellyfin
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            # - key: node-role.kubernetes.io/worker
+            - key: app
+              operator: In
+              values:
+                - "compute"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jellyfin-conf-pvc
+  namespace: default
+spec:
+  storageClassName: local-path # may remove
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 3Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jellyfin-media-pvc
+  namespace: default
+spec:
+  storageClassName: local-storage
+  accessModes:
+    - ReadWriteMany
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 3Ti
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: jellyfin
+  name: jellyfin
+spec:
+  replicas: 1 # TODO get this working with 3 replicas, probably by running on a single agent
+  selector:
+    matchLabels:
+      app: jellyfin
+  template:
+    metadata:
+      labels:
+        app: jellyfin
+    spec:
+      # TODO Fails to decode to Go struct, need to troubleshoot
+      # affinity:
+        # nodeAffinity:
+          # - matchExpressions:
+              # - key: app
+                # operator: In
+                # values:
+                  # - "compute"
+      containers:
+      - env:
+        - name: JELLYFIN_PublishedServerUrl
+          value: http://rpi4:8096
+        image: docker.io/jellyfin/jellyfin:latest
+        name: jellyfin
+        ports:
+        - containerPort: 8096
+          # hostPort: 8096
+        # Need to setup TLS for this
+        # - containerPort: 8920
+          # hostPort: 8920
+        securityContext:
+          privileged: true
+          capabilities:
+            drop:
+            - CAP_MKNOD
+            - CAP_NET_RAW
+            - CAP_AUDIT_WRITE
+        volumeMounts:
+        - name: media
+          mountPath: /media
+        # - name: cache
+          # mountPath: /cache
+        - name: conf
+          mountPath: /config
+        - name: dev-dri
+          mountPath: /dev/dri/renderD128 # Raspberry pi 4 VC4 video card
+      enableServiceLinks: false
+      volumes:
+      - name: media
+        persistentVolumeClaim:
+          claimName: jellyfin-media-pvc
+      - name: conf
+        persistentVolumeClaim:
+          claimName: jellyfin-conf-pvc
+      # - name: cache
+        # emptyDir:
+          # sizeLimit: 1Gi
+      - name: dev-dri
+        hostPath:
+          path: /dev/dri/renderD128
+          type: CharDevice
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
