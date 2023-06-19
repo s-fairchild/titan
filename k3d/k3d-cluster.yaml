@@ -15,6 +15,9 @@ volumes:
     - volume: /data/jellyfin:/data/jellyfin
       nodeFilters:
         - agent:*
+    - volume: /var/local/k3d/persistentVolumes:/pvs
+      nodeFilters:
+        - agent:*
   # - volume: /var/data/motionplus:/var/data/motionplus
     # nodeFilters:
       # - agent:*
@@ -26,7 +29,7 @@ ports:
   - port: 8080:80 # same as `--port '8080:80@loadbalancer'`
     nodeFilters:
       - loadbalancer
-  # - port: 30000-32767:30000-32767 # TODO currently the syntax above fails for v1alpha5, port syntax to new APIversion
+  # - port: 30000-32767:30000-32767 # TODO creating the loadbalancer induces a hang due to the large amount of port mappings. If the cluster is installed with --no-rollback the install is successful, after the loadbalancer comes up
   - port: 8096:30096
     nodeFilters:
       - agent:*

@@ -1,7 +1,13 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: jellyfin
+---
 kind: Service
 apiVersion: v1
 metadata:
   name: jellyfin-udp
+  namespace: jellyfin
   annotations:
     metallb.universe.tf/allow-shared-ip: jellyfin # # < annotation name to combine the Service IP, make sure it's same name as in the service UDP yaml
 spec:
@@ -23,6 +29,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: jellyfin-tcp
+  namespace: jellyfin
   annotations:
     metallb.universe.tf/allow-shared-ip: jellyfin # # < annotation name to combine the Service IP, make sure it's same name as in the service UDP yaml
   labels:
@@ -43,6 +50,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: jellyfin
+  namespace: jellyfin
   annotations:
     ingress.kubernetes.io/ssl-redirect: "false"
 spec:
@@ -61,12 +69,13 @@ apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: jellyfin-media
+  namespace: jellyfin
 spec:
   capacity:
     storage: 3Ti
   volumeMode: Filesystem
   accessModes:
-  - ReadWriteMany
+    - ReadWriteMany
   persistentVolumeReclaimPolicy: Retain
   storageClassName: local-storage
   local:
@@ -75,7 +84,6 @@ spec:
     required:
       nodeSelectorTerms:
         - matchExpressions:
-            # - key: node-role.kubernetes.io/worker
             - key: app
               operator: In
               values:
@@ -85,9 +93,9 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: jellyfin-conf-pvc
-  namespace: default
+  namespace: jellyfin
 spec:
-  storageClassName: local-path # may remove
+  storageClassName: local-path
   accessModes:
     - ReadWriteOnce
   resources:
@@ -95,10 +103,34 @@ spec:
       storage: 3Gi
 ---
 apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: jellyfin-conf
+  namespace: jellyfin
+spec:
+  capacity:
+    storage: 5Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: /pvs/jellyfin/jellyfin-conf
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: app
+              operator: In
+              values:
+                - "compute"
+---
+apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: jellyfin-media-pvc
-  namespace: default
+  namespace: jellyfin
 spec:
   storageClassName: local-storage
   accessModes:
@@ -111,9 +143,10 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  name: jellyfin
+  namespace: jellyfin
   labels:
     app: jellyfin
-  name: jellyfin
 spec:
   replicas: 1 # TODO get this working with 3 replicas, probably by running on a single agent
   selector:
@@ -121,6 +154,8 @@ spec:
       app: jellyfin
   template:
     metadata:
+      name: jellyfin
+      namespace: jellyfin
       labels:
         app: jellyfin
     spec:
