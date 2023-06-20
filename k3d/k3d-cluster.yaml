@@ -18,15 +18,8 @@ volumes:
     - volume: /var/local/k3d/persistentVolumes:/pvs
       nodeFilters:
         - agent:*
-  # - volume: /var/data/motionplus:/var/data/motionplus
-    # nodeFilters:
-      # - agent:*
-  # - volume: /usr/local/etc/k3d/manifests:/var/lib/rancher/k3s/server/manifests # auto deploy manifests
-    # nodeFilters:
-      # - server:*
-  # - volume: /usr/local/etc/pihole/custom.list:/usr/local/etc/pihole/custom.list
 ports:
-  - port: 8080:80 # same as `--port '8080:80@loadbalancer'`
+  - port: 8080:80
     nodeFilters:
       - loadbalancer
   # - port: 30000-32767:30000-32767 # TODO creating the loadbalancer induces a hang due to the large amount of port mappings. If the cluster is installed with --no-rollback the install is successful, after the loadbalancer comes up
@@ -35,11 +28,11 @@ ports:
       - agent:*
 options:
   k3d: # k3d runtime settings
-    wait: true # wait for cluster to be usable before returining; same as `--wait` (default: true)
-    timeout: "300s" # wait timeout before aborting; same as `--timeout 60s`
+    wait: true
+    timeout: "300s"
   kubeconfig:
-    updateDefaultKubeconfig: true # add new cluster to your default Kubeconfig; same as `--kubeconfig-update-default` (default: true)
-    switchCurrentContext: true # also set current-context to the new cluster's context; same as `--kubeconfig-switch-context` (default: true)
+    updateDefaultKubeconfig: true
+    switchCurrentContext: true
   k3s:
     nodeLabels:
       - label: app=compute
