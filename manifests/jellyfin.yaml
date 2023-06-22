@@ -1,3 +1,5 @@
+# TODO setup healthcheck
+# TODO setup SSL cert and https port
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -138,7 +140,7 @@ spec:
   volumeMode: Filesystem
   resources:
     requests:
-      storage: 3Ti
+      storage: 4Ti
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -168,6 +170,20 @@ spec:
                 # values:
                   # - "compute"
       containers:
+      - name: liveness
+        image: longhornio/livenessprobe:v2.9.0-arm64
+        args:
+        - /server
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8096
+            httpHeaders:
+            - name: Custom-Header
+              value: Awesome
+          initialDelaySeconds: 120
+          periodSeconds: 3
+
       - env:
         - name: JELLYFIN_PublishedServerUrl
           value: http://rpi4:8096
