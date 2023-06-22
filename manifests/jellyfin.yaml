@@ -77,11 +77,35 @@ spec:
     storage: 3Ti
   volumeMode: Filesystem
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: local-storage
+  storageClassName: local-path
   local:
     path: /data/jellyfin
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: app
+              operator: In
+              values:
+                - "compute"
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: jellyfin-conf
+  namespace: jellyfin
+spec:
+  capacity:
+    storage: 5Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-path
+  local:
+    path: /pvs/jellyfin/jellyfin-conf
   nodeAffinity:
     required:
       nodeSelectorTerms:
@@ -97,6 +121,8 @@ metadata:
   name: jellyfin-conf-pvc
   namespace: jellyfin
 spec:
+  volumeName: jellyfin-conf
+  volumeMode: Filesystem
   storageClassName: local-path
   accessModes:
     - ReadWriteOnce
@@ -105,42 +131,19 @@ spec:
       storage: 3Gi
 ---
 apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: jellyfin-conf
-  namespace: jellyfin
-spec:
-  capacity:
-    storage: 5Gi
-  volumeMode: Filesystem
-  accessModes:
-    - ReadWriteMany
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: local-storage
-  local:
-    path: /pvs/jellyfin/jellyfin-conf
-  nodeAffinity:
-    required:
-      nodeSelectorTerms:
-        - matchExpressions:
-            - key: app
-              operator: In
-              values:
-                - "compute"
----
-apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: jellyfin-media-pvc
   namespace: jellyfin
 spec:
-  storageClassName: local-storage
-  accessModes:
-    - ReadWriteMany
+  volumeName: jellyfin-media
   volumeMode: Filesystem
+  storageClassName: local-path
+  accessModes:
+    - ReadWriteOnce
   resources:
     requests:
-      storage: 4Ti
+      storage: 3Gi
 ---
 apiVersion: apps/v1
 kind: Deployment
