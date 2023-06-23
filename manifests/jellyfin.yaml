@@ -5,67 +5,45 @@ kind: Namespace
 metadata:
   name: jellyfin
 ---
-kind: Service
-apiVersion: v1
-metadata:
-  name: jellyfin-udp
-  namespace: jellyfin
-  annotations:
-    metallb.universe.tf/allow-shared-ip: jellyfin # # < annotation name to combine the Service IP, make sure it's same name as in the service UDP yaml
-spec:
-  ports:
-  - port: 1900             # < port to open on the outside on the server
-    targetPort: 1900       # < targetport. port on the pod to passthrough
-    name: dlna-udp         # < reference name for the port in the deployment yaml
-    protocol: UDP
-  - port: 7359
-    targetPort: 7359
-    name: discovery-udp
-    protocol: UDP
-  # sessionAffinity: ClientIP # This is necessary for multi-replica deployments
-  selector:
-    app: jellyfin
-  type: NodePort
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: jellyfin-tcp
-  namespace: jellyfin
-  annotations:
-    metallb.universe.tf/allow-shared-ip: jellyfin # # < annotation name to combine the Service IP, make sure it's same name as in the service UDP yaml
-  labels:
-    app: jellyfin
-spec:
-  ports:
-  - name: 8096-8096
-    nodePort: 30096
-    port: 8096
-    protocol: TCP
-    targetPort: 8096
-  selector:
-    app: jellyfin
-  type: NodePort
----
 # apiVersion: networking.k8s.io/v1beta1 # for k3s < v1.19
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: jellyfin
   namespace: jellyfin
+  labels:
+    app: jellyfin
   annotations:
-    ingress.kubernetes.io/ssl-redirect: "false"
+    ingress.kubernetes.io/ssl-redirect: "true"
+    traefik.frontend.rule.type: PathPrefix
 spec:
   rules:
   - http:
       paths:
-      - path: /jellyfin
+      - path: /
         pathType: Prefix
         backend:
           service:
             name: jellyfin
             port:
-              number: 8096
+              number: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jellyfin
+  namespace: jellyfin
+  labels:
+    app: jellyfin
+spec:
+  ports:
+    - name: http
+      port: 80
+      targetPort: http-web-svc
+      protocol: TCP
+  selector:
+    app: jellyfin
+  type: ClusterIP
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -168,7 +146,7 @@ spec:
       - name: jellyfin
         livenessProbe:
           tcpSocket:
-            port: 8096
+            port: http-web-svc
           initialDelaySeconds: 120
           periodSeconds: 5
         env:
@@ -177,6 +155,8 @@ spec:
         image: docker.io/jellyfin/jellyfin:latest
         ports:
         - containerPort: 8096
+          name: http-web-svc
+          protocol: TCP
         securityContext:
           privileged: true
           capabilities:
@@ -191,6 +171,14 @@ spec:
           mountPath: /config
         - name: dev-dri
           mountPath: /dev/dri/renderD128 # Raspberry pi 4 VC4 video card
+        - name: card0
+          mountPath: /dev/dri/card0
+        resources:
+          requests:
+            memory: "250Mi"
+            cpu: "50m"
+          limits:
+            memory: "1Gi"
       enableServiceLinks: false
       volumes:
       - name: media
@@ -202,6 +190,10 @@ spec:
       - name: dev-dri
         hostPath:
           path: /dev/dri/renderD128
+          type: CharDevice
+      - name: card0
+        hostPath:
+          path: /dev/dri/card0
           type: CharDevice
       dnsPolicy: ClusterFirst
       restartPolicy: Always
