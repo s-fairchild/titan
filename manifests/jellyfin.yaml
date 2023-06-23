@@ -164,40 +164,19 @@ spec:
       labels:
         app: jellyfin
     spec:
-      # TODO Fails to decode to Go struct, need to troubleshoot
-      # affinity:
-        # nodeAffinity:
-          # - matchExpressions:
-              # - key: app
-                # operator: In
-                # values:
-                  # - "compute"
       containers:
-      - name: liveness
-        image: longhornio/livenessprobe:v2.9.0-arm64
-        args:
-        - /server
+      - name: jellyfin
         livenessProbe:
-          httpGet:
-            path: /health
+          tcpSocket:
             port: 8096
-            httpHeaders:
-            - name: Custom-Header
-              value: Awesome
           initialDelaySeconds: 120
-          periodSeconds: 3
-
-      - env:
+          periodSeconds: 5
+        env:
         - name: JELLYFIN_PublishedServerUrl
           value: http://rpi4:8096
         image: docker.io/jellyfin/jellyfin:latest
-        name: jellyfin
         ports:
         - containerPort: 8096
-          # hostPort: 8096
-        # Need to setup TLS for this
-        # - containerPort: 8920
-          # hostPort: 8920
         securityContext:
           privileged: true
           capabilities:
@@ -208,8 +187,6 @@ spec:
         volumeMounts:
         - name: media
           mountPath: /media
-        # - name: cache
-          # mountPath: /cache
         - name: conf
           mountPath: /config
         - name: dev-dri
@@ -222,9 +199,6 @@ spec:
       - name: conf
         persistentVolumeClaim:
           claimName: jellyfin-conf-pvc
-      # - name: cache
-        # emptyDir:
-          # sizeLimit: 1Gi
       - name: dev-dri
         hostPath:
           path: /dev/dri/renderD128

@@ -43,6 +43,7 @@ Workloads
 2. Elasticsearch
 3. [MotionPlus](https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&cad=rja&uact=8&ved=2ahUKEwidw8T34dH_AhVwF1kFHWfjC20QFnoECC4QAQ&url=https%3A%2F%2Fgithub.com%2FMotion-Project%2Fmotionplus&usg=AOvVaw3LnQpoPIybVa1Z11DAVZ9J&opi=89978449)
    1. For video survuelance recording
+4. [Docker Swag](https://github.com/linuxserver/docker-swag#migrating-from-the-old-linuxserverletsencrypt-image)
 
 ## Design Goals
 
