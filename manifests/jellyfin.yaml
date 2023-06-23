@@ -18,7 +18,8 @@ metadata:
     traefik.frontend.rule.type: PathPrefix
 spec:
   rules:
-  - http:
+  - host: jellyfin.rpi4
+    http:
       paths:
       - path: /
         pathType: Prefix
