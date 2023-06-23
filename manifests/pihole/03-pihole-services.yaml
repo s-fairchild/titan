@@ -1,0 +1,52 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: pihole
+  namespace: pihole
+  labels:
+    app: pihole
+  annotations:
+    ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: http-admin-web
+    protocol: TCP
+  selector:
+    app: pihole
+  type: ClusterIP
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: pihole-udp
+  namespace: pihole
+  annotations:
+    metallb.universe.tf/allow-shared-ip: pihole-udp # # < annotation name to combine the Service IP, make sure it's same name as in the service UDP yaml
+spec:
+  ports:
+  - port: 30053
+    targetPort: dns-udp
+    name: dns
+    protocol: UDP
+  selector:
+    app: pihole
+  type: NodePort
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: pihole-tcp
+  namespace: pihole
+  annotations:
+    metallb.universe.tf/allow-shared-ip: pihole-tcp # # < annotation name to combine the Service IP, make sure it's same name as in the service UDP yaml
+spec:
+  ports:
+  - port: 30053
+    targetPort: dns-tcp
+    name: dns
+    protocol: TCP
+  selector:
+    app: pihole
+  type: NodePort

@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: pihole
+  namespace: pihole
+  name: pihole
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pihole
+  template:
+    metadata:
+      labels:
+        app: pihole
+        namespace: pihole
+      name: pihole
+    spec:
+      hostname: pihole
+      automountServiceAccountToken: false
+      dnsPolicy: None
+      enableServiceLinks: false
+      dnsConfig:
+        nameservers:
+          - "127.0.0.1"
+          - "1.1.1.1"
+      restartPolicy: Always
+      volumes:
+        - name: pihole-log
+          persistentVolumeClaim:
+            claimName: pihole-log-pvc
+        - name: pihole-conf
+          persistentVolumeClaim:
+            claimName: pihole-conf-pvc
+      containers:
+      - name: pihole
+        image: docker.io/pihole/pihole:latest
+        env:
+        - name: PROXY_LOCATION
+          value: "pihole.rpi4"
+        - name: VIRTUAL_HOST
+          value: "pihole.rpi4"
+        - name: ServerIP
+          value: "10.50.0.10"
+        - name: TZ
+          value: "America/New_York"
+        - name: HOSTNAME
+          value: "pihole.rpi4"
+        - name: DNSMASQ_LISTENING
+          value: "all"
+        resources:
+          requests:
+            memory: "100Mi"
+            cpu: "500m"
+          limits:
+            memory: "150Mi"
+            cpu: "5000m"
+        ports:
+        - name: dns-udp
+          containerPort: 53
+          protocol: UDP
+        - name: dns-tcp
+          containerPort: 53
+          protocol: TCP
+        - name: http-admin-web
+          containerPort: 80
+          protocol: TCP
+        securityContext:
+          capabilities:
+            drop:
+            - CAP_MKNOD
+            - CAP_NET_RAW
+            - CAP_AUDIT_WRITE
+        volumeMounts:
+        - name: pihole-log
+          mountPath: /var/log/
+        - name: pihole-conf
+          mountPath: /etc/pihole/

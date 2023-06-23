@@ -5,7 +5,6 @@ kind: Namespace
 metadata:
   name: jellyfin
 ---
-# apiVersion: networking.k8s.io/v1beta1 # for k3s < v1.19
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -152,7 +151,7 @@ spec:
           periodSeconds: 5
         env:
         - name: JELLYFIN_PublishedServerUrl
-          value: http://rpi4:8096
+          value: https://jellyfin.rpi4
         image: docker.io/jellyfin/jellyfin:latest
         ports:
         - containerPort: 8096
