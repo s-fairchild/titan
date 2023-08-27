@@ -7,8 +7,8 @@ servers: 1
 agents: 1
 network: k3d
 kubeAPI:
-  host: "beth" # important for the `server` setting in the kubeconfig
-  hostIP: "127.0.0.1" # where the Kubernetes API will be listening on
+  host: "beth.rpi4" # important for the `server` setting in the kubeconfig
+  hostIP: "10.50.0.10" # where the Kubernetes API will be listening on
   hostPort: "6443" # where the Kubernetes API listening port will be mapped to on your host system
 volumes:
     - volume: /data/jellyfin:/data/jellyfin
