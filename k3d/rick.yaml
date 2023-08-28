@@ -1,15 +1,25 @@
 apiVersion: k3d.io/v1alpha5
 kind: Simple
 metadata:
-  name: beth
+  name: morty
 image: docker.io/rancher/k3s:v1.25.6-k3s1
 servers: 1
 agents: 1
 network: k3d
+token: "${TOKEN}"
 kubeAPI:
-  host: "beth.rpi4" # important for the `server` setting in the kubeconfig
+  # The server name is different here to allow connecting to the master control plane of rick
+  # morty is set as the metadata name to avoid confusion when viewing the cluster/nodes on expresso host
+  host: "rick.rpi4.expresso.lan" # important for the `server` setting in the kubeconfig
   hostIP: "10.50.0.10" # where the Kubernetes API will be listening on
   hostPort: "6443" # where the Kubernetes API listening port will be mapped to on your host system
+hostAliases: # /etc/hosts style entries to be injected into /etc/hosts in the node containers and in the NodeHosts section in CoreDNS
+  - ip: 10.50.0.1
+    hostnames: 
+      - morty.expresso.lan
+  - ip: 10.50.0.10
+    hostnames:
+      - rick.rpi4.expresso.lan
 volumes:
     - volume: /data/jellyfin:/data/jellyfin
       nodeFilters:
@@ -20,9 +30,9 @@ volumes:
     - volume: /var/local/k3d/persistentVolumes:/pvs
       nodeFilters:
         - agent:*
-    # - volume: /var/local/etc/k3d/manifests:/manifests
-      # nodeFilters:
-        # - server:0
+    - volume: /var/local/etc/k3d/manifests:/manifests
+      nodeFilters:
+        - server:*
     # TODO add these for custom pihole settings
     # /etc/pihole/custom.list
     # /etc/pihole/local.list
@@ -41,12 +51,12 @@ ports:
   - port: 8080:80
     nodeFilters:
       - loadbalancer
-  - port: 10.50.0.10:53:30053/tcp # systemd-resolvd listens on 127.0.0.1:53
-    nodeFilters:
-      - agent:*
-  - port: 10.50.0.10:53:30053/udp # systemd-resolvd listens on 127.0.0.1:53
-    nodeFilters:
-      - agent:*
+  # - port: 10.50.0.10:53:30053/tcp # systemd-resolvd listens on 127.0.0.1:53
+  #   nodeFilters:
+  #     - agent:*
+  # - port: 10.50.0.10:53:30053/udp # systemd-resolvd listens on 127.0.0.1:53
+  #   nodeFilters:
+  #     - agent:*
   # - port: 30000-32767:30000-32767 # TODO creating the loadbalancer induces a hang due to the large amount of port mappings. If the cluster is installed with --no-rollback the install is successful, after the loadbalancer comes up
 options:
   k3d: # k3d runtime settings
@@ -56,6 +66,13 @@ options:
     updateDefaultKubeconfig: true
     switchCurrentContext: true
   k3s:
+    extraArgs: # additional arguments passed to the `k3s server|agent` command; same as `--k3s-arg`
+      - arg: --tls-san=rick.rpi4.expresso.lan
+        nodeFilters:
+          - server:*
+      - arg: --cluster-init
+        nodeFilters:
+          - server:*
     nodeLabels:
       - label: app=compute
         nodeFilters:

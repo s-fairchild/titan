@@ -7,30 +7,13 @@ servers: 1
 agents: 1
 network: k3d
 kubeAPI:
-  host: "beth.rpi4" # important for the `server` setting in the kubeconfig
-  hostIP: "10.50.0.10" # where the Kubernetes API will be listening on
+  host: "morty.expresso" # important for the `server` setting in the kubeconfig
+  hostIP: "10.50.0.1" # where the Kubernetes API will be listening on
   hostPort: "6443" # where the Kubernetes API listening port will be mapped to on your host system
-volumes:
-    - volume: /data/jellyfin:/data/jellyfin
-      nodeFilters:
-        - agent:*
-    - volume: /dev/dri/card0:/dev/dri/card0
-      nodeFilters:
-        - agent:*
-    - volume: /var/local/k3d/persistentVolumes:/pvs
-      nodeFilters:
-        - agent:*
-    # - volume: /var/local/etc/k3d/manifests:/manifests
-      # nodeFilters:
-        # - server:0
-    # TODO add these for custom pihole settings
-    # /etc/pihole/custom.list
-    # /etc/pihole/local.list
-
-    # causes failure
-    # - volume: /usr/local/etc/k3d/manifests/jellyfin.yaml:/var/lib/rancher/k3s/server/manifests
-      # nodeFilters:
-        # - server:*
+# volumes:
+#     - volume: /dev/dri/card0:/dev/dri/card0
+#       nodeFilters:
+#         - agent:*
 ports:
   - port: 80:80
     nodeFilters:
@@ -41,7 +24,7 @@ ports:
   - port: 8080:80
     nodeFilters:
       - loadbalancer
-  - port: 10.50.0.10:53:30053/tcp # systemd-resolvd listens on 127.0.0.1:53
+  - port: 10.50.0.10:53:/tcp # systemd-resolvd listens on 127.0.0.1:53
     nodeFilters:
       - agent:*
   - port: 10.50.0.10:53:30053/udp # systemd-resolvd listens on 127.0.0.1:53

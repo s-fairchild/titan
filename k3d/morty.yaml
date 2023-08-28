@@ -1,0 +1,81 @@
+apiVersion: k3d.io/v1alpha5
+kind: Simple
+metadata:
+  name: rick
+image: docker.io/rancher/k3s:v1.25.6-k3s1
+servers: 1
+agents: 1
+network: k3d
+token: "${TOKEN}"
+kubeAPI:
+  host: "rick.rpi4.expresso.lan" # important for the `server` setting in the kubeconfig
+  hostIP: "10.50.0.1" # where the Kubernetes API will be listening on
+  hostPort: "6443" # where the Kubernetes API listening port will be mapped to on your host system
+hostAliases: # /etc/hosts style entries to be injected into /etc/hosts in the node containers and in the NodeHosts section in CoreDNS
+  - ip: 10.50.0.10
+    hostnames: 
+      - rick.rpi4.expresso.lan
+      - rick.rpi4.lan
+      - rick.rpi4.lan
+      - rick.rpi4
+      - rpi4
+  - ip: 10.50.0.1
+    hostnames:
+      - morty.expresso.lan
+      - morty.expresso
+      - expresso.lan
+      - expresso
+volumes:
+    # - volume: /dev/dri/card0:/dev/dri/card0
+    #   nodeFilters:
+    #     - agent:*
+    - volume: /var/local/k3d/persistentVolumes:/var/local/k3d/pvs
+      nodeFilters:
+        - agent:*
+    - volume: /var/local/etc/k3d/manifests:/usr/local/etc/k3d/manifests
+      nodeFilters:
+        - agent:*
+    # TODO add these for custom pihole settings
+    # /etc/pihole/custom.list
+    # /etc/pihole/local.list
+
+    # causes failure
+    # - volume: /usr/local/etc/k3d/manifests/jellyfin.yaml:/var/lib/rancher/k3s/server/manifests
+      # nodeFilters:
+        # - server:*
+ports:
+  - port: 80:80
+    nodeFilters:
+      - loadbalancer
+  - port: 443:443
+    nodeFilters:
+      - loadbalancer
+  - port: 8080:80
+    nodeFilters:
+      - loadbalancer
+  # - port: 10.50.0.10:53:30053/tcp # systemd-resolvd listens on 127.0.0.1:53
+  #   nodeFilters:
+  #     - agent:*
+  # - port: 10.50.0.10:53:30053/udp # systemd-resolvd listens on 127.0.0.1:53
+  #   nodeFilters:
+  #     - agent:*
+  # - port: 30000-32767:30000-32767 # TODO creating the loadbalancer induces a hang due to the large amount of port mappings. If the cluster is installed with --no-rollback the install is successful, after the loadbalancer comes up
+options:
+  k3d: # k3d runtime settings
+    wait: true
+    timeout: "300s"
+  kubeconfig:
+    updateDefaultKubeconfig: true
+    switchCurrentContext: true
+  k3s:
+    extraArgs: # additional arguments passed to the `k3s server|agent` command; same as `--k3s-arg`
+      - arg: --tls-san=rick.rpi4.expresso.lan
+        nodeFilters:
+          - server:*
+      - arg: --cluster-init
+        nodeFilters:
+          - server:*
+    nodeLabels:
+      - label: app=compute
+        nodeFilters:
+          - agent:*

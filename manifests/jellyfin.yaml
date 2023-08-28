@@ -17,7 +17,7 @@ metadata:
     traefik.frontend.rule.type: PathPrefix
 spec:
   rules:
-  - host: jellyfin.rpi4
+  - host: jellyfin.rpi4.expresso.lan
     http:
       paths:
       - path: /
@@ -151,7 +151,7 @@ spec:
           periodSeconds: 5
         env:
         - name: JELLYFIN_PublishedServerUrl
-          value: https://jellyfin.rpi4
+          value: https://jellyfin.rpi4.expresso.lan
         image: docker.io/jellyfin/jellyfin:latest
         ports:
         - containerPort: 8096
