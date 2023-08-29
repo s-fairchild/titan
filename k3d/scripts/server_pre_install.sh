@@ -1,7 +1,7 @@
 #!/bin/bash
 
-mkdir -p /var/local/k3d/pvs
-mkdir -p /usr/local/etc/k3d/man
+mkdir -p /var/local/etc/k3d/manifests
+mkdir -p /var/local/var/k3d/persistentVolumes
 
 systemctl enable --now firewalld
 

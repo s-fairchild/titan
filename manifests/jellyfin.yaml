@@ -1,9 +1,87 @@
-# TODO setup healthcheck
-# TODO setup SSL cert and https port
 apiVersion: v1
 kind: Namespace
 metadata:
   name: jellyfin
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: jellyfin-conf
+spec:
+  capacity:
+    storage: 5Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-path
+  local:
+    path: /pvs/jellyfin/jellyfin-conf
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: app
+              operator: In
+              values:
+                - "compute"
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: jellyfin-media
+spec:
+  capacity:
+    storage: 3Ti
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-path
+  local:
+    path: /data/jellyfin
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: app
+              operator: In
+              values:
+                - "compute"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jellyfin-conf-pvc
+  namespace: jellyfin
+  annotations:
+    volumeType: local
+spec:
+  volumeName: jellyfin-conf
+  volumeMode: Filesystem
+  storageClassName: local-path
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 3Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jellyfin-media-pvc
+  namespace: jellyfin
+  annotations:
+    volumeType: local
+spec:
+  volumeName: jellyfin-media
+  volumeMode: Filesystem
+  storageClassName: local-path
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 200Mi
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -17,7 +95,7 @@ metadata:
     traefik.frontend.rule.type: PathPrefix
 spec:
   rules:
-  - host: jellyfin.rpi4.expresso.lan
+  - host: jellyfin.rick.expresso.lan
     http:
       paths:
       - path: /
@@ -44,84 +122,6 @@ spec:
   selector:
     app: jellyfin
   type: ClusterIP
----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: jellyfin-media
-  namespace: jellyfin
-spec:
-  capacity:
-    storage: 3Ti
-  volumeMode: Filesystem
-  accessModes:
-    - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: local-path
-  local:
-    path: /data/jellyfin
-  nodeAffinity:
-    required:
-      nodeSelectorTerms:
-        - matchExpressions:
-            - key: app
-              operator: In
-              values:
-                - "compute"
----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: jellyfin-conf
-  namespace: jellyfin
-spec:
-  capacity:
-    storage: 5Gi
-  volumeMode: Filesystem
-  accessModes:
-    - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: local-path
-  local:
-    path: /pvs/jellyfin/jellyfin-conf
-  nodeAffinity:
-    required:
-      nodeSelectorTerms:
-        - matchExpressions:
-            - key: app
-              operator: In
-              values:
-                - "compute"
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: jellyfin-conf-pvc
-  namespace: jellyfin
-spec:
-  volumeName: jellyfin-conf
-  volumeMode: Filesystem
-  storageClassName: local-path
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 3Gi
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: jellyfin-media-pvc
-  namespace: jellyfin
-spec:
-  volumeName: jellyfin-media
-  volumeMode: Filesystem
-  storageClassName: local-path
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 3Gi
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -151,7 +151,7 @@ spec:
           periodSeconds: 5
         env:
         - name: JELLYFIN_PublishedServerUrl
-          value: https://jellyfin.rpi4.expresso.lan
+          value: https://jellyfin.rick.expresso.lan
         image: docker.io/jellyfin/jellyfin:latest
         ports:
         - containerPort: 8096
@@ -171,8 +171,8 @@ spec:
           mountPath: /config
         - name: dev-dri
           mountPath: /dev/dri/renderD128 # Raspberry pi 4 VC4 video card
-        - name: card0
-          mountPath: /dev/dri/card0
+        - name: card1
+          mountPath: /dev/dri/card1
         resources:
           requests:
             memory: "250Mi"
@@ -191,9 +191,9 @@ spec:
         hostPath:
           path: /dev/dri/renderD128
           type: CharDevice
-      - name: card0
+      - name: card1
         hostPath:
-          path: /dev/dri/card0
+          path: /dev/dri/card1
           type: CharDevice
       dnsPolicy: ClusterFirst
       restartPolicy: Always

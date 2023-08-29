@@ -1,79 +1,72 @@
+servers: 3
+agents: 3
 apiVersion: k3d.io/v1alpha5
-kind: Simple
-metadata:
-  name: morty
+token: ${TOKEN}
+hostAliases:
+- hostnames:
+  - morty.expresso.lan
+  ip: 10.50.0.1
+- hostnames:
+  - rpi4.expresso.lan
+  ip: 10.50.0.10
 image: docker.io/rancher/k3s:v1.25.6-k3s1
-servers: 1
-agents: 1
-network: k3d
-token: "${TOKEN}"
+kind: Simple
 kubeAPI:
-  # The server name is different here to allow connecting to the master control plane of rick
-  # morty is set as the metadata name to avoid confusion when viewing the cluster/nodes on expresso host
-  host: "rick.rpi4.expresso.lan" # important for the `server` setting in the kubeconfig
-  hostIP: "10.50.0.10" # where the Kubernetes API will be listening on
-  hostPort: "6443" # where the Kubernetes API listening port will be mapped to on your host system
-hostAliases: # /etc/hosts style entries to be injected into /etc/hosts in the node containers and in the NodeHosts section in CoreDNS
-  - ip: 10.50.0.1
-    hostnames: 
-      - morty.expresso.lan
-  - ip: 10.50.0.10
-    hostnames:
-      - rick.rpi4.expresso.lan
-volumes:
-    - volume: /data/jellyfin:/data/jellyfin
-      nodeFilters:
-        - agent:*
-    - volume: /dev/dri/card0:/dev/dri/card0
-      nodeFilters:
-        - agent:*
-    - volume: /var/local/k3d/persistentVolumes:/pvs
-      nodeFilters:
-        - agent:*
-    - volume: /var/local/etc/k3d/manifests:/manifests
-      nodeFilters:
-        - server:*
-    # TODO add these for custom pihole settings
-    # /etc/pihole/custom.list
-    # /etc/pihole/local.list
-
-    # causes failure
-    # - volume: /usr/local/etc/k3d/manifests/jellyfin.yaml:/var/lib/rancher/k3s/server/manifests
-      # nodeFilters:
-        # - server:*
-ports:
-  - port: 80:80
-    nodeFilters:
-      - loadbalancer
-  - port: 443:443
-    nodeFilters:
-      - loadbalancer
-  - port: 8080:80
-    nodeFilters:
-      - loadbalancer
-  # - port: 10.50.0.10:53:30053/tcp # systemd-resolvd listens on 127.0.0.1:53
-  #   nodeFilters:
-  #     - agent:*
-  # - port: 10.50.0.10:53:30053/udp # systemd-resolvd listens on 127.0.0.1:53
-  #   nodeFilters:
-  #     - agent:*
-  # - port: 30000-32767:30000-32767 # TODO creating the loadbalancer induces a hang due to the large amount of port mappings. If the cluster is installed with --no-rollback the install is successful, after the loadbalancer comes up
+  host: rick.expresso.lan
+  hostIP: 10.50.0.2
+  hostPort: "6443"
+metadata:
+  name: rick
+network: k3d
 options:
-  k3d: # k3d runtime settings
+  k3d:
+    disableImageVolume: false
+    disableLoadbalancer: false
+    disableRollback: false
+    loadbalancer: {}
+    timeout: 300000000000
     wait: true
-    timeout: "300s"
-  kubeconfig:
-    updateDefaultKubeconfig: true
-    switchCurrentContext: true
   k3s:
-    extraArgs: # additional arguments passed to the `k3s server|agent` command; same as `--k3s-arg`
-      - arg: --tls-san=rick.rpi4.expresso.lan
-        nodeFilters:
-          - server:*
-      - arg: --cluster-init
-        nodeFilters:
-          - server:*
+    extraArgs:
+    - arg: --tls-san=rick.expresso.lan
+      nodeFilters:
+      - server:*
     nodeLabels:
-      - label: app=compute
-        nodeFilters:
-          - agent:*
+    - label: app=compute
+      nodeFilters:
+      - agent:*
+  kubeconfig:
+    switchCurrentContext: true
+    updateDefaultKubeconfig: true
+  runtime:
+    HostPidMode: false
+ports:
+- nodeFilters:
+  - loadbalancer
+  port: 80:80
+- nodeFilters:
+  - loadbalancer
+  port: 443:443
+- nodeFilters:
+  - loadbalancer
+  port: 8080:80
+registries: {}
+volumes:
+- nodeFilters:
+  - agent:*
+  volume: /data/jellyfin:/data/jellyfin:Z
+- nodeFilters:
+  - agent:*
+  volume: /data/motion:/data/motion:Z
+- nodeFilters:
+  - agent:*
+  volume: /dev/dri:/dev/dri:z
+- nodeFilters:
+  - agent:*
+  volume: /var/local/var/k3d/persistentVolumes:/pvs:Z
+- nodeFilters:
+  - agent:*
+  volume: jellyfin-conf:/volumes/jellyfin-conf
+- nodeFilters:
+  - server:*
+  volume: /usr/local/etc/k3d/manifests:/var/lib/rancher/k3s/server/manifests/compute:Z
