@@ -1,0 +1,52 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: pihole
+  namespace: pihole
+  labels:
+    app: pihole
+  annotations:
+    ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: http-admin-web
+    protocol: TCP
+  selector:
+    app: pihole
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pihole
+  name: pihole-tcp
+spec:
+  ports:
+  - name: 30053-30053-tcp
+    nodePort: 30053
+    port: 5353
+    protocol: TCP
+    targetPort: 30053
+  selector:
+    app: pihole
+  type: NodePort
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   labels:
+#     app: pihole
+#   name: pihole-udp
+# spec:
+#   ports:
+#   - name: 30054-30054-udp
+#     nodePort: 30054
+#     port: 5354
+#     protocol: UDP
+#     targetPort: 30054
+#   selector:
+#     app: pihole
+#   type: NodePort

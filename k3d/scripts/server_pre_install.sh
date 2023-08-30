@@ -9,3 +9,6 @@ firewall-cmd --permanent --add-service=kube-apiserver
 firewall-cmd --permanent --add-service=https
 firewall-cmd --permanent --add-service=http
 firewall-cmd --reload
+
+# Required for jellyfin filesystem watcher
+sysctl -w fs.inotify.max_user_instances=5000

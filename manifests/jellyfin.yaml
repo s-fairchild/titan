@@ -4,182 +4,162 @@ metadata:
   name: jellyfin
 ---
 apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: jellyfin
+  name: jellyfin
+  namespace: jellyfin
+spec:
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: http-web-svc
+  selector:
+    app: jellyfin
+  type: ClusterIP
+---
+apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: jellyfin-conf
 spec:
-  capacity:
-    storage: 5Gi
-  volumeMode: Filesystem
   accessModes:
-    - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: local-path
+  - ReadWriteOnce
+  capacity:
+    storage: 3Gi
   local:
-    path: /pvs/jellyfin/jellyfin-conf
+    path: /pvs/jellyfin/conf
   nodeAffinity:
     required:
       nodeSelectorTerms:
-        - matchExpressions:
-            - key: app
-              operator: In
-              values:
-                - "compute"
+      - matchExpressions:
+        - key: app
+          operator: In
+          values:
+          - compute
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-path
+  volumeMode: Filesystem
 ---
 apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: jellyfin-media
 spec:
-  capacity:
-    storage: 3Ti
-  volumeMode: Filesystem
   accessModes:
-    - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: local-path
+  - ReadWriteOnce
+  capacity:
+    storage: 4T
   local:
     path: /data/jellyfin
   nodeAffinity:
     required:
       nodeSelectorTerms:
-        - matchExpressions:
-            - key: app
-              operator: In
-              values:
-                - "compute"
+      - matchExpressions:
+        - key: app
+          operator: In
+          values:
+          - compute
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-path
+  volumeMode: Filesystem
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: jellyfin-conf-pvc
-  namespace: jellyfin
   annotations:
     volumeType: local
+  name: jellyfin-conf-pvc
+  namespace: jellyfin
 spec:
-  volumeName: jellyfin-conf
-  volumeMode: Filesystem
-  storageClassName: local-path
   accessModes:
-    - ReadWriteOnce
+  - ReadWriteOnce
   resources:
     requests:
       storage: 3Gi
+  storageClassName: local-path
+  volumeMode: Filesystem
+  volumeName: jellyfin-conf
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: jellyfin-media-pvc
-  namespace: jellyfin
   annotations:
     volumeType: local
+  name: jellyfin-media-pvc
+  namespace: jellyfin
 spec:
-  volumeName: jellyfin-media
-  volumeMode: Filesystem
-  storageClassName: local-path
   accessModes:
-    - ReadWriteOnce
+  - ReadWriteOnce
   resources:
     requests:
-      storage: 200Mi
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: jellyfin
-  namespace: jellyfin
-  labels:
-    app: jellyfin
-  annotations:
-    ingress.kubernetes.io/ssl-redirect: "true"
-    traefik.frontend.rule.type: PathPrefix
-spec:
-  rules:
-  - host: jellyfin.rick.expresso.lan
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: jellyfin
-            port:
-              number: 80
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: jellyfin
-  namespace: jellyfin
-  labels:
-    app: jellyfin
-spec:
-  ports:
-    - name: http
-      port: 80
-      targetPort: http-web-svc
-      protocol: TCP
-  selector:
-    app: jellyfin
-  type: ClusterIP
+      storage: 4T
+  storageClassName: local-path
+  volumeMode: Filesystem
+  volumeName: jellyfin-media
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: jellyfin
-  namespace: jellyfin
   labels:
     app: jellyfin
+  name: jellyfin
+  namespace: jellyfin
 spec:
-  replicas: 1 # TODO get this working with 3 replicas, probably by running on a single agent
+  replicas: 1
   selector:
     matchLabels:
       app: jellyfin
   template:
     metadata:
-      name: jellyfin
-      namespace: jellyfin
       labels:
         app: jellyfin
+      name: jellyfin
+      namespace: jellyfin
     spec:
       containers:
-      - name: jellyfin
-        livenessProbe:
-          tcpSocket:
-            port: http-web-svc
-          initialDelaySeconds: 120
-          periodSeconds: 5
-        env:
+      - env:
         - name: JELLYFIN_PublishedServerUrl
           value: https://jellyfin.rick.expresso.lan
         image: docker.io/jellyfin/jellyfin:latest
+        livenessProbe:
+          initialDelaySeconds: 120
+          periodSeconds: 5
+          tcpSocket:
+            port: http-web-svc
+        name: jellyfin
         ports:
         - containerPort: 8096
           name: http-web-svc
           protocol: TCP
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 10G
+          requests:
+            cpu: 1000m
+            memory: 10G
         securityContext:
-          privileged: true
           capabilities:
             drop:
             - CAP_MKNOD
             - CAP_NET_RAW
             - CAP_AUDIT_WRITE
+          privileged: true
         volumeMounts:
-        - name: media
-          mountPath: /media
-        - name: conf
-          mountPath: /config
-        - name: dev-dri
-          mountPath: /dev/dri/renderD128 # Raspberry pi 4 VC4 video card
-        - name: card1
-          mountPath: /dev/dri/card1
-        resources:
-          requests:
-            memory: "250Mi"
-            cpu: "50m"
-          limits:
-            memory: "1Gi"
+        - mountPath: /media
+          name: media
+        - mountPath: /config
+          name: conf
+        - mountPath: /dev/dri/renderD128
+          name: dev-dri
+        - mountPath: /dev/dri/card1
+          name: card1
+      dnsPolicy: ClusterFirst
       enableServiceLinks: false
+      restartPolicy: Always
       volumes:
       - name: media
         persistentVolumeClaim:
@@ -187,13 +167,34 @@ spec:
       - name: conf
         persistentVolumeClaim:
           claimName: jellyfin-conf-pvc
-      - name: dev-dri
-        hostPath:
+      - hostPath:
           path: /dev/dri/renderD128
           type: CharDevice
-      - name: card1
-        hostPath:
+        name: dev-dri
+      - hostPath:
           path: /dev/dri/card1
           type: CharDevice
-      dnsPolicy: ClusterFirst
-      restartPolicy: Always
+        name: card1
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    ingress.kubernetes.io/ssl-redirect: "true"
+    traefik.frontend.rule.type: PathPrefix
+  labels:
+    app: jellyfin
+  name: jellyfin
+  namespace: jellyfin
+spec:
+  rules:
+  - host: jellyfin.rick.expresso.lan
+    http:
+      paths:
+      - backend:
+          service:
+            name: jellyfin
+            port:
+              number: 80
+        path: /
+        pathType: Prefix

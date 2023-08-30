@@ -50,6 +50,9 @@ ports:
 - nodeFilters:
   - loadbalancer
   port: 8080:80
+- nodeFilters:
+  - agent:*
+  port: "10.50.0.2:53:30053/tcp"
 registries: {}
 volumes:
 - nodeFilters:
@@ -63,10 +66,7 @@ volumes:
   volume: /dev/dri:/dev/dri:z
 - nodeFilters:
   - agent:*
-  volume: /var/local/var/k3d/persistentVolumes:/pvs:Z
-- nodeFilters:
-  - agent:*
-  volume: jellyfin-conf:/volumes/jellyfin-conf
+  volume: compute:/pvs:Z
 - nodeFilters:
   - server:*
-  volume: /usr/local/etc/k3d/manifests:/var/lib/rancher/k3s/server/manifests/compute:Z
+  volume: /var/local/etc/k3d/manifests:/var/lib/rancher/k3s/server/manifests/compute:Z

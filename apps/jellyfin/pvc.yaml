@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jellyfin-conf-pvc
+  namespace: jellyfin
+  annotations:
+    volumeType: local
+spec:
+  volumeName: jellyfin-conf
+  volumeMode: Filesystem
+  storageClassName: local-path
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 3Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jellyfin-media-pvc
+  namespace: jellyfin
+  annotations:
+    volumeType: local
+spec:
+  volumeName: jellyfin-media
+  volumeMode: Filesystem
+  storageClassName: local-path
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 3.9T
