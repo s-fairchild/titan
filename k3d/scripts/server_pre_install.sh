@@ -13,4 +13,9 @@ firewall-cmd --permanent --add-forward-port=port=53:proto=udp:toport=32053:toadd
 firewall-cmd --reload
 
 # Required for jellyfin filesystem watcher
-sysctl -w fs.inotify.max_user_instances=5000
+sysctl -w fs.inotify.max_user_instances=30000
+sysctl -w fs.inotify.max_user_watches=30000
+
+echo 'fs.inotify.max_user_watches = 30000
+fs.inotify.max_user_instances = 30000
+' >> /etc/sysctl.d/99-sysctl.conf

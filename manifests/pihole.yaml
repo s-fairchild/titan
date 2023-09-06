@@ -5,7 +5,7 @@ metadata:
 ---
 apiVersion: v1
 data:
-  password: VldQUXRUUEM4ZyN0ekghRndocjJzRThzQWd5bm8hQUxFKnJneTgjQCMyVgo=
+  admin: VldQUXRUUEM4ZyN0ekghRndocjJzRThzQWd5bm8hQUxFKnJneTgjQCMyVgo=
 kind: Secret
 metadata:
   name: webpassword
@@ -36,14 +36,31 @@ kind: Service
 metadata:
   labels:
     app: pihole
+  name: pihole-tcp
+spec:
+  ports:
+  - name: 53-53-tcp
+    nodePort: 32000
+    port: 53
+    protocol: TCP
+    targetPort: dns-tcp
+  selector:
+    app: pihole
+  type: NodePort
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pihole
   name: pihole-udp
 spec:
   ports:
-  - name: 32053-32053-udp
-    nodePort: 30000
+  - name: 53-53-udp
+    nodePort: 32000
     port: 53
     protocol: UDP
-    targetPort: 32000
+    targetPort: dns-udp
   selector:
     app: pihole
   type: NodePort
@@ -117,7 +134,7 @@ spec:
         - name: WEB_PORT
           value: "80"
         - name: WEBPASSWORD_FILE
-          value: /etc/webpassword
+          value: /etc/webpassword/admin
         image: docker.io/pihole/pihole:dev
         imagePullPolicy: IfNotPresent
         name: pihole

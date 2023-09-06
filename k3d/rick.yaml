@@ -39,17 +39,13 @@ options:
     switchCurrentContext: true
     updateDefaultKubeconfig: true
   runtime:
-    HostPidMode: false
     ulimits: # allowed keys are: rttime, core, locks, msgqueue, nice, rss, rtprio, cpu, fsize, memlock, nofile, nproc, stack, data, sigpending
-      - name: rttime
-        soft: 26677
-        hard: 300000
-      # - name: nofile # Required for Jellyfin filesystem monitoring
-      #   soft: 26677
-      #   hard: 26677
-      # - name: cpu
-      #   soft: 200000
-      #   hard: 200000
+      - name: locks
+        soft: 30000
+        hard: 30000
+      - name: nofile # Required for Jellyfin filesystem monitoring
+        soft: 30000
+        hard: 30000
 ports:
 - nodeFilters:
   - loadbalancer

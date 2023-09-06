@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: motion
+  namespace: motion
+  labels:
+    app: motion
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: motion
+  template:
+    metadata:
+      name: motion
+      namespace: motion
+      labels:
+        app: motion
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - compute
+      containers:
+      - name: motion
+        # TODO update image
+        image: docker.io/motion/jellyfin:latest
+        # TODO update ports
+        ports:
+        - containerPort: 8096
+          name: http-web-svc
+          protocol: TCP
+        securityContext:
+          privileged: true
+          capabilities:
+            drop:
+            - CAP_MKNOD
+            - CAP_NET_RAW
+            - CAP_AUDIT_WRITE
+        volumeMounts:
+        - name: media
+          mountPath: /media
+        - name: conf
+          mountPath: /config
+        - name: dev-dri
+          mountPath: /dev/dri/renderD128 # Raspberry pi 4 VC4 video card
+        - name: card1
+          mountPath: /dev/dri/card1
+        resources:
+          requests:
+            memory: "10G"
+            cpu: "1000m"
+          limits:
+            memory: "10G"
+            cpu: "1000m"
+      enableServiceLinks: false
+      volumes:
+      - name: media
+        persistentVolumeClaim:
+          claimName: motion-media-pvc
+      - name: conf
+        persistentVolumeClaim:
+          claimName: motion-conf-pvc
+      - name: dev-dri
+        hostPath:
+          path: /dev/dri/renderD128
+          type: CharDevice
+      - name: card1
+        hostPath:
+          path: /dev/dri/card1
+          type: CharDevice
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always

@@ -70,7 +70,7 @@ spec:
         - name: WEB_PORT
           value: "80"
         - name: WEBPASSWORD_FILE
-          value: "/etc/webpassword"
+          value: "/etc/webpassword/admin"
         # - name: WEBPASSWORD
         #   valueFrom:
         #     secretKeyRef:
