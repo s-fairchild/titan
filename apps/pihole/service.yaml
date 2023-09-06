@@ -16,37 +16,37 @@ spec:
   selector:
     app: pihole
   type: ClusterIP
----
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    app: pihole
-  name: pihole-tcp
-spec:
-  ports:
-  - name: 30053-30053-tcp
-    nodePort: 30053
-    port: 5353
-    protocol: TCP
-    targetPort: 30053
-  selector:
-    app: pihole
-  type: NodePort
 # ---
 # apiVersion: v1
 # kind: Service
 # metadata:
 #   labels:
 #     app: pihole
-#   name: pihole-udp
+#   name: pihole-tcp
 # spec:
 #   ports:
-#   - name: 30054-30054-udp
-#     nodePort: 30054
-#     port: 5354
-#     protocol: UDP
-#     targetPort: 30054
+#   - name: 30053-30053-tcp
+#     nodePort: 30053
+#     port: 5353
+#     protocol: TCP
+#     targetPort: 30053
 #   selector:
 #     app: pihole
 #   type: NodePort
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pihole
+  name: pihole-udp
+spec:
+  ports:
+  - name: 32053-32053-udp
+    nodePort: 30000
+    port: 53
+    protocol: UDP
+    targetPort: 32000
+  selector:
+    app: pihole
+  type: NodePort

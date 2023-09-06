@@ -17,6 +17,21 @@ spec:
         namespace: pihole
       name: pihole
     spec:
+      volumes:
+        - name: webpassword
+          secret:
+            secretName: webpassword
+            optional: false
+            defaultMode: 0400
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - compute
       hostname: pihole
       automountServiceAccountToken: false
       dnsPolicy: None
@@ -26,20 +41,10 @@ spec:
           - "127.0.0.1"
           - "1.1.1.1"
       restartPolicy: Always
-      volumes:
-        - name: webpassword
-          readOnly: true
-          mountPath: /var/local/etc/webpassword
-      # volumes:
-      #   - name: pihole-log
-      #     persistentVolumeClaim:
-      #       claimName: pihole-log-pvc
-        # - name: pihole-conf
-        #   persistentVolumeClaim:
-        #     claimName: pihole-conf-pvc
       containers:
       - name: pihole
-        image: docker.io/pihole/pihole:latest
+        image: docker.io/pihole/pihole:dev
+        imagePullPolicy: IfNotPresent
         # See this for all env variables available https://github.com/pi-hole/docker-pi-hole#environment-variables
         env:
         - name: PROXY_LOCATION
@@ -55,19 +60,23 @@ spec:
         - name: FTLCONF_LOCAL_IPV4
           value: "10.50.0.2"
         - name: PIHOLE_DNS_
-          value: "8.8.8.8;4.4.4.4a"
+          value: "8.8.8.8;4.4.4.4"
         - name: DHCP_ACTIVE
           value: "false"
         - name: TEMPERATUREUNIT
-          value: f
+          value: "f"
         - name: WEBTHEME
           value: "default-darker"
         - name: WEB_PORT
           value: "80"
-        # - name: WEBPASSWORD
-        #   value: password
         - name: WEBPASSWORD_FILE
-          value: "/var/local/etc/webpassword"
+          value: "/etc/webpassword"
+        # - name: WEBPASSWORD
+        #   valueFrom:
+        #     secretKeyRef:
+        #       name: webpassword
+        #       key: password
+        #       optional: false
         resources:
           requests:
             memory: "100Mi"
@@ -91,8 +100,7 @@ spec:
             - CAP_MKNOD
             - CAP_NET_RAW
             - CAP_AUDIT_WRITE
-        # volumeMounts:
-        # - name: pihole-log
-        #   mountPath: /var/log/
-        # - name: pihole-conf
-        #   mountPath: /etc/pihole/
+        volumeMounts:
+          - name: webpassword
+            readOnly: true
+            mountPath: "/etc/webpassword"

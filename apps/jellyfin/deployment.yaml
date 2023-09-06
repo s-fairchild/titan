@@ -17,6 +17,15 @@ spec:
       labels:
         app: jellyfin
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - compute
       containers:
       - name: jellyfin
         livenessProbe:

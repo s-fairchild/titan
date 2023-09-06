@@ -95,7 +95,7 @@ spec:
   - ReadWriteOnce
   resources:
     requests:
-      storage: 4T
+      storage: 3.9T
   storageClassName: local-path
   volumeMode: Filesystem
   volumeName: jellyfin-media
@@ -119,6 +119,15 @@ spec:
       name: jellyfin
       namespace: jellyfin
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - compute
       containers:
       - env:
         - name: JELLYFIN_PublishedServerUrl

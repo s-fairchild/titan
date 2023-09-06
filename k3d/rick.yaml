@@ -28,7 +28,7 @@ options:
     wait: true
   k3s:
     extraArgs:
-    - arg: --tls-san=rick.expresso.lan
+    - arg: --tls-san=rick.lan --tls-san=expresso.lan --tls-san=morty.expresso.lan --tls-san=pihole.rick.expresso.lan --tls-san=jellyfin.rick.expresso.lan
       nodeFilters:
       - server:*
     nodeLabels:
@@ -40,6 +40,16 @@ options:
     updateDefaultKubeconfig: true
   runtime:
     HostPidMode: false
+    ulimits: # allowed keys are: rttime, core, locks, msgqueue, nice, rss, rtprio, cpu, fsize, memlock, nofile, nproc, stack, data, sigpending
+      - name: rttime
+        soft: 26677
+        hard: 300000
+      # - name: nofile # Required for Jellyfin filesystem monitoring
+      #   soft: 26677
+      #   hard: 26677
+      # - name: cpu
+      #   soft: 200000
+      #   hard: 200000
 ports:
 - nodeFilters:
   - loadbalancer
@@ -51,8 +61,11 @@ ports:
   - loadbalancer
   port: 8080:80
 - nodeFilters:
-  - agent:*
-  port: "10.50.0.2:53:30053/tcp"
+  - server:*
+  port: "32000-32100:32000-32100/tcp"
+- nodeFilters:
+  - server:*
+  port: "32000-32100:32000-32100/udp"
 registries: {}
 volumes:
 - nodeFilters:

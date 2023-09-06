@@ -5,7 +5,7 @@ metadata:
 ---
 apiVersion: v1
 data:
-  password: ${PIHOLE_WEBPASSWORD}
+  password: VldQUXRUUEM4ZyN0ekghRndocjJzRThzQWd5bm8hQUxFKnJneTgjQCMyVgo=
 kind: Secret
 metadata:
   name: webpassword
@@ -36,14 +36,14 @@ kind: Service
 metadata:
   labels:
     app: pihole
-  name: pihole-tcp
+  name: pihole-udp
 spec:
   ports:
-  - name: 30053-30053-tcp
-    nodePort: 30053
-    port: 5353
-    protocol: TCP
-    targetPort: 30053
+  - name: 32053-32053-udp
+    nodePort: 30000
+    port: 53
+    protocol: UDP
+    targetPort: 32000
   selector:
     app: pihole
   type: NodePort
@@ -82,6 +82,15 @@ spec:
         namespace: pihole
       name: pihole
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - compute
       automountServiceAccountToken: false
       containers:
       - env:
@@ -98,7 +107,7 @@ spec:
         - name: FTLCONF_LOCAL_IPV4
           value: 10.50.0.2
         - name: PIHOLE_DNS_
-          value: 8.8.8.8;4.4.4.4a
+          value: 8.8.8.8;4.4.4.4
         - name: DHCP_ACTIVE
           value: "false"
         - name: TEMPERATUREUNIT
@@ -108,8 +117,9 @@ spec:
         - name: WEB_PORT
           value: "80"
         - name: WEBPASSWORD_FILE
-          value: /var/local/etc/webpassword
-        image: docker.io/pihole/pihole:latest
+          value: /etc/webpassword
+        image: docker.io/pihole/pihole:dev
+        imagePullPolicy: IfNotPresent
         name: pihole
         ports:
         - containerPort: 53
@@ -134,6 +144,10 @@ spec:
             - CAP_MKNOD
             - CAP_NET_RAW
             - CAP_AUDIT_WRITE
+        volumeMounts:
+        - mountPath: /etc/webpassword
+          name: webpassword
+          readOnly: true
       dnsConfig:
         nameservers:
         - 127.0.0.1
@@ -143,9 +157,11 @@ spec:
       hostname: pihole
       restartPolicy: Always
       volumes:
-      - mountPath: /var/local/etc/webpassword
-        name: webpassword
-        readOnly: true
+      - name: webpassword
+        secret:
+          defaultMode: 256
+          optional: false
+          secretName: webpassword
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
