@@ -21,19 +21,17 @@ metadata:
   namespace: pihole
 spec:
   ports:
-  - name: 53-53
-    nodePort: 32053
+  - name: 53-53-udp
     port: 53
     protocol: UDP
     targetPort: dns-udp
   - name: 53-53-tcp
-    nodePort: 32053
     port: 53
     protocol: TCP
     targetPort: dns-tcp
   selector:
     app: pihole
-  type: NodePort
+  type: LoadBalancer
 ---
 apiVersion: v1
 kind: Service
@@ -85,8 +83,8 @@ spec:
     metadata:
       labels:
         app: pihole
-        namespace: pihole
       name: pihole
+      namespace: pihole
     spec:
       affinity:
         nodeAffinity:

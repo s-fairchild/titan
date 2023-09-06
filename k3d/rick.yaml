@@ -57,10 +57,16 @@ ports:
   port: 8080:80
 - nodeFilters:
   - server:*
-  port: "10.50.0.2:32000-32100:32000-32100/tcp"
+  port: "10.50.0.2:53:53/tcp"
 - nodeFilters:
   - server:*
-  port: "10.50.0.2:32000-32100:32000-32100/udp"
+  port: "10.50.0.2:53:53/udp"
+# - nodeFilters:
+#   - server:*
+#   port: "10.50.0.2:32000-32100:32000-32100/tcp"
+# - nodeFilters:
+#   - server:*
+#   port: "10.50.0.2:32000-32100:32000-32100/udp"
 registries: {}
 volumes:
 - nodeFilters:
