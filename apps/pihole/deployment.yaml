@@ -6,7 +6,7 @@ metadata:
   namespace: pihole
   name: pihole
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: pihole
@@ -32,15 +32,19 @@ spec:
         - name: conf
           persistentVolumeClaim:
             claimName: pihole-conf-pvc
-        - name: local-records
+        - name: pihole-custom
           configMap:
-            name: local-records
+            name: pihole-custom
             optional: false
         - name: webpassword
           secret:
             secretName: webpassword
             optional: false
             defaultMode: 0400
+        - name: unbound-config
+          persistentVolumeClaim:
+            claimName: unbound-conf-pvc
+            readOnly: true
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -78,7 +82,8 @@ spec:
         - name: FTLCONF_LOCAL_IPV4
           value: "10.50.0.2"
         - name: PIHOLE_DNS_
-          value: "8.8.8.8;4.4.4.4"
+          value: "127.0.0.1#5335"
+          # value: "8.8.8.8;8.8.4.4"
         - name: DHCP_ACTIVE
           value: "false"
         - name: TEMPERATUREUNIT
@@ -86,7 +91,7 @@ spec:
         - name: WEBTHEME
           value: "default-darker"
         - name: WEB_PORT
-          value: "8080"
+          value: "8090"
         - name: WEBPASSWORD
           valueFrom:
             secretKeyRef:
@@ -108,7 +113,7 @@ spec:
           containerPort: 53
           protocol: TCP
         - name: http-admin-web
-          containerPort: 8080
+          containerPort: 8090
           protocol: TCP
         securityContext:
           capabilities:
@@ -119,3 +124,24 @@ spec:
         volumeMounts:
         - name: conf
           mountPath: /etc/pihole
+      - name: unbound
+        image: madnuttah/unbound:latest
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            memory: "100Mi"
+            cpu: "30m"
+          limits:
+            memory: "100Mi"
+            cpu: "30m"
+        # ports:
+        # - name: dns-unbound-udp
+        #   containerPort: 5353
+        #   protocol: UDP
+        # - name: dns-unbound-tcp
+        #   containerPort: 5353
+        #   protocol: TCP
+        volumeMounts:
+          - name: unbound-config
+            mountPath: /opt/unbound/etc/unbound
+            readOnly: true

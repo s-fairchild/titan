@@ -14,3 +14,20 @@ spec:
   resources:
     requests:
       storage: 3Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: unbound-conf-pvc
+  namespace: pihole
+  annotations:
+    volumeType: local
+spec:
+  volumeName: unbound-conf
+  volumeMode: Filesystem
+  storageClassName: local-path
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 1Gi

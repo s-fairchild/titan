@@ -1,22 +1,3 @@
-kind: Service
-apiVersion: v1
-metadata:
-  name: pihole-web
-  namespace: pihole
-  labels:
-    app: pihole
-  annotations:
-    ingress.kubernetes.io/ssl-redirect: "true"
-spec:
-  ports:
-  - name: pihole-web
-    port: 8080
-    targetPort: http-admin-web
-    protocol: TCP
-  selector:
-    app: pihole
-  type: ClusterIP
----
 apiVersion: v1
 kind: Service
 metadata:
