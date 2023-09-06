@@ -9,8 +9,8 @@ metadata:
     ingress.kubernetes.io/ssl-redirect: "true"
 spec:
   ports:
-  - name: http
-    port: 80
+  - name: pihole-web
+    port: 8080
     targetPort: http-admin-web
     protocol: TCP
   selector:

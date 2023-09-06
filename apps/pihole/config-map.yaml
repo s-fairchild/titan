@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: local-records
+  namespace: pihole
+data:
+  local.records: |
+    10.50.0.10 rpi4.expresso.lan
+    10.50.0.2 rick.expresso.lan
+    10.50.0.1 expresso.lan

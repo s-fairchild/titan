@@ -1,27 +1,16 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: pihole-log-pvc
+  name: pihole-conf-pvc
   namespace: pihole
   annotations:
     volumeType: local
 spec:
-  volumeName: pihole-log
+  volumeName: pihole-conf
+  volumeMode: Filesystem
+  storageClassName: local-path
   accessModes:
-  - ReadWriteOnce
+    - ReadWriteOnce
   resources:
     requests:
-      storage: 300Mi
----
-# apiVersion: v1
-# kind: PersistentVolumeClaim
-# metadata:
-#   name: pihole-conf-pvc
-#   namespace: pihole
-# spec:
-#   volumeName: pihole-conf
-#   accessModes:
-#   - ReadWriteOnce
-#   resources:
-#     requests:
-#       storage: 100Mi
+      storage: 3Gi

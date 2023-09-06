@@ -12,12 +12,30 @@ spec:
       app: pihole
   template:
     metadata:
-      labels:
-        app: pihole
       namespace: pihole
       name: pihole
+      labels:
+        app: pihole
+        providers.docker.network: "k3d"
+        entrypoints.web.address: "pihole.rick.expresso.lan"
+        entrypoints.web.http.redirections.entrypoint.to: websecure
+        entrypoints.websecure.address: "pihole.rick.expresso.lan"
+        certificatesresolvers.letsencrypt.acme.httpchallenge: "true"
+        certificatesresolvers.letsencrypt.acme.storage: acme.json
+        certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint: web
+        traefik.http.routers.pihole.entrypoints: "websecure"
+        traefik.http.routers.pihole.tls: "true"
+        traefik.http.routers.pihole.tls.certresolver: letsencrypt
+        traefik.http.services.pihole.loadbalancer.server.port: "80"
     spec:
       volumes:
+        - name: conf
+          persistentVolumeClaim:
+            claimName: pihole-conf-pvc
+        - name: local-records
+          configMap:
+            name: local-records
+            optional: false
         - name: webpassword
           secret:
             secretName: webpassword
@@ -43,12 +61,12 @@ spec:
       restartPolicy: Always
       containers:
       - name: pihole
-        image: docker.io/pihole/pihole:dev
+        image: docker.io/pihole/pihole:latest
         imagePullPolicy: IfNotPresent
         # See this for all env variables available https://github.com/pi-hole/docker-pi-hole#environment-variables
         env:
-        - name: PROXY_LOCATION
-          value: "pihole.rick.expresso.lan"
+        # - name: PROXY_LOCATION
+        #   value: "pihole.rick.expresso.lan"
         - name: VIRTUAL_HOST
           value: "pihole.rick.expresso.lan"
         - name: ServerIP
@@ -68,15 +86,13 @@ spec:
         - name: WEBTHEME
           value: "default-darker"
         - name: WEB_PORT
-          value: "80"
-        - name: WEBPASSWORD_FILE
-          value: "/etc/webpassword/admin"
-        # - name: WEBPASSWORD
-        #   valueFrom:
-        #     secretKeyRef:
-        #       name: webpassword
-        #       key: password
-        #       optional: false
+          value: "8080"
+        - name: WEBPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: webpassword
+              key: admin
+              optional: false
         resources:
           requests:
             memory: "100Mi"
@@ -92,7 +108,7 @@ spec:
           containerPort: 53
           protocol: TCP
         - name: http-admin-web
-          containerPort: 80
+          containerPort: 8080
           protocol: TCP
         securityContext:
           capabilities:
@@ -101,6 +117,5 @@ spec:
             - CAP_NET_RAW
             - CAP_AUDIT_WRITE
         volumeMounts:
-          - name: webpassword
-            readOnly: true
-            mountPath: "/etc/webpassword"
+        - name: conf
+          mountPath: /etc/pihole

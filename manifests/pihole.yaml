@@ -44,8 +44,8 @@ metadata:
   namespace: pihole
 spec:
   ports:
-  - name: http
-    port: 80
+  - name: pihole-web
+    port: 8080
     protocol: TCP
     targetPort: http-admin-web
   selector:
@@ -53,19 +53,45 @@ spec:
   type: ClusterIP
 ---
 apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pihole-conf
+spec:
+  accessModes:
+  - ReadWriteOnce
+  capacity:
+    storage: 3Gi
+  local:
+    fsType: btrfs
+    path: /pvs/pihole/etc
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: app
+          operator: In
+          values:
+          - compute
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-path
+  volumeMode: Filesystem
+---
+apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   annotations:
     volumeType: local
-  name: pihole-log-pvc
+  name: pihole-conf-pvc
   namespace: pihole
 spec:
   accessModes:
   - ReadWriteOnce
   resources:
     requests:
-      storage: 300Mi
-  volumeName: pihole-log
+      storage: 3Gi
+  storageClassName: local-path
+  volumeMode: Filesystem
+  volumeName: pihole-conf
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -83,6 +109,17 @@ spec:
     metadata:
       labels:
         app: pihole
+        certificatesresolvers.letsencrypt.acme.httpchallenge: "true"
+        certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint: web
+        certificatesresolvers.letsencrypt.acme.storage: acme.json
+        entrypoints.web.address: pihole.rick.expresso.lan
+        entrypoints.web.http.redirections.entrypoint.to: websecure
+        entrypoints.websecure.address: pihole.rick.expresso.lan
+        providers.docker.network: k3d
+        traefik.http.routers.pihole.entrypoints: websecure
+        traefik.http.routers.pihole.tls: "true"
+        traefik.http.routers.pihole.tls.certresolver: letsencrypt
+        traefik.http.services.pihole.loadbalancer.server.port: "80"
       name: pihole
       namespace: pihole
     spec:
@@ -98,8 +135,6 @@ spec:
       automountServiceAccountToken: false
       containers:
       - env:
-        - name: PROXY_LOCATION
-          value: pihole.rick.expresso.lan
         - name: VIRTUAL_HOST
           value: pihole.rick.expresso.lan
         - name: ServerIP
@@ -119,10 +154,14 @@ spec:
         - name: WEBTHEME
           value: default-darker
         - name: WEB_PORT
-          value: "80"
-        - name: WEBPASSWORD_FILE
-          value: /etc/webpassword/admin
-        image: docker.io/pihole/pihole:dev
+          value: "8080"
+        - name: WEBPASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: admin
+              name: webpassword
+              optional: false
+        image: docker.io/pihole/pihole:latest
         imagePullPolicy: IfNotPresent
         name: pihole
         ports:
@@ -132,7 +171,7 @@ spec:
         - containerPort: 53
           name: dns-tcp
           protocol: TCP
-        - containerPort: 80
+        - containerPort: 8080
           name: http-admin-web
           protocol: TCP
         resources:
@@ -149,9 +188,8 @@ spec:
             - CAP_NET_RAW
             - CAP_AUDIT_WRITE
         volumeMounts:
-        - mountPath: /etc/webpassword
-          name: webpassword
-          readOnly: true
+        - mountPath: /etc/pihole
+          name: conf
       dnsConfig:
         nameservers:
         - 127.0.0.1
@@ -161,6 +199,13 @@ spec:
       hostname: pihole
       restartPolicy: Always
       volumes:
+      - name: conf
+        persistentVolumeClaim:
+          claimName: pihole-conf-pvc
+      - configMap:
+          name: local-records
+          optional: false
+        name: local-records
       - name: webpassword
         secret:
           defaultMode: 256
@@ -175,7 +220,7 @@ metadata:
     traefik.frontend.rule.type: PathPrefix
   labels:
     app: pihole
-  name: pihole
+  name: pihole-admin
   namespace: pihole
 spec:
   rules:
@@ -184,8 +229,8 @@ spec:
       paths:
       - backend:
           service:
-            name: pihole
+            name: pihole-web
             port:
-              number: 80
-        path: /
+              name: pihole-web
+        path: /admin
         pathType: Prefix
