@@ -1,7 +1,7 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: pihole
+  name: pihole-web
   namespace: pihole
   labels:
     app: pihole
@@ -20,12 +20,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  name: pihole-dns
+  namespace: pihole
   labels:
     app: pihole
-  name: pihole-udp
 spec:
   ports:
-  - name: 53-53-udp
+  - name: 53-53
     nodePort: 32053
     port: 53
     protocol: UDP
