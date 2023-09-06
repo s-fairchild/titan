@@ -36,23 +36,6 @@ kind: Service
 metadata:
   labels:
     app: pihole
-  name: pihole-tcp
-spec:
-  ports:
-  - name: 53-53-tcp
-    nodePort: 32000
-    port: 53
-    protocol: TCP
-    targetPort: dns-tcp
-  selector:
-    app: pihole
-  type: NodePort
----
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    app: pihole
   name: pihole-udp
 spec:
   ports:
@@ -61,6 +44,11 @@ spec:
     port: 53
     protocol: UDP
     targetPort: dns-udp
+  - name: 53-53-tcp
+    nodePort: 32000
+    port: 53
+    protocol: TCP
+    targetPort: dns-tcp
   selector:
     app: pihole
   type: NodePort

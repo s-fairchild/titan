@@ -26,24 +26,12 @@ metadata:
 spec:
   ports:
   - name: 53-53-udp
-    nodePort: 32000
+    nodePort: 32053
     port: 53
     protocol: UDP
     targetPort: dns-udp
-  selector:
-    app: pihole
-  type: NodePort
----
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    app: pihole
-  name: pihole-tcp
-spec:
-  ports:
   - name: 53-53-tcp
-    nodePort: 32000
+    nodePort: 32053
     port: 53
     protocol: TCP
     targetPort: dns-tcp
