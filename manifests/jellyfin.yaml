@@ -4,6 +4,15 @@ metadata:
   name: jellyfin
 ---
 apiVersion: v1
+data:
+  password: c3VwZXJTZWNyZXRQYXNzd29yZAo=
+kind: Secret
+metadata:
+  name: webpassword
+  namespace: jellyfin
+type: Opaque
+---
+apiVersion: v1
 kind: Service
 metadata:
   labels:
@@ -19,6 +28,29 @@ spec:
   selector:
     app: jellyfin
   type: ClusterIP
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: jellyfin-cache
+spec:
+  accessModes:
+  - ReadWriteOnce
+  capacity:
+    storage: 3Gi
+  local:
+    path: /pvs/jellyfin/cache
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: app
+          operator: In
+          values:
+          - compute
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-path
+  volumeMode: Filesystem
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -65,6 +97,23 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: local-path
   volumeMode: Filesystem
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  annotations:
+    volumeType: local
+  name: jellyfin-cache-pvc
+  namespace: jellyfin
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 3Gi
+  storageClassName: local-path
+  volumeMode: Filesystem
+  volumeName: jellyfin-cache
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -132,7 +181,13 @@ spec:
       - env:
         - name: JELLYFIN_PublishedServerUrl
           value: https://jellyfin.rick.expresso.lan
-        image: docker.io/jellyfin/jellyfin:latest
+        - name: PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: webpassword
+              optional: false
+        image: docker.io/linuxserver/jellyfin:latest
         livenessProbe:
           initialDelaySeconds: 120
           periodSeconds: 5
@@ -162,10 +217,10 @@ spec:
           name: media
         - mountPath: /config
           name: conf
+        - mountPath: /cache
+          name: cache
         - mountPath: /dev/dri/renderD128
           name: dev-dri
-        - mountPath: /dev/dri/card1
-          name: card1
       dnsPolicy: ClusterFirst
       enableServiceLinks: false
       restartPolicy: Always
@@ -184,6 +239,9 @@ spec:
           path: /dev/dri/card1
           type: CharDevice
         name: card1
+      - name: cache
+        persistentVolumeClaim:
+          claimName: jellyfin-cache-pvc
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress

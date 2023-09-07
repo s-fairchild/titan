@@ -30,6 +30,30 @@ metadata:
 ---
 apiVersion: v1
 data:
+  setupVars.conf: |
+    PIHOLE_INTERFACE=eth0
+    IPV4_ADDRESS=0.0.0.0
+    IPV6_ADDRESS=0:0:0:0:0:0
+    QUERY_LOGGING=true
+    INSTALL_WEB_SERVER=true
+    INSTALL_WEB_INTERFACE=true
+    LIGHTTPD_ENABLED=true
+    CACHE_SIZE=10000
+    DNS_FQDN_REQUIRED=true
+    DNS_BOGUS_PRIV=true
+    DNSMASQ_LISTENING=all
+    WEBPASSWORD=9cd5e58d205c8fb1d617ed0c03d78a8c37763203f6055a73e56a1ff301e767a8
+    WEBTHEME=default-darker
+    TEMPERATUREUNIT=F
+    PIHOLE_DNS_1=127.0.0.1#5335
+    BLOCKING_ENABLED=true
+kind: ConfigMap
+metadata:
+  name: setup-vars
+  namespace: pihole
+---
+apiVersion: v1
+data:
   unbound.conf: "server:\n    ###########################################################################\n
     \   # BASIC SETTINGS\n    ###########################################################################\n
     \   # Time to live maximum for RRsets and messages in the cache. If the maximum\n
@@ -464,6 +488,10 @@ spec:
             - CAP_NET_RAW
             - CAP_AUDIT_WRITE
         volumeMounts:
+        - mountPath: /etc/pihole/setupVars.conf
+          mountPropagation: None
+          name: setup
+          subPath: setupVars.conf
         - mountPath: /etc/dnsmasq.d/05-pihole-custom-cname.conf
           mountPropagation: None
           name: pihole-cname
@@ -503,6 +531,10 @@ spec:
       hostname: pihole
       restartPolicy: Always
       volumes:
+      - configMap:
+          name: setup-vars
+          optional: false
+        name: setup
       - name: conf
         persistentVolumeClaim:
           claimName: pihole-conf-pvc

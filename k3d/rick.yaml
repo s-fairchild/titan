@@ -22,14 +22,12 @@ options:
     disableImageVolume: false
     disableLoadbalancer: false
     disableRollback: false
-    loadbalancer: {}
     timeout: 300000000000
     wait: true
+    loadbalancer:
+      configOverrides:
+        - settings.workerConnections=10000
   k3s:
-    # extraArgs:
-    # - arg: --tls-san=rick.lan --tls-san=expresso.lan --tls-san=morty.expresso.lan --tls-san=pihole.rick.expresso.lan --tls-san=jellyfin.rick.expresso.lan
-    #   nodeFilters:
-    #   - server:*
     nodeLabels:
     - label: app=compute
       nodeFilters:
@@ -61,13 +59,9 @@ ports:
 - nodeFilters:
   - server:*
   port: "10.50.0.2:53:53/udp"
-# - nodeFilters:
-#   - server:*
-#   port: "10.50.0.2:32000-32100:32000-32100/tcp"
-# - nodeFilters:
-#   - server:*
-#   port: "10.50.0.2:32000-32100:32000-32100/udp"
-registries: {}
+registries:
+  use:
+    - k3d-registry:5000 # Precreated k3d registry is required when using podman, see k3d registry --help for more info
 volumes:
 - nodeFilters:
   - agent:*

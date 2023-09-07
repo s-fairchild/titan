@@ -9,14 +9,13 @@ hostAliases:
 - hostnames:
   - rpi4.expresso.lan
   ip: 10.50.0.10
-image: docker.io/rancher/k3s:v1.25.6-k3s1
 kind: Simple
 kubeAPI:
-  host: rick.expresso.lan
+  host: morty.expresso.lan
   hostIP: 10.50.0.2
-  hostPort: "6443"
+  hostPort: "6444"
 metadata:
-  name: rick
+  name: morty
 network: k3d
 options:
   k3d:
@@ -27,53 +26,19 @@ options:
     timeout: 300000000000
     wait: true
   k3s:
-    extraArgs:
-    - arg: --tls-san=rick.lan --tls-san=expresso.lan --tls-san=morty.expresso.lan --tls-san=pihole.rick.expresso.lan --tls-san=jellyfin.rick.expresso.lan
-      nodeFilters:
-      - server:*
     nodeLabels:
     - label: app=compute
       nodeFilters:
       - agent:*
   kubeconfig:
-    switchCurrentContext: true
-    updateDefaultKubeconfig: true
+    switchCurrentContext: false
+    updateDefaultKubeconfig: false
   runtime:
-    HostPidMode: false
     ulimits: # allowed keys are: rttime, core, locks, msgqueue, nice, rss, rtprio, cpu, fsize, memlock, nofile, nproc, stack, data, sigpending
+      - name: locks
+        soft: 30000
+        hard: 30000
       - name: nofile # Required for Jellyfin filesystem monitoring
-        soft: 26677
-        hard: 26677
-ports:
-- nodeFilters:
-  - loadbalancer
-  port: 80:80
-- nodeFilters:
-  - loadbalancer
-  port: 443:443
-- nodeFilters:
-  - loadbalancer
-  port: 8080:80
-- nodeFilters:
-  - server:*
-  port: "32000-32100:32000-32100/tcp"
-- nodeFilters:
-  - server:*
-  port: "32000-32100:32000-32100/udp"
+        soft: 30000
+        hard: 30000
 registries: {}
-volumes:
-- nodeFilters:
-  - agent:*
-  volume: /data/jellyfin:/data/jellyfin:Z
-- nodeFilters:
-  - agent:*
-  volume: /data/motion:/data/motion:Z
-- nodeFilters:
-  - agent:*
-  volume: /dev/dri:/dev/dri:z
-- nodeFilters:
-  - agent:*
-  volume: compute:/pvs:Z
-- nodeFilters:
-  - server:*
-  volume: /var/local/etc/k3d/manifests:/var/lib/rancher/k3s/server/manifests/compute:Z

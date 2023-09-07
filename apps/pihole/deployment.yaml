@@ -22,6 +22,10 @@ spec:
         app: pihole
     spec:
       volumes:
+        - name: setup
+          configMap:
+            name: setup-vars
+            optional: false
         - name: conf
           persistentVolumeClaim:
             claimName: pihole-conf-pvc
@@ -118,6 +122,10 @@ spec:
             - CAP_NET_RAW
             - CAP_AUDIT_WRITE
         volumeMounts:
+        - name: setup
+          mountPath: /etc/pihole/setupVars.conf
+          mountPropagation: None
+          subPath: setupVars.conf
         - name: pihole-cname
           mountPath: /etc/dnsmasq.d/05-pihole-custom-cname.conf
           mountPropagation: None

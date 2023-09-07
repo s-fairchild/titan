@@ -36,7 +36,13 @@ spec:
         env:
         - name: JELLYFIN_PublishedServerUrl
           value: https://jellyfin.rick.expresso.lan
-        image: docker.io/jellyfin/jellyfin:latest
+        - name: PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: webpassword
+              key: password
+              optional: false
+        image: docker.io/linuxserver/jellyfin:latest
         ports:
         - containerPort: 8096
           name: http-web-svc
@@ -53,10 +59,10 @@ spec:
           mountPath: /media
         - name: conf
           mountPath: /config
+        - name: cache
+          mountPath: /cache
         - name: dev-dri
-          mountPath: /dev/dri/renderD128 # Raspberry pi 4 VC4 video card
-        - name: card1
-          mountPath: /dev/dri/card1
+          mountPath: /dev/dri/renderD128
         resources:
           requests:
             memory: "10G"
@@ -80,5 +86,8 @@ spec:
         hostPath:
           path: /dev/dri/card1
           type: CharDevice
+      - name: cache
+        persistentVolumeClaim:
+          claimName: jellyfin-cache-pvc
       dnsPolicy: ClusterFirst
       restartPolicy: Always

@@ -1,6 +1,30 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
+  name: setup-vars
+  namespace: pihole
+data:
+  setupVars.conf: |
+    PIHOLE_INTERFACE=eth0
+    IPV4_ADDRESS=0.0.0.0
+    IPV6_ADDRESS=0:0:0:0:0:0
+    QUERY_LOGGING=true
+    INSTALL_WEB_SERVER=true
+    INSTALL_WEB_INTERFACE=true
+    LIGHTTPD_ENABLED=true
+    CACHE_SIZE=10000
+    DNS_FQDN_REQUIRED=true
+    DNS_BOGUS_PRIV=true
+    DNSMASQ_LISTENING=all
+    WEBPASSWORD=9cd5e58d205c8fb1d617ed0c03d78a8c37763203f6055a73e56a1ff301e767a8
+    WEBTHEME=default-darker
+    TEMPERATUREUNIT=F
+    PIHOLE_DNS_1=127.0.0.1#5335
+    BLOCKING_ENABLED=true
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
   name: pihole-cname-records
   namespace: pihole
 data:
