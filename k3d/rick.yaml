@@ -1,4 +1,4 @@
-servers: 3
+servers: 1
 agents: 3
 apiVersion: k3d.io/v1alpha5
 token: ${TOKEN}
@@ -26,10 +26,10 @@ options:
     timeout: 300000000000
     wait: true
   k3s:
-    extraArgs:
-    - arg: --tls-san=rick.lan --tls-san=expresso.lan --tls-san=morty.expresso.lan --tls-san=pihole.rick.expresso.lan --tls-san=jellyfin.rick.expresso.lan
-      nodeFilters:
-      - server:*
+    # extraArgs:
+    # - arg: --tls-san=rick.lan --tls-san=expresso.lan --tls-san=morty.expresso.lan --tls-san=pihole.rick.expresso.lan --tls-san=jellyfin.rick.expresso.lan
+    #   nodeFilters:
+    #   - server:*
     nodeLabels:
     - label: app=compute
       nodeFilters:

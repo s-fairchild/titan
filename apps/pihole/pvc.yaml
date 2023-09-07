@@ -10,7 +10,7 @@ spec:
   volumeMode: Filesystem
   storageClassName: local-path
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   resources:
     requests:
       storage: 3Gi

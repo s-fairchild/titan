@@ -5,13 +5,27 @@ metadata:
 ---
 apiVersion: v1
 data:
-  pihole.custom: |
+  05-pihole-custom-cname.conf: |
+    cname=pihole.rick.expresso.lan,rick.expresso.lan
+    cname=jellyfin.rick.expresso.lan,rick.expresso.lan
+    cname=rick.lan,rick.expresso.lan
+    cname=rick,rick.expresso.lan
+kind: ConfigMap
+metadata:
+  name: pihole-cname-records
+  namespace: pihole
+---
+apiVersion: v1
+data:
+  custom.list: |
+    10.50.0.100 r10.expresso.lan
+    10.50.0.50 rh-thinkpad-p1.expresso.lan
     10.50.0.10 rpi4.expresso.lan
     10.50.0.2 rick.expresso.lan
     10.50.0.1 expresso.lan
 kind: ConfigMap
 metadata:
-  name: pihole-custom
+  name: pihole-local-records
   namespace: pihole
 ---
 apiVersion: v1
@@ -227,7 +241,7 @@ metadata:
 ---
 apiVersion: v1
 data:
-  admin: VldQUXRUUEM4ZyN0ekghRndocjJzRThzQWd5bm8hQUxFKnJneTgjQCMyVgo=
+  admin: YWRtaW5QYXNzd29yZAo=
 kind: Secret
 metadata:
   name: webpassword
@@ -256,12 +270,29 @@ spec:
   type: LoadBalancer
 ---
 apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pihole
+  name: pihole-web
+  namespace: pihole
+spec:
+  ports:
+  - name: 8090-8090-tcp
+    port: 8090
+    protocol: TCP
+    targetPort: http-admin-web
+  selector:
+    app: pihole
+  type: ClusterIP
+---
+apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: pihole-conf
 spec:
   accessModes:
-  - ReadWriteOnce
+  - ReadWriteMany
   capacity:
     storage: 3Gi
   local:
@@ -312,7 +343,7 @@ metadata:
   namespace: pihole
 spec:
   accessModes:
-  - ReadWriteOnce
+  - ReadWriteMany
   resources:
     requests:
       storage: 3Gi
@@ -345,18 +376,18 @@ metadata:
   name: pihole
   namespace: pihole
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: pihole
+  strategy:
+    rollingUpdate:
+      maxSurge: 30%
+      maxUnavailable: 2
   template:
     metadata:
       labels:
         app: pihole
-        traefik.http.routers.pihole.entrypoints: websecure
-        traefik.http.routers.pihole.tls: "true"
-        traefik.http.routers.pihole.tls.certresolver: letsencrypt
-        traefik.http.services.pihole.loadbalancer.server.port: "8090"
       name: pihole
       namespace: pihole
     spec:
@@ -383,7 +414,7 @@ spec:
         - name: FTLCONF_LOCAL_IPV4
           value: 10.50.0.2
         - name: PIHOLE_DNS_
-          value: 8.8.8.8;4.4.4.4
+          value: 127.0.0.1#5335
         - name: DHCP_ACTIVE
           value: "false"
         - name: TEMPERATUREUNIT
@@ -391,7 +422,7 @@ spec:
         - name: WEBTHEME
           value: default-darker
         - name: WEB_PORT
-          value: "8080"
+          value: "8090"
         - name: WEBPASSWORD
           valueFrom:
             secretKeyRef:
@@ -400,6 +431,14 @@ spec:
               optional: false
         image: docker.io/pihole/pihole:latest
         imagePullPolicy: IfNotPresent
+        livenessProbe:
+          exec:
+            command:
+            - dig
+            - www.google.com
+            - '@localhost'
+          initialDelaySeconds: 60
+          periodSeconds: 5
         name: pihole
         ports:
         - containerPort: 53
@@ -425,18 +464,25 @@ spec:
             - CAP_NET_RAW
             - CAP_AUDIT_WRITE
         volumeMounts:
-        - mountPath: /etc/pihole
-          name: conf
+        - mountPath: /etc/dnsmasq.d/05-pihole-custom-cname.conf
+          mountPropagation: None
+          name: pihole-cname
+          subPath: 05-pihole-custom-cname.conf
+        - mountPath: /etc/pihole/custom.list
+          mountPropagation: None
+          name: pihole-local
+          subPath: custom.list
       - image: madnuttah/unbound:latest
         imagePullPolicy: IfNotPresent
+        livenessProbe:
+          exec:
+            command:
+            - nslookup
+            - www.google.com
+            - localhost
+          initialDelaySeconds: 60
+          periodSeconds: 5
         name: unbound
-        ports:
-        - containerPort: 5353
-          name: dns-unbound-udp
-          protocol: UDP
-        - containerPort: 5353
-          name: dns-unbound-tcp
-          protocol: TCP
         resources:
           limits:
             cpu: 30m
@@ -444,12 +490,6 @@ spec:
           requests:
             cpu: 30m
             memory: 100Mi
-        securityContext:
-          capabilities:
-            drop:
-            - CAP_MKNOD
-            - CAP_NET_RAW
-            - CAP_AUDIT_WRITE
         volumeMounts:
         - mountPath: /opt/unbound/etc/unbound
           name: unbound-config
@@ -467,9 +507,13 @@ spec:
         persistentVolumeClaim:
           claimName: pihole-conf-pvc
       - configMap:
-          name: pihole-custom
+          name: pihole-local-records
           optional: false
-        name: pihole-custom
+        name: pihole-local
+      - configMap:
+          name: pihole-cname-records
+          optional: false
+        name: pihole-cname
       - name: webpassword
         secret:
           defaultMode: 256

@@ -18,3 +18,20 @@ spec:
     targetPort: dns-tcp
   selector:
     app: pihole
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pihole-web
+  namespace: pihole
+  labels:
+    app: pihole
+spec:
+  ports:
+    - name: 8090-8090-tcp
+      port: 8090
+      targetPort: http-admin-web
+      protocol: TCP
+  selector:
+    app: pihole
+  type: ClusterIP

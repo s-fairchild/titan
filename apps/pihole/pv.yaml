@@ -7,7 +7,7 @@ spec:
     storage: 3Gi
   volumeMode: Filesystem
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   persistentVolumeReclaimPolicy: Retain
   storageClassName: local-path
   local:

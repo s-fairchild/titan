@@ -6,7 +6,11 @@ metadata:
   namespace: pihole
   name: pihole
 spec:
-  replicas: 1
+  replicas: 3
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 2
+      maxSurge: 30%
   selector:
     matchLabels:
       app: pihole
@@ -16,25 +20,18 @@ spec:
       name: pihole
       labels:
         app: pihole
-        providers.docker.network: "k3d"
-        entrypoints.web.address: "pihole.rick.expresso.lan"
-        entrypoints.web.http.redirections.entrypoint.to: websecure
-        entrypoints.websecure.address: "pihole.rick.expresso.lan"
-        certificatesresolvers.letsencrypt.acme.httpchallenge: "true"
-        certificatesresolvers.letsencrypt.acme.storage: acme.json
-        certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint: web
-        traefik.http.routers.pihole.entrypoints: "websecure"
-        traefik.http.routers.pihole.tls: "true"
-        traefik.http.routers.pihole.tls.certresolver: letsencrypt
-        traefik.http.services.pihole.loadbalancer.server.port: "80"
     spec:
       volumes:
         - name: conf
           persistentVolumeClaim:
             claimName: pihole-conf-pvc
-        - name: pihole-custom
+        - name: pihole-local
           configMap:
-            name: pihole-custom
+            name: pihole-local-records
+            optional: false
+        - name: pihole-cname
+          configMap:
+            name: pihole-cname-records
             optional: false
         - name: webpassword
           secret:
@@ -83,7 +80,6 @@ spec:
           value: "10.50.0.2"
         - name: PIHOLE_DNS_
           value: "127.0.0.1#5335"
-          # value: "8.8.8.8;8.8.4.4"
         - name: DHCP_ACTIVE
           value: "false"
         - name: TEMPERATUREUNIT
@@ -122,8 +118,22 @@ spec:
             - CAP_NET_RAW
             - CAP_AUDIT_WRITE
         volumeMounts:
-        - name: conf
-          mountPath: /etc/pihole
+        - name: pihole-cname
+          mountPath: /etc/dnsmasq.d/05-pihole-custom-cname.conf
+          mountPropagation: None
+          subPath: 05-pihole-custom-cname.conf
+        - name: pihole-local
+          mountPath: /etc/pihole/custom.list
+          mountPropagation: None
+          subPath: custom.list
+        livenessProbe:
+          exec:
+            command:
+            - dig
+            - www.google.com
+            - "@localhost"
+          initialDelaySeconds: 60
+          periodSeconds: 5
       - name: unbound
         image: madnuttah/unbound:latest
         imagePullPolicy: IfNotPresent
@@ -134,14 +144,15 @@ spec:
           limits:
             memory: "100Mi"
             cpu: "30m"
-        # ports:
-        # - name: dns-unbound-udp
-        #   containerPort: 5353
-        #   protocol: UDP
-        # - name: dns-unbound-tcp
-        #   containerPort: 5353
-        #   protocol: TCP
         volumeMounts:
           - name: unbound-config
             mountPath: /opt/unbound/etc/unbound
             readOnly: true
+        livenessProbe:
+          exec:
+            command:
+            - nslookup
+            - www.google.com
+            - localhost
+          initialDelaySeconds: 60
+          periodSeconds: 5
