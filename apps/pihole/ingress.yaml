@@ -1,22 +1,22 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
+  name: pihole-web
+  namespace: pihole
+  labels:
+    app: pihole
   annotations:
     ingress.kubernetes.io/ssl-redirect: "true"
     traefik.frontend.rule.type: PathPrefix
-  labels:
-    app: pihole
-  name: pihole-admin
-  namespace: pihole
 spec:
   rules:
   - host: pihole.rick.expresso.lan
     http:
       paths:
-      - backend:
+      - path: /admin
+        pathType: Prefix
+        backend:
           service:
             name: pihole-web
             port:
               name: pihole-web
-        path: /admin
-        pathType: Prefix

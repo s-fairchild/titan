@@ -46,19 +46,16 @@ options:
 ports:
 - nodeFilters:
   - loadbalancer
-  port: 80:80
+  port: 80:8000
 - nodeFilters:
   - loadbalancer
-  port: 443:443
+  port: 443:8443
 - nodeFilters:
-  - loadbalancer
-  port: 8080:80
+  - agent:*
+  port: "10.50.0.2:53:30053/tcp"
 - nodeFilters:
-  - server:*
-  port: "10.50.0.2:53:53/tcp"
-- nodeFilters:
-  - server:*
-  port: "10.50.0.2:53:53/udp"
+  - agent:*
+  port: "10.50.0.2:53:30053/udp"
 registries:
   use:
     - k3d-registry:5000 # Precreated k3d registry is required when using podman, see k3d registry --help for more info

@@ -1,0 +1,103 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: v4l2rtspserver
+---
+apiVersion: v1
+data:
+  user: enhTdDc1WFJFWFVBeE0yVFRlcyoK
+kind: Secret
+metadata:
+  name: user-password
+  namespace: v4l2rtspserver
+type: Opaque
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: v4l2rtspserver
+  name: v4l2rtspserver-udp
+  namespace: v4l2rtspserver
+spec:
+  ports:
+  - name: 8554-8554-udp
+    nodePort: 32554
+    port: 8554
+    protocol: UDP
+    targetPort: rtsp-udp
+  - name: 8554-8554-tcp
+    nodePort: 32554
+    port: 8554
+    protocol: TCP
+    targetPort: rtsp-tcp
+  type: NodePort
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: v4l2rtspserver
+  name: v4l2rtspserver
+  namespace: v4l2rtspserver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: v4l2rtspserver
+  template:
+    metadata:
+      labels:
+        app: v4l2rtspserver
+      name: v4l2rtspserver
+      namespace: v4l2rtspserver
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - camera0
+      containers:
+      - image: mpromonet/v4l2rtspserver:latest-arm64
+        livenessProbe:
+          initialDelaySeconds: 120
+          tcpSocket:
+            port: rtsp-tcp
+        name: v4l2rtspserver
+        ports:
+        - containerPort: 8554
+          name: rtsp-udp
+          protocol: UDP
+        - containerPort: 8554
+          name: rtsp-tcp
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 500m
+          requests:
+            cpu: 100m
+            memory: 200m
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /dev/snd/controlC0
+          name: snd0
+        - mountPath: /etc/user-password
+          name: password
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      volumes:
+      - hostPath:
+          path: /dev/snd/controlC0
+          type: CharDevice
+        name: snd0
+      - name: password
+        secret:
+          defaultMode: 256
+          optional: false
+          secretName: user-password

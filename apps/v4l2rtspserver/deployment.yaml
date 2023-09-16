@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: v4l2rtspserver
+  namespace: v4l2rtspserver
+  labels:
+    app: v4l2rtspserver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: v4l2rtspserver
+  template:
+    metadata:
+      name: v4l2rtspserver
+      namespace: v4l2rtspserver
+      labels:
+        app: v4l2rtspserver
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - camera0
+      containers:
+      - name: v4l2rtspserver
+        livenessProbe:
+          tcpSocket:
+            port: rtsp-tcp
+          initialDelaySeconds: 120
+        image: mpromonet/v4l2rtspserver:latest-arm64
+        ports:
+        - containerPort: 8554
+          name: rtsp-udp
+          protocol: UDP
+        - containerPort: 8554
+          name: rtsp-tcp
+          protocol: TCP
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: snd0
+          mountPath: /dev/snd/controlC0
+        - name: password
+          mountPath: /etc/user-password
+        resources:
+          requests:
+            memory: "200m"
+            cpu: "100m"
+          limits:
+            memory: "500m"
+            cpu: "1000m"
+      volumes:
+      - name: snd0
+        hostPath:
+          path: /dev/snd/controlC0
+          type: CharDevice
+      - name: password
+        secret:
+          secretName: user-password
+          optional: false
+          defaultMode: 0400
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
