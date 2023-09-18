@@ -39,8 +39,8 @@ ExecStart=/usr/bin/podman run \
 	--node-label app=camera0 \
 	--with-node-id \
 	--node-ip 10.50.0.1 \
-	--docker \
-	--container-runtime-endpoint /run/podman/podman.sock
+	--kube-proxy-arg --hostname-override k3s-rick-agent-3
+	
 ExecStop=/usr/bin/podman stop \
 	--ignore -t 10 \
 	--cidfile=%t/%n.ctr-id
