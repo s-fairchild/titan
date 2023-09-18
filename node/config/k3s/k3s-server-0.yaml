@@ -1,0 +1,5 @@
+# node-label:
+  # - "app=compute"
+node-ip: "10.50.0.2"
+kube-proxy-arg:
+  - "--hostname-override k3s-rick-server-0"

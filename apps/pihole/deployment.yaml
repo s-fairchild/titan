@@ -3,6 +3,8 @@ kind: Deployment
 metadata:
   labels:
     app: pihole
+    traefik.udp.routers.myudprouter.entrypoints: "ep1,ep2"
+    traefik.udp.services.pihole.loadbalancer.server.port: ""
   namespace: pihole
   name: pihole
 spec:

@@ -284,31 +284,24 @@ spec:
   - name: 53-53-udp
     port: 53
     protocol: UDP
-    targetPort: dns-udp
+    targetPort: dns-tcp
   - name: 53-53-tcp
     port: 53
     protocol: TCP
     targetPort: dns-tcp
   selector:
     app: pihole
-  type: LoadBalancer
----
 apiVersion: v1
 kind: Service
-metadata:
-  labels:
-    app: pihole
   name: pihole-web
-  namespace: pihole
 spec:
   ports:
-  - name: 8090-8090-tcp
-    port: 8090
-    protocol: TCP
-    targetPort: http-admin-web
+  - port: 30053
+    protocol: UDP
+    targetPort: 30053
   selector:
     app: pihole
-  type: ClusterIP
+  type: LoadBalancer
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -564,7 +557,7 @@ metadata:
     traefik.frontend.rule.type: PathPrefix
   labels:
     app: pihole
-  name: pihole-admin
+  name: pihole-web
   namespace: pihole
 spec:
   rules:
