@@ -1,0 +1,14 @@
+selinux: true
+node-ip: 10.89.1.3
+node-external-ip: 10.50.0.2
+advertise-address: 10.50.0.2
+debug: true
+tls-san:
+  - rick.expresso.lan
+  - rick.lan
+  - expresso.lan
+  - expresso
+  - k3s-rick-agent-0
+  - k3s-rick-server-0
+  - 10.50.0.2
+secrets-encryption: true

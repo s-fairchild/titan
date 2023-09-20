@@ -11,35 +11,32 @@ Restart=always
 RestartSec=30
 TimeoutStartSec=600
 TimeoutStopSec=70
-# -p 10.50.0.1:10250:10250/tcp \
-# -p 10.50.0.1:6443:6443/tcp \
 ExecStart=/usr/bin/podman run \
-	--network=host \
+	--network=agent \
+	--ip=10.90.0.2 \
+	--tz=UTC \
 	--add-host rick.expresso.lan:10.50.0.2 \
+	--add-host k3d-rick-server-0:10.50.0.2 \
+	--add-host k3d-registry:10.50.0.2 \
 	--cidfile=%t/%n.ctr-id \
 	--cgroups=no-conmon \
 	--rm \
 	--sdnotify=conmon \
 	-d \
 	--replace \
-	--name k3s-morty-agent-3 \
-	-h morty.expresso.lan \
+	--name k3s-rick-agent-1 \
+	-h k3s-rick-agent-1 \
 	-v k3s-agent:/var/lib/rancher/k3s \
 	-v k3s-rancher:/etc/rancher \
 	-v /run/podman/podman.sock:/run/podman/podman.sock:rw \
+	-v /usr/local/etc/k3s-agent-1.yaml:/etc/rancher/k3s/config.yaml \
+	-v /usr/local/etc/k3s/rancher/registries.yaml:/etc/rancher/k3s/registries.yaml:ro \
 	--shm-size 200m \
 	--privileged \
-	-e K3S_URL=https://rick.expresso.lan:6443 \
-	-e K3S_EXTERNAL_IP=10.50.0.1 \
 	--secret agent-token,type=env,target=K3S_TOKEN \
 	--annotation app=k3s \
-	docker.io/rancher/k3s:v1.27.4-k3s1 \
-	agent \
-	--node-label app=v4l2rtspserver \
-	--node-label app=camera0 \
-	--with-node-id \
-	--node-ip 10.50.0.1 \
-	--kube-proxy-arg --hostname-override k3s-rick-agent-3
+	docker.io/rancher/k3s:v1.28.1-k3s1 \
+	agent
 	
 ExecStop=/usr/bin/podman stop \
 	--ignore -t 10 \

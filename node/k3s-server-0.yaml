@@ -1,0 +1,19 @@
+selinux: true
+node-external-ip: 10.50.0.2
+advertise-address: 10.50.0.2
+debug: true
+etcd-expose-metrics: true
+tls-san:
+  - rick.expresso.lan
+  - rick.lan
+  - expresso.lan
+  - expresso
+  - k3s-rick-agent-0
+  - k3s-rick-server-1
+  - 10.50.0.2
+secrets-encryption: true
+kube-proxy-arg:
+  - metrics-bind-address=0.0.0.0
+  - pod-bridge-interface=k3s
+write-kubeconfig: /root/admin.kubeconfig
+flannel-backend: wireguard-native

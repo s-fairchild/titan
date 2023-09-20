@@ -1,0 +1,58 @@
+[Unit]
+Description=Podman container-k3s-rick-agent-0.service for %I
+Wants=network-online.target
+After=network-online.target
+RequiresMountsFor=%t/containers
+Requires=k3s-server-0.service
+After=k3s-server-0.service
+PartOf=k3s-server-0.service
+
+[Service]
+Environment=PODMAN_SYSTEMD_UNIT=%n-%i
+Restart=always
+RestartSec=30
+TimeoutStartSec=600
+TimeoutStopSec=70
+ExecStart=/usr/bin/podman run \
+	--network=rick \
+	--network=service \
+	--add-host=k3s-rick-agent-1:10.50.0.1 \
+	--tz=UTC \
+	--cidfile=%t/%n.ctr-id \
+	--cgroups=no-conmon \
+	--rm \
+	--sdnotify=conmon \
+	-d \
+	--replace \
+	--pull missing \
+	--requires k3s-rick-server-0 \
+	--name k3s-rick-agent-0 \
+	-e DOCKER_SOCK=/run/podman/podman.sock \
+	-h k3s-rick-agent-0 \
+	-v k3s-agent-data:/var/lib/rancher/k3s \
+	-v k3s-agent-etc-rancher:/etc/rancher \
+	-v /usr/local/etc/k3s/k3s-agent-0.yaml:/etc/rancher/k3s/config.yaml \
+	-v /run/podman/podman.sock:/run/podman/podman.sock:rw \
+  	-v /data/motion:/data/motion:Z \
+  	-v /data/jellyfin:/data/jellyfin:Z \
+  	-v /dev/dri:/dev/dri:Z \
+  	-v compute:/pvs:Z \
+	--shm-size 5g \
+	--privileged \
+	--secret k3s-token,type=env,target=K3S_TOKEN \
+	--annotation app=k3s \
+	docker.io/rancher/k3s:v1.28.1-k3s1 \
+	agent
+	
+ExecStop=/usr/bin/podman stop \
+	--ignore -t 10 \
+	--cidfile=%t/%n.ctr-id
+ExecStopPost=/usr/bin/podman rm \
+	-f \
+	--ignore -t 10 \
+	--cidfile=%t/%n.ctr-id
+Type=notify
+NotifyAccess=all
+
+[Install]
+WantedBy=default.target

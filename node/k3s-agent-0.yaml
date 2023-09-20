@@ -1,0 +1,9 @@
+selinux: true
+node-external-ip: 10.50.0.2
+node-label:
+  - app=v4l2rtspserver
+  - app=camera0
+  - app=compute
+server: https://k3s-rick-server-0:6443
+debug: true
+node-name: k3s-rick-agent-0

@@ -1,5 +1,5 @@
 servers: 1
-agents: 3
+agents: 1
 apiVersion: k3d.io/v1alpha5
 token: ${K3S_TOKEN}
 hostAliases:
@@ -13,7 +13,7 @@ kubeAPI:
   hostPort: "6443"
 metadata:
   name: rick
-network: k3d
+network: k3d-rick
 options:
   k3d:
     disableImageVolume: false
@@ -26,19 +26,40 @@ options:
         - settings.workerConnections=10000
   k3s:
     extraArgs:
+    - arg: --tls-san=10.50.0.2 
+      nodeFilters:
+        - server:*
+    - arg: --tls-san=10.50.0.1
+      nodeFilters:
+        - server:*
+    - arg: --tls-san=rick.lan
+      nodeFilters:
+        - server:*
     - arg: --tls-san=morty.expresso.lan
       nodeFilters:
         - server:*
-        - agent:*
-    - arg: --tls-san=rick.expresso.lan
+    - arg: --tls-san=morty.lan 
+      nodeFilters:
+        - server:*
+    - arg: --tls-san=pihole.rick.expresso.lan
+      nodeFilters:
+        - server:*
+    - arg: --tls-san=jellyfin.rick.expresso.lan
+      nodeFilters:
+        - server:*
+    - arg: --tls-san=k3s-rick-agent-1
+      nodeFilters:
+        - server:*
+    - arg: --tls-san=jellyfin.rick.expresso.lan
+      nodeFilters:
+        - server:*
+    - arg: --tls-san=system:node:morty.expresso.lan
+      nodeFilters:
+        - server:*
+    - arg: --debug
       nodeFilters:
         - server:*
         - agent:*
-    # - arg: --tls-san=rick.expresso.lan
-    #   nodeFilters:
-    #     - server:*
-    #     - agent:*
-    # - arg: --tls-san=k3s-rick-agent-3
     nodeLabels:
     - label: app=compute
       nodeFilters:
@@ -60,7 +81,7 @@ ports:
   port: 80:80
 - nodeFilters:
   - loadbalancer
-  port: 443:8443
+  port: 443:443
 - nodeFilters:
   - agent:*
   port: "10.50.0.2:53:30053/tcp"
