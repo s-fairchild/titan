@@ -14,9 +14,10 @@ RestartSec=30
 TimeoutStartSec=600
 TimeoutStopSec=70
 ExecStart=/usr/bin/podman run \
-	--network=rick:ip=10.91.0.10 \
+	--name k3s-rick-serverlb \
+	-h k3s-rick-serverlb \
+	--network=rick:ip=10.91.0.3 \
 	--network=service \
-	--add-host=k3s-rick-agent-1:10.50.0.1 \
 	--tz=UTC \
 	--cidfile=%t/%n.ctr-id \
 	--cgroups=no-conmon \
@@ -25,15 +26,11 @@ ExecStart=/usr/bin/podman run \
 	-d \
 	--replace \
 	--pull missing \
-	--name k3s-rick-agent-0 \
-	-h k3s-rick-agent-0 \
-	-v k3s-agent-data:/var/lib/rancher/k3s \
-	-v k3s-agent-etc-rancher:/etc/rancher \
-	-v /usr/local/etc/k3s/k3s-agent-0.yaml:/etc/rancher/k3s/config.yaml \
-  	-v /data/motion:/data/motion:Z \
-  	-v /data/jellyfin:/data/jellyfin:Z \
-  	-v /dev/dri:/dev/dri:Z \
-	--volumes-from=k3s-rick-server-0:z \
+	-v k3s-serverlb-data:/var/lib/rancher/k3s \
+	-v k3s-serverlb-etc-rancher:/etc/rancher \
+	-v /usr/local/etc/k3s/k3s-serverlb.yaml:/etc/rancher/k3s/config.yaml \
+	-p 80:80 \
+	-p 443:443 \
 	--shm-size 5g \
 	--privileged \
 	--secret k3s-token,type=env,target=K3S_TOKEN \

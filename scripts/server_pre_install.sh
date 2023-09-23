@@ -37,13 +37,24 @@ init_volumes() {
 
 init_network() {
     cluster_network="${1:-k3s}"
-    podman network rm "${cluster_network}"
+    # podman network rm "${cluster_network}"
     podman network create \
+                    --ignore \
                     --dns "${CLUSTER_DNS}" \
                     --subnet 10.91.0.0/24 \
                     --interface-name k3s \
                     "${cluster_network}"
-    podman network create --disable-dns --gateway 10.43.0.254 --label app=k3s --interface-name service --subnet 10.43.0.0/24 service
+    
+    # Required to facilitate communication with kubernetes service network
+    # kubernetes has a default address of 10.43.0.1, which is why the default gateway is the last address
+    podman network create \
+                    --ignore \
+                    --disable-dns \
+                    --gateway 10.43.0.254 \
+                    --label app=k3s \
+                    --interface-name service \
+                    --subnet 10.43.0.0/24 \
+                    service
 }
 
 install_pkgs() {
