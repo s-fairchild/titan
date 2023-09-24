@@ -28,7 +28,7 @@ ExecStart=/usr/bin/podman run \
 	-h k3s-rick-agent-1 \
 	-v k3s-agent:/var/lib/rancher/k3s \
 	-v k3s-rancher:/etc/rancher \
-	-v /run/podman/podman.sock:/run/podman/podman.sock:rw \
+	-v compute:/pvs \
 	-v /usr/local/etc/k3s-agent-1.yaml:/etc/rancher/k3s/config.yaml \
 	-v /usr/local/etc/k3s/rancher/registries.yaml:/etc/rancher/k3s/registries.yaml:ro \
 	--shm-size 200m \

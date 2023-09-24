@@ -37,6 +37,7 @@ ExecStart=/usr/bin/podman run \
 	-v local-path:/var/lib/rancher/k3s/storage \
 	-v /root/.kube/config:/root/admin.kubeconfig:Z \
   	-v compute:/pvs:z \
+	-v /etc/machine-id:/etc/machine-id:ro \
 	-p 6443:6443/tcp \
 	-p 10250:10250/tcp \
 	--shm-size 5g \

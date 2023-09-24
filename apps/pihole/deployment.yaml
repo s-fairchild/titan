@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   labels:
     app: pihole
-    traefik.udp.routers.myudprouter.entrypoints: "ep1,ep2"
+    # traefik.udp.routers.myudprouter.entrypoints: "ep1,ep2"
     traefik.udp.services.pihole.loadbalancer.server.port: ""
   namespace: pihole
   name: pihole
@@ -119,6 +119,12 @@ spec:
           protocol: TCP
         securityContext:
           capabilities:
+            add:
+              # Needed for dhcp server if used
+              # - CAP_NET_RAW
+              # - CAP_NET_ADMIN
+              - CAP_SYS_NICE
+              - CAP_CHOWN
             drop:
             - CAP_MKNOD
             - CAP_NET_RAW
