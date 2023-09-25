@@ -20,7 +20,7 @@ ExecStart=/usr/bin/podman run \
 	--tz=UTC \
 	--cidfile=%t/%n.ctr-id \
 	--cgroups=no-conmon \
-	--cgroupns=private \
+	--cgroupns=host \
 	--rm \
 	--sdnotify=conmon \
 	-d \
@@ -36,6 +36,8 @@ ExecStart=/usr/bin/podman run \
   	-v /var/local/etc/k3s/manifests:/var/lib/rancher/k3s/server/manifests/compute:Z \
 	-v local-path:/var/lib/rancher/k3s/storage \
 	-v /root/.kube/config:/root/admin.kubeconfig:Z \
+	-v pod_logs:/var/log/pods \
+	-v kubelet:/var/lib/kubelet \
   	-v compute:/pvs:z \
 	-v /etc/machine-id:/etc/machine-id:ro \
 	-p 6443:6443/tcp \
