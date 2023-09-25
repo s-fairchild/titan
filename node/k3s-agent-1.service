@@ -12,8 +12,7 @@ RestartSec=30
 TimeoutStartSec=600
 TimeoutStopSec=70
 ExecStart=/usr/bin/podman run \
-	--network=agent \
-	--ip=10.90.0.2 \
+	--network=agent:ip=10.90.0.10 \
 	--tz=UTC \
 	--add-host rick.expresso.lan:10.50.0.2 \
 	--add-host k3d-rick-server-0:10.50.0.2 \
@@ -31,6 +30,7 @@ ExecStart=/usr/bin/podman run \
 	-v compute:/pvs \
 	-v /usr/local/etc/k3s-agent-1.yaml:/etc/rancher/k3s/config.yaml \
 	-v /usr/local/etc/k3s/rancher/registries.yaml:/etc/rancher/k3s/registries.yaml:ro \
+	-v pod_logs:/var/log/pod \
 	--shm-size 200m \
 	--privileged \
 	--secret agent-token,type=env,target=K3S_TOKEN \
