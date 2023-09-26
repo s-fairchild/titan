@@ -57,6 +57,16 @@ init_network() {
                     service
 }
 
+# Pre create volumes to apply labels
+# volumes that don't exist on the first pod run are created with no options
+create_volumes() {
+    podman volume create \
+                    -l app=k3s-data \
+                    -l node=server-0 \
+                    -l data=app \
+                    compute
+}
+
 install_pkgs() {
     dnf in -y \
             cri-tools

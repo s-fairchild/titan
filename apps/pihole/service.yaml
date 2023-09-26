@@ -1,34 +1,38 @@
 ---
-apiVersion: v1
-kind: Service
-metadata:
-  name: pihole-dns
-  namespace: pihole
-  labels:
-    app: pihole
-spec:
-  ports:
-  - name: 53-53-udp
-    nodePort: 30053
-    port: 53
-    protocol: UDP
-    targetPort: dns-tcp
-  - name: 53-53-tcp
-    nodePort: 30053
-    port: 53
-    protocol: TCP
-    targetPort: dns-udp
-  type: NodePort
+# apiVersion: v1
+# kind: Service
+# metadata:
+  # name: pihole-dns
+  # namespace: pihole
+  # labels:
+    # app: pihole
+# spec:
+  # ports:
+  # - name: 53-53-udp
+    # nodePort: 30053
+    # port: 53
+    # protocol: UDP
+    # targetPort: dns-tcp
+  # - name: 53-53-tcp
+    # nodePort: 30053
+    # port: 53
+    # protocol: TCP
+    # targetPort: dns-udp
+  # type: NodePort
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: pihole-web
+  namespace: pihole
+  labels:
+    app: pihole
 spec:
   selector:
     app: pihole
   ports:
-    - protocol: UDP
-      port: 30053
-      targetPort: 30053
+    - name: web
+      port: 80
+      targetPort: http-admin-web
+      protocol: TCP
   type: LoadBalancer

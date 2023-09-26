@@ -37,6 +37,15 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
+  name: dnsmasq-port-conf
+  namespace: pihole
+data:
+  port.conf: |
+    port=1053
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
   name: pihole-local-records
   namespace: pihole
 data:

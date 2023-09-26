@@ -45,9 +45,13 @@ spec:
             optional: false
             defaultMode: 0400
         - name: unbound-config
-          persistentVolumeClaim:
-            claimName: unbound-conf-pvc
-            readOnly: true
+          configMap:
+            name: unbound-conf
+            optional: false
+        - name: dnsmasq-port-config
+          configMap:
+            name: dnsmasq-port-conf
+            optional: false
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -109,10 +113,10 @@ spec:
             cpu: "5000m"
         ports:
         - name: dns-udp
-          containerPort: 53
+          containerPort: 1053
           protocol: UDP
         - name: dns-tcp
-          containerPort: 53
+          containerPort: 1053
           protocol: TCP
         - name: http-admin-web
           containerPort: 8090
@@ -142,12 +146,17 @@ spec:
           mountPath: /etc/pihole/custom.list
           mountPropagation: None
           subPath: custom.list
+        - name: dnsmasq-port-config
+          mountPath: /etc/dnsmasq.d/port.conf
+          subPath: port.conf
         livenessProbe:
           exec:
             command:
             - dig
             - www.google.com
             - "@localhost"
+            - -p
+            - "1053"
           initialDelaySeconds: 60
           periodSeconds: 5
       - name: unbound
@@ -169,6 +178,6 @@ spec:
             command:
             - nslookup
             - www.google.com
-            - localhost
+            - 127.0.0.1:5335
           initialDelaySeconds: 60
           periodSeconds: 5
