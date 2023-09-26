@@ -118,7 +118,7 @@ spec:
         - name: dns-tcp
           containerPort: 1053
           protocol: TCP
-        - name: http-admin-web
+        - name: http-web-admin
           containerPort: 8090
           protocol: TCP
         securityContext:
