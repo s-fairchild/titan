@@ -37,6 +37,15 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
+  name: dnsmasq-port-conf
+  namespace: pihole
+data:
+  port.conf: |
+    port=1053
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
   name: pihole-local-records
   namespace: pihole
 data:
@@ -88,7 +97,7 @@ data:
         # it.
         # Default: yes
         # May be set to yes if you have IPv6 connectivity
-        do-ip6: yes
+        do-ip6: false
 
         # Enable or disable whether TCP queries are answered or issued.
         # Default: yes
@@ -111,9 +120,9 @@ data:
 
         # Listen to for queries from clients and answer from this network interface
         # and port.
-        interface: 127.0.0.1@5353
+        interface: 127.0.0.1@5335
         # interface: ::0
-        port: 5353
+        # port: 5335
 
         # If enabled, prefer IPv6 transport for sending DNS queries to internet
         # nameservers.

@@ -3,16 +3,10 @@ kind: Deployment
 metadata:
   labels:
     app: pihole
-    traefik.udp.routers.myudprouter.entrypoints: "ep1,ep2"
-    traefik.udp.services.pihole.loadbalancer.server.port: ""
   namespace: pihole
   name: pihole
 spec:
-  replicas: 3
-  strategy:
-    rollingUpdate:
-      maxUnavailable: 2
-      maxSurge: 30%
+  replicas: 2
   selector:
     matchLabels:
       app: pihole
@@ -22,15 +16,9 @@ spec:
       name: pihole
       labels:
         app: pihole
+        services: dns
     spec:
       volumes:
-        - name: setup
-          configMap:
-            name: setup-vars
-            optional: false
-        - name: conf
-          persistentVolumeClaim:
-            claimName: pihole-conf-pvc
         - name: pihole-local
           configMap:
             name: pihole-local-records
@@ -45,18 +33,22 @@ spec:
             optional: false
             defaultMode: 0400
         - name: unbound-config
-          persistentVolumeClaim:
-            claimName: unbound-conf-pvc
-            readOnly: true
+          configMap:
+            name: unbound-conf
+            optional: false
+        - name: dnsmasq-port-config
+          configMap:
+            name: dnsmasq-port-conf
+            optional: false
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
               - matchExpressions:
-                - key: app
+                - key: services
                   operator: In
                   values:
-                    - compute
+                    - dns
       hostname: pihole
       automountServiceAccountToken: false
       dnsPolicy: None
@@ -109,25 +101,31 @@ spec:
             cpu: "5000m"
         ports:
         - name: dns-udp
-          containerPort: 53
+          containerPort: 1053
           protocol: UDP
         - name: dns-tcp
-          containerPort: 53
+          containerPort: 1053
           protocol: TCP
-        - name: http-admin-web
+        - name: http-web-admin
           containerPort: 8090
           protocol: TCP
         securityContext:
           capabilities:
+            add:
+              # Needed for dhcp server if used
+              # - CAP_NET_RAW
+              # - CAP_NET_ADMIN
+              - CAP_SYS_NICE
+              - CAP_CHOWN
             drop:
             - CAP_MKNOD
             - CAP_NET_RAW
             - CAP_AUDIT_WRITE
         volumeMounts:
-        - name: setup
-          mountPath: /etc/pihole/setupVars.conf
-          mountPropagation: None
-          subPath: setupVars.conf
+        # - name: setup
+        #   mountPath: /etc/pihole/setupVars.conf
+        #   mountPropagation: None
+        #   subPath: setupVars.conf
         - name: pihole-cname
           mountPath: /etc/dnsmasq.d/05-pihole-custom-cname.conf
           mountPropagation: None
@@ -136,12 +134,17 @@ spec:
           mountPath: /etc/pihole/custom.list
           mountPropagation: None
           subPath: custom.list
+        - name: dnsmasq-port-config
+          mountPath: /etc/dnsmasq.d/port.conf
+          subPath: port.conf
         livenessProbe:
           exec:
             command:
             - dig
             - www.google.com
             - "@localhost"
+            - -p
+            - "1053"
           initialDelaySeconds: 60
           periodSeconds: 5
       - name: unbound
@@ -163,6 +166,6 @@ spec:
             command:
             - nslookup
             - www.google.com
-            - localhost
+            - 127.0.0.1:5335
           initialDelaySeconds: 60
           periodSeconds: 5

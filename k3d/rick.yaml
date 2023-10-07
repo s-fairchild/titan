@@ -1,14 +1,11 @@
 servers: 1
-agents: 3
+agents: 1
 apiVersion: k3d.io/v1alpha5
-token: ${TOKEN}
+token: ${K3S_TOKEN}
 hostAliases:
 - hostnames:
   - morty.expresso.lan
   ip: 10.50.0.1
-- hostnames:
-  - rpi4.expresso.lan
-  ip: 10.50.0.10
 kind: Simple
 kubeAPI:
   host: rick.expresso.lan
@@ -16,7 +13,7 @@ kubeAPI:
   hostPort: "6443"
 metadata:
   name: rick
-network: k3d
+network: k3d-rick
 options:
   k3d:
     disableImageVolume: false
@@ -28,6 +25,41 @@ options:
       configOverrides:
         - settings.workerConnections=10000
   k3s:
+    extraArgs:
+    - arg: --tls-san=10.50.0.2 
+      nodeFilters:
+        - server:*
+    - arg: --tls-san=10.50.0.1
+      nodeFilters:
+        - server:*
+    - arg: --tls-san=rick.lan
+      nodeFilters:
+        - server:*
+    - arg: --tls-san=morty.expresso.lan
+      nodeFilters:
+        - server:*
+    - arg: --tls-san=morty.lan 
+      nodeFilters:
+        - server:*
+    - arg: --tls-san=pihole.rick.expresso.lan
+      nodeFilters:
+        - server:*
+    - arg: --tls-san=jellyfin.rick.expresso.lan
+      nodeFilters:
+        - server:*
+    - arg: --tls-san=k3s-rick-agent-1
+      nodeFilters:
+        - server:*
+    - arg: --tls-san=jellyfin.rick.expresso.lan
+      nodeFilters:
+        - server:*
+    - arg: --tls-san=system:node:morty.expresso.lan
+      nodeFilters:
+        - server:*
+    - arg: --debug
+      nodeFilters:
+        - server:*
+        - agent:*
     nodeLabels:
     - label: app=compute
       nodeFilters:
@@ -56,6 +88,9 @@ ports:
 - nodeFilters:
   - agent:*
   port: "10.50.0.2:53:30053/udp"
+# - nodeFilters:
+#   - agent:3
+#   port: "10.50.0.1:8554:32554/udp"
 registries:
   use:
     - k3d-registry:5000 # Precreated k3d registry is required when using podman, see k3d registry --help for more info

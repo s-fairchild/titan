@@ -5,6 +5,15 @@ metadata:
 ---
 apiVersion: v1
 data:
+  port.conf: |
+    port=1053
+kind: ConfigMap
+metadata:
+  name: dnsmasq-port-conf
+  namespace: pihole
+---
+apiVersion: v1
+data:
   05-pihole-custom-cname.conf: |
     cname=pihole.rick.expresso.lan,rick.expresso.lan
     cname=jellyfin.rick.expresso.lan,rick.expresso.lan
@@ -75,7 +84,7 @@ data:
     disable the\n    # IPv6 transport for sending DNS traffic, it does not impact
     the contents\n    # of the DNS traffic, which may have IPv4 (A) and IPv6 (AAAA)
     addresses in\n    # it.\n    # Default: yes\n    # May be set to yes if you have
-    IPv6 connectivity\n    do-ip6: yes\n\n    # Enable or disable whether TCP queries
+    IPv6 connectivity\n    do-ip6: false\n\n    # Enable or disable whether TCP queries
     are answered or issued.\n    # Default: yes\n    do-tcp: yes\n\n    # Enable or
     disable whether UDP queries are answered or issued.\n    # Default: yes\n    do-udp:
     yes\n\n    # RFC 6891. Number  of bytes size to advertise as the EDNS reassembly
@@ -87,8 +96,8 @@ data:
     of TCP fallback generated is\n    # excessive (probably also for this resolver,
     consider tuning the outgoing\n    # tcp number).\n    edns-buffer-size: 1232\n\n
     \   # Listen to for queries from clients and answer from this network interface\n
-    \   # and port.\n    interface: 127.0.0.1@5353\n    # interface: ::0\n    port:
-    5353\n\n    # If enabled, prefer IPv6 transport for sending DNS queries to internet\n
+    \   # and port.\n    interface: 127.0.0.1@5335\n    # interface: ::0\n    # port:
+    5335\n\n    # If enabled, prefer IPv6 transport for sending DNS queries to internet\n
     \   # nameservers.\n    # Default: yes\n    # You want to leave this to no unless
     you have *native* IPv6. With 6to4 and\n    # Terredo tunnels your web browser
     should favor IPv4 for the same reasons\n    prefer-ip6: no\n\n    # Rotates RRSet
@@ -282,23 +291,24 @@ metadata:
 spec:
   ports:
   - name: 53-53-udp
-    port: 53
+    nodePort: 30053
+    port: 1053
     protocol: UDP
-    targetPort: dns-tcp
-  - name: 53-53-tcp
-    port: 53
-    protocol: TCP
-    targetPort: dns-tcp
+    targetPort: dns-udp
   selector:
     app: pihole
+  type: NodePort
+---
 apiVersion: v1
 kind: Service
+metadata:
   name: pihole-web
 spec:
   ports:
-  - port: 30053
-    protocol: UDP
-    targetPort: 30053
+  - name: web-admin
+    port: 8090
+    protocol: TCP
+    targetPort: http-web-admin
   selector:
     app: pihole
   type: LoadBalancer
@@ -313,7 +323,7 @@ spec:
   capacity:
     storage: 3Gi
   local:
-    fsType: btrfs
+    fsType: xfs
     path: /pvs/pihole/etc
   nodeAffinity:
     required:
@@ -337,7 +347,7 @@ spec:
   capacity:
     storage: 3Gi
   local:
-    fsType: btrfs
+    fsType: xfs
     path: /pvs/unbound/
   nodeAffinity:
     required:
@@ -393,18 +403,15 @@ metadata:
   name: pihole
   namespace: pihole
 spec:
-  replicas: 3
+  replicas: 2
   selector:
     matchLabels:
       app: pihole
-  strategy:
-    rollingUpdate:
-      maxSurge: 30%
-      maxUnavailable: 2
   template:
     metadata:
       labels:
         app: pihole
+        services: dns
       name: pihole
       namespace: pihole
     spec:
@@ -413,10 +420,10 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
-              - key: app
+              - key: services
                 operator: In
                 values:
-                - compute
+                - dns
       automountServiceAccountToken: false
       containers:
       - env:
@@ -454,18 +461,20 @@ spec:
             - dig
             - www.google.com
             - '@localhost'
+            - -p
+            - "1053"
           initialDelaySeconds: 60
           periodSeconds: 5
         name: pihole
         ports:
-        - containerPort: 53
+        - containerPort: 1053
           name: dns-udp
           protocol: UDP
-        - containerPort: 53
+        - containerPort: 1053
           name: dns-tcp
           protocol: TCP
         - containerPort: 8090
-          name: http-admin-web
+          name: http-web-admin
           protocol: TCP
         resources:
           limits:
@@ -476,15 +485,14 @@ spec:
             memory: 100Mi
         securityContext:
           capabilities:
+            add:
+            - CAP_SYS_NICE
+            - CAP_CHOWN
             drop:
             - CAP_MKNOD
             - CAP_NET_RAW
             - CAP_AUDIT_WRITE
         volumeMounts:
-        - mountPath: /etc/pihole/setupVars.conf
-          mountPropagation: None
-          name: setup
-          subPath: setupVars.conf
         - mountPath: /etc/dnsmasq.d/05-pihole-custom-cname.conf
           mountPropagation: None
           name: pihole-cname
@@ -493,6 +501,9 @@ spec:
           mountPropagation: None
           name: pihole-local
           subPath: custom.list
+        - mountPath: /etc/dnsmasq.d/port.conf
+          name: dnsmasq-port-config
+          subPath: port.conf
       - image: madnuttah/unbound:latest
         imagePullPolicy: IfNotPresent
         livenessProbe:
@@ -500,7 +511,7 @@ spec:
             command:
             - nslookup
             - www.google.com
-            - localhost
+            - 127.0.0.1:5335
           initialDelaySeconds: 60
           periodSeconds: 5
         name: unbound
@@ -525,13 +536,6 @@ spec:
       restartPolicy: Always
       volumes:
       - configMap:
-          name: setup-vars
-          optional: false
-        name: setup
-      - name: conf
-        persistentVolumeClaim:
-          claimName: pihole-conf-pvc
-      - configMap:
           name: pihole-local-records
           optional: false
         name: pihole-local
@@ -544,10 +548,14 @@ spec:
           defaultMode: 256
           optional: false
           secretName: webpassword
-      - name: unbound-config
-        persistentVolumeClaim:
-          claimName: unbound-conf-pvc
-          readOnly: true
+      - configMap:
+          name: unbound-conf
+          optional: false
+        name: unbound-config
+      - configMap:
+          name: dnsmasq-port-conf
+          optional: false
+        name: dnsmasq-port-config
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -568,6 +576,6 @@ spec:
           service:
             name: pihole-web
             port:
-              name: pihole-web
+              name: web-admin
         path: /admin
         pathType: Prefix

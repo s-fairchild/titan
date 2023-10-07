@@ -12,7 +12,7 @@ spec:
   storageClassName: local-path
   local:
     path: /pvs/pihole/etc
-    fsType: btrfs
+    fsType: xfs
   nodeAffinity:
     required:
       nodeSelectorTerms:
@@ -36,7 +36,7 @@ spec:
   storageClassName: local-path
   local:
     path: /pvs/unbound/
-    fsType: btrfs
+    fsType: xfs
   nodeAffinity:
     required:
       nodeSelectorTerms:

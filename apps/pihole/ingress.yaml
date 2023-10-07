@@ -19,4 +19,4 @@ spec:
           service:
             name: pihole-web
             port:
-              name: pihole-web
+              name: web-admin

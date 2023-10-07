@@ -5,12 +5,13 @@ metadata:
   namespace: jellyfin
   labels:
     app: jellyfin
+    svccontroller.k3s.cattle.io/lbpool: pool1
 spec:
   ports:
-    - name: http
-      port: 80
+    - name: http-web
+      port: 8096
       targetPort: http-web-svc
       protocol: TCP
   selector:
     app: jellyfin
-  type: ClusterIP
+  type: LoadBalancer

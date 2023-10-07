@@ -7,16 +7,13 @@ metadata:
   labels:
     app: pihole
 spec:
+  selector:
+    app: pihole
   ports:
   - name: 53-53-udp
     nodePort: 30053
-    port: 53
+    port: 1053
     protocol: UDP
-    targetPort: dns-tcp
-  - name: 53-53-tcp
-    nodePort: 30053
-    port: 53
-    protocol: TCP
     targetPort: dns-udp
   type: NodePort
 ---
@@ -27,8 +24,10 @@ metadata:
 spec:
   selector:
     app: pihole
+    # svccontroller.k3s.cattle.io/lbpool: pool1
   ports:
-    - protocol: UDP
-      port: 30053
-      targetPort: 30053
+  - name: web-admin
+    port: 8090
+    targetPort: http-web-admin
+    protocol: TCP
   type: LoadBalancer
