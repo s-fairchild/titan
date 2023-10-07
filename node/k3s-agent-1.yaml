@@ -1,0 +1,8 @@
+node-label:
+  - camera=0
+  - services=dns
+node-ip: 10.50.0.1
+server: https://rick.expresso.lan:6443
+node-external-ip: 10.50.0.1
+debug: true
+node-name: k3s-rick-agent-1

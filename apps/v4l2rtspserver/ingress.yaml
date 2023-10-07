@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: v4l2rtspserver
+  namespace: v4l2rtspserver
+  labels:
+    app: v4l2rtspserver
+  annotations:
+    ingress.kubernetes.io/ssl-redirect: "false"
+    traefik.frontend.rule.type: PathPrefix
+spec:
+  rules:
+  - host: v4l2rtspserver.expresso.lan
+    http:
+      paths:
+      - path: /unicast.m3u8
+        pathType: Prefix
+        backend:
+          service:
+            name: v4l2rtspserver
+            port:
+              name: http-web

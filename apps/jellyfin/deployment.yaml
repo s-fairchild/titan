@@ -32,7 +32,6 @@ spec:
           tcpSocket:
             port: http-web-svc
           initialDelaySeconds: 120
-          periodSeconds: 5
         env:
         - name: JELLYFIN_PublishedServerUrl
           value: https://jellyfin.rick.expresso.lan
@@ -66,10 +65,10 @@ spec:
         resources:
           requests:
             memory: "10G"
-            cpu: "1000m"
+            cpu: "600m"
           limits:
             memory: "10G"
-            cpu: "1000m"
+            cpu: "600m"
       enableServiceLinks: false
       volumes:
       - name: media

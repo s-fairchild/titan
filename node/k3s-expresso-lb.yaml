@@ -1,0 +1,9 @@
+selinux: true
+node-ip: 10.91.0.11
+node-external-ip: 10.50.0.1
+node-label:
+  - svccontroller.k3s.cattle.io/enablelb=true
+  - svccontroller.k3s.cattle.io/lbpool=pool2
+server: https://k3s-rick-server-0:6443
+debug: true
+node-name: k3s-rick-expressolb

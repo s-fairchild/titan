@@ -17,17 +17,18 @@ kind: Service
 metadata:
   labels:
     app: jellyfin
+    svccontroller.k3s.cattle.io/lbpool: pool1
   name: jellyfin
   namespace: jellyfin
 spec:
   ports:
-  - name: http
-    port: 80
+  - name: http-web
+    port: 8096
     protocol: TCP
     targetPort: http-web-svc
   selector:
     app: jellyfin
-  type: ClusterIP
+  type: LoadBalancer
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -190,7 +191,6 @@ spec:
         image: docker.io/linuxserver/jellyfin:latest
         livenessProbe:
           initialDelaySeconds: 120
-          periodSeconds: 5
           tcpSocket:
             port: http-web-svc
         name: jellyfin
@@ -200,10 +200,10 @@ spec:
           protocol: TCP
         resources:
           limits:
-            cpu: 1000m
+            cpu: 600m
             memory: 10G
           requests:
-            cpu: 1000m
+            cpu: 600m
             memory: 10G
         securityContext:
           capabilities:
@@ -262,6 +262,6 @@ spec:
           service:
             name: jellyfin
             port:
-              number: 80
+              name: http-web
         path: /
         pathType: Prefix

@@ -17,21 +17,24 @@ kind: Service
 metadata:
   labels:
     app: v4l2rtspserver
+    camera: "0"
+    svccontroller.k3s.cattle.io/lbpool: pool2
   name: v4l2rtspserver-udp
   namespace: v4l2rtspserver
 spec:
   ports:
   - name: 8554-8554-udp
-    nodePort: 32554
     port: 8554
     protocol: UDP
     targetPort: rtsp-udp
   - name: 8554-8554-tcp
-    nodePort: 32554
     port: 8554
     protocol: TCP
     targetPort: rtsp-tcp
-  type: NodePort
+  - name: 8080-8080-tcp
+    port: 8080
+    targetPort: rtsp-http
+  type: LoadBalancer
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -57,12 +60,15 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
-              - key: app
+              - key: camera
                 operator: In
                 values:
-                - camera0
+                - "0"
       containers:
-      - image: mpromonet/v4l2rtspserver:latest-arm64
+      - args:
+        - -p
+        - "8080"
+        image: mpromonet/v4l2rtspserver:latest-arm64
         livenessProbe:
           initialDelaySeconds: 120
           tcpSocket:
@@ -75,29 +81,60 @@ spec:
         - containerPort: 8554
           name: rtsp-tcp
           protocol: TCP
+        - containerPort: 8080
+          name: rtsp-http
         resources:
           limits:
             cpu: 1000m
-            memory: 500m
+            memory: 500Mi
           requests:
             cpu: 100m
-            memory: 200m
+            memory: 200Mi
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /dev/snd/controlC0
+        - mountPath: /dev/snd
           name: snd0
         - mountPath: /etc/user-password
           name: password
+        - mountPath: /dev/video0
+          name: video0
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       volumes:
       - hostPath:
-          path: /dev/snd/controlC0
+          path: /dev/video0
           type: CharDevice
+        name: video0
+      - hostPath:
+          path: /dev/snd
+          type: Directory
         name: snd0
       - name: password
         secret:
           defaultMode: 256
           optional: false
           secretName: user-password
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    ingress.kubernetes.io/ssl-redirect: "false"
+    traefik.frontend.rule.type: PathPrefix
+  labels:
+    app: v4l2rtspserver
+  name: v4l2rtspserver
+  namespace: v4l2rtspserver
+spec:
+  rules:
+  - host: v4l2rtspserver.expresso.lan
+    http:
+      paths:
+      - backend:
+          service:
+            name: v4l2rtspserver
+            port:
+              name: http-web
+        path: /unicast.m3u8
+        pathType: Prefix

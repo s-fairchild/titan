@@ -5,6 +5,7 @@ metadata:
   namespace: jellyfin
   labels:
     app: jellyfin
+    svccontroller.k3s.cattle.io/lbpool: pool1
 spec:
   ports:
     - name: http-web

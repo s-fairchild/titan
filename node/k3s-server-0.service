@@ -20,7 +20,7 @@ ExecStart=/usr/bin/podman run \
 	--tz=UTC \
 	--cidfile=%t/%n.ctr-id \
 	--cgroups=no-conmon \
-	--cgroupns=private \
+	--cgroupns=host \
 	--rm \
 	--sdnotify=conmon \
 	-d \
@@ -38,6 +38,8 @@ ExecStart=/usr/bin/podman run \
 	-v pod_logs:/var/log/pod \
 	-v /root/.kube/config:/root/admin.kubeconfig:Z \
   	-v compute:/pvs:z \
+	-v kubelet:/var/lib/kubelet \
+	-v pod_logs:/var/log/pod \
 	-v /etc/machine-id:/etc/machine-id:ro \
 	-p 6443:6443/tcp \
 	-p 10250:10250/tcp \

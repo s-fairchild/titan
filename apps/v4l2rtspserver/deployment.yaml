@@ -22,12 +22,15 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
               - matchExpressions:
-                - key: app
+                - key: camera
                   operator: In
                   values:
-                    - camera0
+                    - "0"
       containers:
       - name: v4l2rtspserver
+        args:
+          - "-p"
+          - "8080"
         livenessProbe:
           tcpSocket:
             port: rtsp-tcp
@@ -37,28 +40,36 @@ spec:
         - containerPort: 8554
           name: rtsp-udp
           protocol: UDP
-        - containerPort: 8554
-          name: rtsp-tcp
-          protocol: TCP
+        # - containerPort: 8554
+        #   name: rtsp-tcp
+        #   protocol: TCP
+        - containerPort: 8080
+          name: rtsp-http
         securityContext:
           privileged: true
         volumeMounts:
         - name: snd0
-          mountPath: /dev/snd/controlC0
+          mountPath: /dev/snd
         - name: password
           mountPath: /etc/user-password
+        - name: video0
+          mountPath: /dev/video0
         resources:
           requests:
-            memory: "200m"
+            memory: "200Mi"
             cpu: "100m"
           limits:
-            memory: "500m"
+            memory: "500Mi"
             cpu: "1000m"
       volumes:
+      - name: video0
+        hostPath: 
+          path: /dev/video0
+          type: CharDevice
       - name: snd0
         hostPath:
-          path: /dev/snd/controlC0
-          type: CharDevice
+          path: /dev/snd
+          type: Directory
       - name: password
         secret:
           secretName: user-password

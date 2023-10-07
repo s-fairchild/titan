@@ -26,13 +26,16 @@ ExecStart=/usr/bin/podman run \
 	--replace \
 	--pull missing \
 	--name k3s-rick-agent-0 \
+	--device /dev/dri/card1:/dev/dri/card1 \
+	--device /dev/dri/renderD128:/dev/dri/renderD128 \
 	-h k3s-rick-agent-0 \
+	-v k3s-agent-0-kubelet:/var/lib/kubelet \
+	-v k3s-agent-0-pod_logs:/var/log/pods \
 	-v k3s-agent-data:/var/lib/rancher/k3s \
 	-v k3s-agent-etc-rancher:/etc/rancher \
 	-v /usr/local/etc/k3s/k3s-agent-0.yaml:/etc/rancher/k3s/config.yaml \
   	-v /data/motion:/data/motion:Z \
   	-v /data/jellyfin:/data/jellyfin:Z \
-  	-v /dev/dri:/dev/dri:Z \
 	--volumes-from=k3s-rick-server-0:z \
 	--shm-size 5g \
 	--privileged \

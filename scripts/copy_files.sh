@@ -1,24 +1,49 @@
-#!/bin/bash
+#!/bin/bash -x
 # Copy k3s files to remote server
 
 set -o nounset
 
-remote_user="${REMOTE_USER}"
-remote_host="${REMOTE_HOST}"
-connection_string="${remote_user}@${remote_host}"
+main() {
+    host="${1:-}"
+    if [[ $host = "rick" ]]; then
+        cp_to_rick
+    elif [[ $host = "expresso" ]]; then
+        cp_to_expresso
+    elif [[ $host = "all" ]]; then
+        cp_to_all
+    else
+        echo "Usage: ${0} < rick | expresso | all >"
+    fi
+}
 
 copy_files() {
     scp "${1}" "${connection_string}:${2:-}"
 }
 
-copy_files k3s_install.env
-copy_files scripts/server_pre_install.sh
-copy_files node/k3s-server-0.service /usr/lib/systemd/system/
-copy_files node/k3s-agent-0.service /usr/lib/systemd/system/
-copy_files node/k3s-server-1.service /usr/lib/systemd/system/
-copy_files node/k3s-server-1.yaml /usr/local/etc/k3s/
-copy_files node/k3s-agent-0.yaml /usr/local/etc/k3s/
-copy_files node/k3s-server-0.yaml /usr/local/etc/k3s/
+cp_to_all() {
+    cp_to_rick
+    cp_to_expresso
+}
 
-copy_files node/k3s-serverlb.yaml /usr/local/etc/k3s/
-copy_files node/k3s-serverlb.service /usr/lib/systemd/system/
+cp_to_rick() {
+    local connection_string="root@rick"
+    copy_files k3s_install.env
+    copy_files scripts/server_pre_install.sh
+    copy_files node/k3s-server-0.service /usr/lib/systemd/system/
+    copy_files node/k3s-agent-0.service /usr/lib/systemd/system/
+    copy_files node/k3s-agent-0.yaml /usr/local/etc/k3s/
+    copy_files node/k3s-server-0.yaml /usr/local/etc/k3s/
+
+    copy_files node/k3s-serverlb.yaml /usr/local/etc/k3s/
+    copy_files node/k3s-serverlb.service /usr/lib/systemd/system/
+    unset connection_string
+}
+
+cp_to_expresso() {
+    local connection_string="root@expresso"
+    scp node/k3s-agent-1.service /usr/lib/systemd/system/
+    cp node/k3s-agent-1.yaml /usr/local/etc/
+    unset connection_string
+}
+
+main "${@}"
