@@ -1,19 +1,21 @@
----
 apiVersion: v1
 kind: Service
 metadata:
-  name: rtsp-udp
+  name: rtsp
   namespace: v4l2rtspserver
   labels:
     app: v4l2rtspserver
     camera: "0"
 spec:
   ports:
-  - name: 30554-30554-udp
-    port: 30554
+  - name: 8554-8554-udp
+    port: 8554
     protocol: UDP
     targetPort: rtsp-udp
-  type: NodePort
+  - name: 8554-8554-tcp
+    port: 8554
+    protocol: TCP
+  type: ClusterIP
 ---
 apiVersion: v1
 kind: Service
@@ -23,7 +25,7 @@ metadata:
   labels:
     app: v4l2rtspserver
     camera: "0"
-    # svccontroller.k3s.cattle.io/lbpool: pool2
+    svccontroller.k3s.cattle.io/lbpool: pool2
 spec:
   ports:
   - name: 8080-8080-http

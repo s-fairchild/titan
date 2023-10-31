@@ -77,11 +77,11 @@ spec:
           subPath: transcodes
         resources:
           requests:
-            memory: "15G"
+            memory: "1G"
             cpu: "500m"
           limits:
             memory: "15G"
-            cpu: "2500m"
+            cpu: "5000m"
       enableServiceLinks: false
       volumes:
       - name: media

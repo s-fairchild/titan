@@ -110,6 +110,7 @@ install_pkgs() {
         cri-tools
         vim
         kubernetes-client
+        htop
     )
     log "Installing packages: ${pkgs[*]}"
     dnf in -y "${pkgs[@]}"

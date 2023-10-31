@@ -26,6 +26,7 @@ ExecStart=/usr/bin/podman run \
 	-d \
 	--replace \
 	--pull missing \
+	-v /etc/machine-id:/etc/machine-id:ro \
 	-v k3s-expressolb-data:/var/lib/rancher/k3s \
 	-v k3s-expressolb-etc-rancher:/etc/rancher \
 	-v /usr/local/etc/k3s-expressolb.yaml:/etc/rancher/k3s/config.yaml \

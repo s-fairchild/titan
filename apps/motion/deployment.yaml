@@ -46,7 +46,7 @@ spec:
         - name: conf
           mountPath: /config
         - name: dev-dri
-          mountPath: /dev/dri/renderD128 # Raspberry pi 4 VC4 video card
+          mountPath: /dev/dri/renderD128
         - name: card1
           mountPath: /dev/dri/card1
         resources:

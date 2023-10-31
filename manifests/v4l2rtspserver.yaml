@@ -18,20 +18,28 @@ metadata:
   labels:
     app: v4l2rtspserver
     camera: "0"
-    svccontroller.k3s.cattle.io/lbpool: pool2
-  name: v4l2rtspserver-udp
+  name: rtsp-udp
   namespace: v4l2rtspserver
 spec:
   ports:
-  - name: 8554-8554-udp
-    port: 8554
+  - name: 30554-30554-udp
+    port: 30554
     protocol: UDP
     targetPort: rtsp-udp
-  - name: 8554-8554-tcp
-    port: 8554
-    protocol: TCP
-    targetPort: rtsp-tcp
-  - name: 8080-8080-tcp
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: v4l2rtspserver
+    camera: "0"
+    svccontroller.k3s.cattle.io/lbpool: pool2
+  name: v4l2rtspserver-http
+  namespace: v4l2rtspserver
+spec:
+  ports:
+  - name: 8080-8080-http
     port: 8080
     targetPort: rtsp-http
   type: LoadBalancer
@@ -78,14 +86,11 @@ spec:
         - containerPort: 8554
           name: rtsp-udp
           protocol: UDP
-        - containerPort: 8554
-          name: rtsp-tcp
-          protocol: TCP
         - containerPort: 8080
           name: rtsp-http
         resources:
           limits:
-            cpu: 1000m
+            cpu: 2000m
             memory: 500Mi
           requests:
             cpu: 100m

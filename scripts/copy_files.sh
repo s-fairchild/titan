@@ -6,7 +6,9 @@ set -o nounset
 main() {
     host="${1:-all}"
     if [[ $host = "rick" ]]; then
+        connection_string="root@rick"
         cp_to_rick
+        cp_manifests
     elif [[ $host = "expresso" ]]; then
         cp_to_expresso
     elif [[ $host = "all" ]]; then
@@ -26,7 +28,6 @@ cp_to_all() {
 }
 
 cp_to_rick() {
-    local connection_string="root@rick"
     copy_files k3s_install.env
     copy_files scripts/server_pre_install.sh
     copy_files node/k3s-server-0.service /usr/lib/systemd/system/
@@ -36,7 +37,11 @@ cp_to_rick() {
 
     copy_files node/k3s-serverlb.yaml /usr/local/etc/k3s/
     copy_files node/k3s-serverlb.service /usr/lib/systemd/system/
-    unset connection_string
+}
+
+cp_manifests() {
+    copy_files manifests/jellyfin.yaml /var/local/etc/k3s/manifests/
+    copy_files manifests/pihole.yaml /var/local/etc/k3s/manifests/
 }
 
 cp_to_expresso() {
