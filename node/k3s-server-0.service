@@ -31,15 +31,15 @@ ExecStart=/usr/bin/podman run \
 	-h k3s-rick-server-0 \
 	-v k3s-server-0-data:/var/lib/rancher/k3s \
 	-v k3s-server-0-etc-rancher:/etc/rancher \
+  	-v /var/local/var/k3s/persistentVolumes/:/pvs:z \
+	-v kubelet:/var/lib/kubelet \
+	-v pod_logs:/var/log/pod \
+	-v local-path:/var/lib/rancher/k3s/storage \
+	-v pod_logs:/var/log/pod \
 	-v /var/lib/k3s/server-0/containers:/var/lib/containers:Z \
 	-v /usr/local/etc/k3s/k3s-server-0.yaml:/etc/rancher/k3s/config.yaml \
   	-v /var/local/etc/k3s/manifests:/var/lib/rancher/k3s/server/manifests/compute:Z \
-	-v local-path:/var/lib/rancher/k3s/storage \
-	-v pod_logs:/var/log/pod \
 	-v /root/.kube/config:/root/admin.kubeconfig:Z \
-  	-v compute:/pvs:z \
-	-v kubelet:/var/lib/kubelet \
-	-v pod_logs:/var/log/pod \
 	-v /etc/machine-id:/etc/machine-id:ro \
 	-p 6443:6443/tcp \
 	-p 10250:10250/tcp \

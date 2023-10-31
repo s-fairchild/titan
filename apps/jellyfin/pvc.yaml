@@ -37,8 +37,6 @@ kind: PersistentVolumeClaim
 metadata:
   name: jellyfin-data-pvc
   namespace: jellyfin
-  annotations:
-    volumeType: local
 spec:
   volumeName: jellyfin-data
   volumeMode: Filesystem

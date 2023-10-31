@@ -33,37 +33,14 @@ spec:
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: jellyfin-cache
+  name: jellyfin-data
 spec:
   accessModes:
   - ReadWriteOnce
   capacity:
-    storage: 3Gi
+    storage: 5Gi
   local:
-    path: /pvs/jellyfin/cache
-  nodeAffinity:
-    required:
-      nodeSelectorTerms:
-      - matchExpressions:
-        - key: app
-          operator: In
-          values:
-          - compute
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: local-path
-  volumeMode: Filesystem
----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: jellyfin-conf
-spec:
-  accessModes:
-  - ReadWriteOnce
-  capacity:
-    storage: 3Gi
-  local:
-    path: /pvs/jellyfin/conf
+    path: /pvs/jellyfin/data
   nodeAffinity:
     required:
       nodeSelectorTerms:
@@ -86,7 +63,7 @@ spec:
   capacity:
     storage: 4T
   local:
-    path: /data/jellyfin
+    path: /var/data/jellyfin
   nodeAffinity:
     required:
       nodeSelectorTerms:
@@ -104,23 +81,6 @@ kind: PersistentVolumeClaim
 metadata:
   annotations:
     volumeType: local
-  name: jellyfin-cache-pvc
-  namespace: jellyfin
-spec:
-  accessModes:
-  - ReadWriteOnce
-  resources:
-    requests:
-      storage: 3Gi
-  storageClassName: local-path
-  volumeMode: Filesystem
-  volumeName: jellyfin-cache
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  annotations:
-    volumeType: local
   name: jellyfin-conf-pvc
   namespace: jellyfin
 spec:
@@ -132,6 +92,21 @@ spec:
   storageClassName: local-path
   volumeMode: Filesystem
   volumeName: jellyfin-conf
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jellyfin-data-pvc
+  namespace: jellyfin
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: local-path
+  volumeMode: Filesystem
+  volumeName: jellyfin-data
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -182,6 +157,8 @@ spec:
       - env:
         - name: JELLYFIN_PublishedServerUrl
           value: https://jellyfin.rick.expresso.lan
+        - name: JELLYFIN_DATA_DIR
+          value: /data
         - name: PASSWORD
           valueFrom:
             secretKeyRef:
@@ -200,11 +177,11 @@ spec:
           protocol: TCP
         resources:
           limits:
-            cpu: 600m
-            memory: 10G
+            cpu: 2500m
+            memory: 15G
           requests:
-            cpu: 600m
-            memory: 10G
+            cpu: 500m
+            memory: 15G
         securityContext:
           capabilities:
             drop:
@@ -215,12 +192,20 @@ spec:
         volumeMounts:
         - mountPath: /media
           name: media
-        - mountPath: /config
-          name: conf
-        - mountPath: /cache
+        - mountPath: /config/data
+          name: data
+          subPath: data
+        - mountPath: /config/cache
           name: cache
+          subPath: cache
         - mountPath: /dev/dri/renderD128
           name: dev-dri
+        - mountPath: /config/log
+          name: logs
+          subPath: log
+        - mountPath: /config/data/transcodes
+          name: transcodes
+          subPath: transcodes
       dnsPolicy: ClusterFirst
       enableServiceLinks: false
       restartPolicy: Always
@@ -228,9 +213,9 @@ spec:
       - name: media
         persistentVolumeClaim:
           claimName: jellyfin-media-pvc
-      - name: conf
+      - name: data
         persistentVolumeClaim:
-          claimName: jellyfin-conf-pvc
+          claimName: jellyfin-data-pvc
       - hostPath:
           path: /dev/dri/renderD128
           type: CharDevice
@@ -239,9 +224,18 @@ spec:
           path: /dev/dri/card1
           type: CharDevice
         name: card1
-      - name: cache
-        persistentVolumeClaim:
-          claimName: jellyfin-cache-pvc
+      - emptyDir:
+          medium: Memory
+          sizeLimit: 2Gi
+        name: cache
+      - emptyDir:
+          medium: Memory
+          sizeLimit: 500Mi
+        name: logs
+      - emptyDir:
+          medium: Memory
+          sizeLimit: 10Gi
+        name: transcodes
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress

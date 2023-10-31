@@ -1,10 +1,10 @@
-#!/bin/bash -x
+#!/bin/bash
 # Copy k3s files to remote server
 
 set -o nounset
 
 main() {
-    host="${1:-}"
+    host="${1:-all}"
     if [[ $host = "rick" ]]; then
         cp_to_rick
     elif [[ $host = "expresso" ]]; then

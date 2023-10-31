@@ -6,12 +6,18 @@ main() {
     init_secrets
     set_limits
     update_start_firewalld
+    enable_podman_socket
     start_cluster
 }
 
+enable_podman_socket() {
+    systemctl enable --now podman.socket
+}
+
 start_cluster() {
-    systemctl enable k3s-agent-0 k3s-serverlb
     systemctl enable --now k3s-server-0
+    systemctl enable --now k3s-agent-0
+    systemctl enable --now k3s-serverlb
 }
 
 log() {
