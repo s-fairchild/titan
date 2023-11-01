@@ -2,7 +2,7 @@ selinux: true
 node-ip: 10.91.0.2
 node-external-ip: 10.50.0.2
 advertise-address: 10.50.0.2
-debug: true
+debug: false
 etcd-expose-metrics: true
 tls-san:
   - rick.expresso.lan

@@ -1,8 +1,9 @@
 node-label:
   - camera=0
-  - services=dns
-node-ip: 10.50.0.1
+  - router=true
+  - url=garage
+node-ip: 10.99.0.11
 server: https://rick.expresso.lan:6443
 node-external-ip: 10.50.0.1
-debug: true
+debug: false
 node-name: k3s-rick-agent-1
