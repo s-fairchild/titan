@@ -61,9 +61,9 @@ spec:
         volumeMounts:
         - name: media
           mountPath: /media
-        - name: data
-          mountPath: /config/data
-          subPath: data
+        - name: conf
+          mountPath: /config
+          subPath: config
         - name: cache
           mountPath: /config/cache
           subPath: cache
@@ -87,9 +87,9 @@ spec:
       - name: media
         persistentVolumeClaim:
           claimName: jellyfin-media-pvc
-      - name: data
+      - name: conf
         persistentVolumeClaim:
-          claimName: jellyfin-data-pvc
+          claimName: jellyfin-conf-pvc
       - name: dev-dri
         hostPath:
           path: /dev/dri/renderD128

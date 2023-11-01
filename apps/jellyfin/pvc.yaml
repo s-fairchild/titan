@@ -31,18 +31,3 @@ spec:
   resources:
     requests:
       storage: 3.9T
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: jellyfin-data-pvc
-  namespace: jellyfin
-spec:
-  volumeName: jellyfin-data
-  volumeMode: Filesystem
-  storageClassName: local-path
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 5Gi

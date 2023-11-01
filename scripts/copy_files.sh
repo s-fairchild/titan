@@ -8,7 +8,7 @@ main() {
     if [[ $host = "rick" ]]; then
         connection_string="root@rick"
         cp_to_rick
-        cp_manifests
+        # cp_manifests
     elif [[ $host = "expresso" ]]; then
         cp_to_expresso
     elif [[ $host = "all" ]]; then

@@ -33,14 +33,14 @@ spec:
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: jellyfin-data
+  name: jellyfin-conf
 spec:
   accessModes:
   - ReadWriteOnce
   capacity:
     storage: 5Gi
   local:
-    path: /pvs/jellyfin/data
+    path: /pvs/jellyfin/conf
   nodeAffinity:
     required:
       nodeSelectorTerms:
@@ -92,21 +92,6 @@ spec:
   storageClassName: local-path
   volumeMode: Filesystem
   volumeName: jellyfin-conf
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: jellyfin-data-pvc
-  namespace: jellyfin
-spec:
-  accessModes:
-  - ReadWriteOnce
-  resources:
-    requests:
-      storage: 5Gi
-  storageClassName: local-path
-  volumeMode: Filesystem
-  volumeName: jellyfin-data
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -177,11 +162,11 @@ spec:
           protocol: TCP
         resources:
           limits:
-            cpu: 2500m
+            cpu: 5000m
             memory: 15G
           requests:
             cpu: 500m
-            memory: 15G
+            memory: 1G
         securityContext:
           capabilities:
             drop:
@@ -192,9 +177,9 @@ spec:
         volumeMounts:
         - mountPath: /media
           name: media
-        - mountPath: /config/data
-          name: data
-          subPath: data
+        - mountPath: /config
+          name: conf
+          subPath: config
         - mountPath: /config/cache
           name: cache
           subPath: cache
@@ -213,9 +198,9 @@ spec:
       - name: media
         persistentVolumeClaim:
           claimName: jellyfin-media-pvc
-      - name: data
+      - name: conf
         persistentVolumeClaim:
-          claimName: jellyfin-data-pvc
+          claimName: jellyfin-conf-pvc
       - hostPath:
           path: /dev/dri/renderD128
           type: CharDevice

@@ -24,7 +24,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: jellyfin-data
+  name: jellyfin-conf
 spec:
   capacity:
     storage: 5Gi
@@ -34,7 +34,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: local-path
   local:
-    path: /pvs/jellyfin/data
+    path: /pvs/jellyfin/conf
   nodeAffinity:
     required:
       nodeSelectorTerms:
