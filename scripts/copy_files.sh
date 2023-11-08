@@ -6,7 +6,6 @@ set -o nounset
 main() {
     host="${1:-all}"
     if [[ $host = "rick" ]]; then
-        connection_string="root@rick"
         cp_to_rick
         # cp_manifests
     elif [[ $host = "expresso" ]]; then
@@ -28,6 +27,7 @@ cp_to_all() {
 }
 
 cp_to_rick() {
+    connection_string="root@rick"
     copy_files k3s_install.env
     copy_files scripts/server_pre_install.sh
     copy_files node/k3s-server-0.service /usr/lib/systemd/system/
@@ -45,10 +45,14 @@ cp_manifests() {
 }
 
 cp_to_expresso() {
-    local connection_string="root@expresso"
-    scp node/k3s-agent-1.service /usr/lib/systemd/system/
-    cp node/k3s-agent-1.yaml /usr/local/etc/
-    unset connection_string
+    connection_string="root@expresso"
+    # Agent
+    copy_files node/k3s-agent-1.service /usr/lib/systemd/system/
+    copy_files node/k3s-agent-1.yaml /usr/local/etc/
+
+    # Loadbalancer
+    copy_files node/k3s-expressolb.service /usr/lib/systemd/system/
+    copy_files node/k3s-expressolb.yaml /usr/local/etc/
 }
 
 main "${@}"

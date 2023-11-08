@@ -7,3 +7,4 @@ server: https://rick.expresso.lan:6443
 node-external-ip: 10.50.0.1
 debug: false
 node-name: k3s-rick-agent-1
+selinux: false

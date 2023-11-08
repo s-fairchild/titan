@@ -15,6 +15,7 @@ ExecStartPre=modprobe iptable_nat
 ExecStart=/usr/bin/podman run \
 	--network=rick:ip=10.91.0.2 \
 	--network=service \
+	--dns-search=expresso.lan \
 	--add-host=k3s-rick-agent-1:10.50.0.1 \
 	--add-host=10.43.0.1:10.50.0.2 \
 	--tz=UTC \

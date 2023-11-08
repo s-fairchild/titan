@@ -18,6 +18,7 @@ ExecStart=/usr/bin/podman run \
 	--name k3s-rick-expressolb \
 	-h k3s-rick-expressolb \
 	--network=agent:ip=10.99.0.20 \
+	--dns-search=expresso.lan \
 	--add-host=k3s-rick-server-0:10.50.0.2 \
 	--tz=UTC \
 	--cidfile=%t/%n.ctr-id \
