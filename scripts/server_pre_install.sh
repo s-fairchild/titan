@@ -10,6 +10,15 @@ main() {
     start_cluster
 }
 
+configure_tuned() {
+    log "Enabling tuned"
+    systemctl enable --now tuned
+
+    log "Setting tuned profile to network-latency"
+    tuned-adm profile network-latency
+    log "$(tuned-adm active)"
+}
+
 enable_podman_socket() {
     systemctl enable --now podman.socket
 }
@@ -111,6 +120,7 @@ install_pkgs() {
         vim
         kubernetes-client
         htop
+        tuned
     )
     log "Installing packages: ${pkgs[*]}"
     dnf in -y "${pkgs[@]}"
