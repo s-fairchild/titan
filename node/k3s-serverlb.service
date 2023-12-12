@@ -18,6 +18,8 @@ ExecStart=/usr/bin/podman run \
 	-h k3s-rick-serverlb \
 	--network=rick:ip=10.91.0.3 \
 	--network=service \
+	-p 80:80 \
+	-p 443:443 \
 	--dns-search=expresso.lan \
 	--tz=UTC \
 	--cidfile=%t/%n.ctr-id \
@@ -30,10 +32,6 @@ ExecStart=/usr/bin/podman run \
 	-v k3s-serverlb-data:/var/lib/rancher/k3s \
 	-v k3s-serverlb-etc-rancher:/etc/rancher \
 	-v /usr/local/etc/k3s/k3s-serverlb.yaml:/etc/rancher/k3s/config.yaml \
-	-p 80:80 \
-	-p 443:443 \
-	-p 10.50.0.2:53:30053/udp \
-	-p 10.50.0.2:8554:30554/udp \
 	--shm-size 5g \
 	--privileged \
 	--secret k3s-token,type=env,target=K3S_TOKEN \

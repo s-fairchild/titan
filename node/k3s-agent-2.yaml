@@ -1,10 +1,10 @@
-node-ip: 10.99.0.11
-node-external-ip: 10.50.0.1
 node-label:
   - camera=0
   - router=true
   - url=garage
-server: https://k3s-rick-server-0:6443
+node-ip: 10.99.0.11
+server: https://rick.expresso.lan:6443
+node-external-ip: 10.50.0.1
 debug: false
 node-name: k3s-rick-agent-1
 selinux: false

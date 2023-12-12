@@ -1,0 +1,18 @@
+---
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: lan
+  namespace: metallb-system
+spec:
+  addresses:
+  - 10.50.0.51-10.50.0.99
+---
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: router
+  namespace: metallb-system
+spec:
+  addresses:
+  - 10.50.0.200-10.50.0.253

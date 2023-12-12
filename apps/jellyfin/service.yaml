@@ -5,6 +5,8 @@ metadata:
   namespace: jellyfin
   labels:
     app: jellyfin
+  annotations:
+    kubernetes.io/ingress.class: "system-cluster-critical"
     svccontroller.k3s.cattle.io/lbpool: pool1
 spec:
   ports:

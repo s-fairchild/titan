@@ -8,17 +8,20 @@ After=k3s-agent-1.service
 PartOf=k3s-agent-1.service
 
 [Service]
+# TODO set hostname via environment variable and systemd variables
+# Environment=K3S_NODE_NAME=k3s-rick-expressolb
 Environment=PODMAN_SYSTEMD_UNIT=%n-%i
 Restart=always
 RestartSec=30
 TimeoutStartSec=600
 TimeoutStopSec=70
 ExecStart=/usr/bin/podman run \
-	--systemd=true \
 	--name k3s-rick-expressolb \
 	-h k3s-rick-expressolb \
-	--network=agent:ip=10.99.0.20 \
+	--network=rick:ip=10.99.0.20 \
+	--systemd=true \
 	--dns-search=expresso.lan \
+	--add-host rick.expresso.lan:10.50.0.2 \
 	--add-host=k3s-rick-server-0:10.50.0.2 \
 	--tz=UTC \
 	--cidfile=%t/%n.ctr-id \

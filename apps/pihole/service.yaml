@@ -6,6 +6,10 @@ metadata:
   namespace: pihole
   labels:
     app: pihole
+  annotations:
+    # TODO change this ingress class once it's created
+    kubernetes.io/ingress.class: traefik
+    # metallb.universe.tf/address-pool: server-pool
 spec:
   selector:
     app: pihole
@@ -21,10 +25,15 @@ apiVersion: v1
 kind: Service
 metadata:
   name: pihole-web
+  labels:
+    app: pihole
+  annotations:
+    # TODO change this ingress class once it's created
+    kubernetes.io/ingress.class: traefik
+    # metallb.universe.tf/address-pool: server-pool
 spec:
   selector:
     app: pihole
-    # svccontroller.k3s.cattle.io/lbpool: pool1
   ports:
   - name: web-admin
     port: 8090

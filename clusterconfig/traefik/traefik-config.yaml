@@ -1,0 +1,95 @@
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: traefik-crd
+  namespace: kube-system
+spec:
+  chart: https://%{KUBERNETES_API}%/static/charts/traefik-crd-21.2.1+up21.2.0.tgz
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  chart: https://%{KUBERNETES_API}%/static/charts/traefik-21.2.1+up21.2.0.tgz
+  set:
+    global.systemDefaultRegistry: ""
+  valuesContent: |-
+  podAnnotations:
+    prometheus.io/port: "8082"
+    prometheus.io/scrape: "true"
+  providers:
+    kubernetesCRD:
+      enabled: true
+      allowCrossNamespace: false
+      allowExternalNameServices: false
+      # -- Allows to return 503 when there is no endpoints available
+      allowEmptyServices: true
+    kubernetesIngress:
+      enabled: true
+      allowExternalNameServices: false
+      # -- Allows to return 503 when there is no endpoints available
+      allowEmptyServices: true
+      publishedService:
+        enabled: true
+        # Published Kubernetes Service to copy status from. Format: namespace/servicename
+        # By default this Traefik service
+        # pathOverride: ""
+  hostNetwork: true
+  rbac:
+    enabled: true
+    namespaced: false
+  podSecurityPolicy:
+    enabled: true
+  priorityClassName: "system-cluster-critical"
+  nodeSelector:
+    svccontroller.k3s.cattle.io/enablelb: true
+  image:
+    repository: "rancher/mirrored-library-traefik"
+    tag: "2.9.10"
+    pullPolicy: IfNotPresent
+  tolerations:
+  - key: "CriticalAddonsOnly"
+    operator: "Exists"
+  - key: "node-role.kubernetes.io/control-plane"
+    operator: "Exists"
+    effect: "NoSchedule"
+  - key: "node-role.kubernetes.io/master"
+    operator: "Exists"
+    effect: "NoSchedule"
+  - key: "app"
+    operator: "In"
+    values:
+      - compute
+    effect: "NoSchedule"
+  service:
+    enabled: true
+    annotations: {}
+    labels: {}
+    ipFamilyPolicy: "SingleStack"
+    # spec:
+    #   loadBalancerSourceRanges:
+    #     - 10.50.0.0/24
+    ports:
+      traefik:
+        port: "9000"
+        expose: false
+        exposedPort: "9000"
+        protocol: TCP
+      web:
+        asDefault: false
+        port: 80
+        expose: true
+        exposedPort: 80
+        protocol: TCP
+      websecure:
+        asDefault: true
+        port: 443
+        expose: true
+        exposedPort: 443
+        protocol: TCP
+    ingressClass:
+      enabled: true
+      isDefaultClass: true

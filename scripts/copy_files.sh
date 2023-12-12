@@ -7,11 +7,13 @@ main() {
     host="${1:-all}"
     if [[ $host = "rick" ]]; then
         cp_to_rick
-        # cp_manifests
+        cp_manifests
     elif [[ $host = "expresso" ]]; then
         cp_to_expresso
     elif [[ $host = "all" ]]; then
         cp_to_all
+    elif [[ $host = "manifests" ]]; then
+        cp_manifests
     else
         echo "Usage: ${0} < rick | expresso | all >"
     fi
@@ -40,8 +42,21 @@ cp_to_rick() {
 }
 
 cp_manifests() {
-    copy_files manifests/jellyfin.yaml /var/local/etc/k3s/manifests/
-    copy_files manifests/pihole.yaml /var/local/etc/k3s/manifests/
+    manifests="/var/local/etc/k3s/manifests/"
+    skip_files="/var/local/etc/k3s/skip/"
+
+    oc kustomize apps/jellyfin > manifests/jellyfin.yaml 
+    # oc kustomize apps/motion > manifests/motion.yaml
+    # oc kustomize apps/v4l2rtspserver > manifests/v4l2rtspserver.yaml
+    copy_files manifests/jellyfin.yaml "$manifests"
+
+    # Traefik helm chart
+    copy_files clusterconfig/traefik/traefik-config.yaml "$manifests"
+    copy_files clusterconfig/traefik/traefik.yaml.skip "$skip_files"
+
+    # metal-lb configs
+    # copy_files clusterconfig/metal-lb/advertisements.yaml "$manifests"
+    # copy_files clusterconfig/metal-lb/pools.yaml "$manifests"
 }
 
 cp_to_expresso() {

@@ -10,7 +10,7 @@ metadata:
     traefik.frontend.rule.type: PathPrefix
 spec:
   rules:
-  - host: pihole.rick.expresso.lan
+  - host: pihole.app.rick.expresso.lan
     http:
       paths:
       - path: /admin

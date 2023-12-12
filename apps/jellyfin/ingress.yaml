@@ -8,9 +8,10 @@ metadata:
   annotations:
     ingress.kubernetes.io/ssl-redirect: "true"
     traefik.frontend.rule.type: PathPrefix
+    svccontroller.k3s.cattle.io/lbpool: pool1
 spec:
   rules:
-  - host: jellyfin.rick.expresso.lan
+  - host: jellyfin.app.rick.expresso.lan
     http:
       paths:
       - path: /

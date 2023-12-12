@@ -1,6 +1,5 @@
 selinux: true
 node-ip: 10.91.0.2
-node-external-ip: 10.50.0.2
 advertise-address: 10.50.0.2
 debug: false
 etcd-expose-metrics: true
@@ -18,3 +17,5 @@ kube-proxy-arg:
   - pod-bridge-interface=k3s
 write-kubeconfig: /root/admin.kubeconfig
 flannel-backend: wireguard-native
+# disable:
+  # - servicelb

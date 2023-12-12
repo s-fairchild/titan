@@ -14,10 +14,9 @@ ExecStartPre=modprobe iptable_filter
 ExecStartPre=modprobe iptable_nat
 ExecStart=/usr/bin/podman run \
 	--network=rick:ip=10.91.0.2 \
-	--network=service \
-	--dns-search=expresso.lan \
+	--network=service:ip=10.43.0.1 \
 	--add-host=k3s-rick-agent-1:10.50.0.1 \
-	--add-host=10.43.0.1:10.50.0.2 \
+	-p 10.50.0.2:6443:6443/tcp \
 	--tz=UTC \
 	--cidfile=%t/%n.ctr-id \
 	--cgroups=no-conmon \
@@ -38,12 +37,11 @@ ExecStart=/usr/bin/podman run \
 	-v local-path:/var/lib/rancher/k3s/storage \
 	-v pod_logs:/var/log/pod \
 	-v /var/lib/k3s/server-0/containers:/var/lib/containers:Z \
-	-v /usr/local/etc/k3s/k3s-server-0.yaml:/etc/rancher/k3s/config.yaml \
+	-v /usr/local/etc/k3s/k3s-server-0.yaml:/etc/rancher/k3s/config.yaml:ro \
   	-v /var/local/etc/k3s/manifests:/var/lib/rancher/k3s/server/manifests/compute:Z \
+  	-v /var/local/etc/k3s/skip/traefik.yaml.skip:/var/lib/rancher/k3s/server/manifests/traefik.yaml.skip:ro \
 	-v /root/.kube/config:/root/admin.kubeconfig:Z \
 	-v /etc/machine-id:/etc/machine-id:ro \
-	-p 6443:6443/tcp \
-	-p 10250:10250/tcp \
 	--shm-size 5g \
 	--privileged \
 	--cap-add=ALL \

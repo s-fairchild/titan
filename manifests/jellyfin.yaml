@@ -15,9 +15,11 @@ type: Opaque
 apiVersion: v1
 kind: Service
 metadata:
+  annotations:
+    kubernetes.io/ingress.class: system-cluster-critical
+    svccontroller.k3s.cattle.io/lbpool: pool1
   labels:
     app: jellyfin
-    svccontroller.k3s.cattle.io/lbpool: pool1
   name: jellyfin
   namespace: jellyfin
 spec:
@@ -227,6 +229,7 @@ kind: Ingress
 metadata:
   annotations:
     ingress.kubernetes.io/ssl-redirect: "true"
+    svccontroller.k3s.cattle.io/lbpool: pool1
     traefik.frontend.rule.type: PathPrefix
   labels:
     app: jellyfin
@@ -234,7 +237,7 @@ metadata:
   namespace: jellyfin
 spec:
   rules:
-  - host: jellyfin.rick.expresso.lan
+  - host: jellyfin.app.rick.expresso.lan
     http:
       paths:
       - backend:
