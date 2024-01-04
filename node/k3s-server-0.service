@@ -13,8 +13,8 @@ TimeoutStopSec=70
 ExecStartPre=modprobe iptable_filter
 ExecStartPre=modprobe iptable_nat
 ExecStart=/usr/bin/podman run \
-	--network=rick:ip=10.91.0.2 \
-	--network=service:ip=10.43.0.1 \
+	--network=rick:ip=10.91.0.2,alias=server-0 \
+	--network=service:ip=10.43.0.1,alias=server-0 \
 	--add-host=k3s-rick-agent-1:10.50.0.1 \
 	-p 10.50.0.2:6443:6443/tcp \
 	--tz=UTC \
@@ -31,7 +31,6 @@ ExecStart=/usr/bin/podman run \
 	-h k3s-rick-server-0 \
 	-v k3s-server-0-data:/var/lib/rancher/k3s \
 	-v k3s-server-0-etc-rancher:/etc/rancher \
-  	-v /var/local/var/k3s/persistentVolumes/:/pvs:z \
 	-v kubelet:/var/lib/kubelet \
 	-v pod_logs:/var/log/pod \
 	-v local-path:/var/lib/rancher/k3s/storage \
