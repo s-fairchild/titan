@@ -21,3 +21,13 @@ spec:
             name: jellyfin
             port:
               name: http-web
+  - host: jellyfin.expresso.lan
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: jellyfin
+            port:
+              name: http-web

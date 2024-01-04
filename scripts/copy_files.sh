@@ -32,13 +32,20 @@ cp_to_all() {
 }
 
 cp_to_rick() {
+    # Install files
     copy_files k3s_install.env
     copy_files scripts/server_pre_install.sh
+    # Servers
     copy_files node/k3s-server-0.service /usr/lib/systemd/system/
+    copy_files node/k3s-server-0.yaml /usr/local/etc/k3s/
+    # Agents
     copy_files node/k3s-agent-0.service /usr/lib/systemd/system/
     copy_files node/k3s-agent-0.yaml /usr/local/etc/k3s/
-    copy_files node/k3s-server-0.yaml /usr/local/etc/k3s/
 
+    copy_files node/k3s-agent-2.service /usr/lib/systemd/system/
+    copy_files node/k3s-agent-2.yaml /usr/local/etc/k3s/
+
+    # Loadbalancers
     copy_files node/k3s-serverlb.yaml /usr/local/etc/k3s/
     copy_files node/k3s-serverlb.service /usr/lib/systemd/system/
     
@@ -58,9 +65,7 @@ cp_manifests() {
     copy_files clusterconfig/traefik/traefik-config.yaml "$manifests"
     copy_files clusterconfig/traefik/traefik.yaml.skip "$skip_files"
 
-    # metal-lb configs
-    # copy_files clusterconfig/metal-lb/advertisements.yaml "$manifests"
-    # copy_files clusterconfig/metal-lb/pools.yaml "$manifests"
+    copy_files clusterconfig/apiserver/apiserver-ingress.yaml "$manifests"
 }
 
 cp_to_expresso() {

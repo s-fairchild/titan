@@ -1,21 +1,32 @@
 selinux: true
+servicelb-namespace: kube-system-traefik
 node-ip: 10.91.0.2
-advertise-address: 10.50.0.2
 debug: false
 etcd-expose-metrics: true
 tls-san:
   - rick.expresso.lan
+  - app.rick.expresso.lan
   - rick.lan
   - expresso.lan
-  - expresso
   - k3s-rick-agent-0
-  - k3s-rick-server-1
+  - k3s-rick-agent-1
+  - k3s-rick-agent-2
+  - k3s-rick-server-0
+  - k3s-rick-serverlb
+  - server-0
+  - loadbalancer
   - 10.50.0.2
+  - 10.50.0.1
 secrets-encryption: true
 kube-proxy-arg:
   - metrics-bind-address=0.0.0.0
   - pod-bridge-interface=k3s
 write-kubeconfig: /root/admin.kubeconfig
 flannel-backend: wireguard-native
-# disable:
-  # - servicelb
+
+# kube apiserver
+advertise-port: 6443
+https-listen-port: 6443
+# advertise-address: 10.50.0.2
+# kube-apiserver-arg:
+#   - external-hostname: rick.expresso.lan

@@ -4,6 +4,6 @@ node-external-ip: 10.50.0.2
 node-label:
   - svccontroller.k3s.cattle.io/enablelb=true
   - svccontroller.k3s.cattle.io/lbpool=pool1
-server: https://k3s-rick-server-0:6443
+server: https://server-0:6443
 debug: false
 node-name: k3s-rick-serverlb

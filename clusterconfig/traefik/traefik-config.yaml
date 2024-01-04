@@ -38,6 +38,11 @@ spec:
           # By default this Traefik service
           # pathOverride: ""
     hostNetwork: false
+    providers:
+    kubernetesIngress:
+      ingressEndpoint:
+        ip: 10.50.0.2
+        publishedService: "default/kubernetes"
     rbac:
       enabled: true
       namespaced: false
@@ -81,35 +86,3 @@ spec:
         level: ERROR
       access:
         enabled: false
-
-
-    # ports:
-    #   traefik:
-    #     port: "9000"
-    #     expose: false
-    #     exposedPort: "9000"
-    #     protocol: TCP
-    #   web:
-    #     asDefault: false
-    #     port: 8000
-    #     expose: true
-    #     exposedPort: 80
-    #     protocol: TCP
-    #   websecure:
-    #     asDefault: true
-    #     port: 8443
-    #     expose: true
-    #     exposedPort: 443
-    #     protocol: TCP
-    #   internal:
-    #     type: ClusterIP
-    #     labels:
-    #       app.kubernetes.io/network: internal
-    #     annotations: {}
-    #     spec: {}
-    #     loadBalancerSourceRanges: []
-    #     externalIPs: []
-    #     ipFamilies: [ "IPv4","IPv6" ]
-    #     ingressClass:
-    #       enabled: true
-    #       isDefaultClass: true

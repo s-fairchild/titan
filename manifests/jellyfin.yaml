@@ -247,3 +247,13 @@ spec:
               name: http-web
         path: /
         pathType: Prefix
+  - host: jellyfin.expresso.lan
+    http:
+      paths:
+      - backend:
+          service:
+            name: jellyfin
+            port:
+              name: http-web
+        path: /
+        pathType: Prefix
