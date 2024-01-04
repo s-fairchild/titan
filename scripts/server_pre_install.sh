@@ -74,7 +74,7 @@ set_limits() {
 init_volumes() {
     dirs=(
         /var/lib/k3s/server-0/containers
-        /var/local/etc/k3s/manifests
+        /var/local/etc/k3s/manifests/apiserver
         /var/local/var/k3s/persistentVolumes
     )
 

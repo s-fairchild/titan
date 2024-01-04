@@ -65,7 +65,8 @@ cp_manifests() {
     copy_files clusterconfig/traefik/traefik-config.yaml "$manifests"
     copy_files clusterconfig/traefik/traefik.yaml.skip "$skip_files"
 
-    copy_files clusterconfig/apiserver/apiserver-ingress.yaml "$manifests"
+    # copy_files clusterconfig/apiserver/endpoint.yaml "$manifests/apiserver/"
+    copy_files clusterconfig/apiserver/ingress.yaml "$manifests/apiserver/"
 }
 
 cp_to_expresso() {

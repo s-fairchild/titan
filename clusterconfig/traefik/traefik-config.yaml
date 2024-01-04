@@ -29,20 +29,17 @@ spec:
         allowEmptyServices: true
       kubernetesIngress:
         enabled: true
+        ingressClass: "traefik-internal"
+        # May not work with traefik < 3.0
+        ingressEndpoint:
+          hostname: "https://api.rick.expresso.lan:6443"
+          ip: 10.50.0.2
         allowExternalNameServices: false
         # -- Allows to return 503 when there is no endpoints available
         allowEmptyServices: true
         publishedService:
           enabled: true
-          # Published Kubernetes Service to copy status from. Format: namespace/servicename
-          # By default this Traefik service
-          # pathOverride: ""
     hostNetwork: false
-    providers:
-    kubernetesIngress:
-      ingressEndpoint:
-        ip: 10.50.0.2
-        publishedService: "default/kubernetes"
     rbac:
       enabled: true
       namespaced: false
@@ -61,11 +58,6 @@ spec:
         effect: "NoSchedule"
       - key: "node-role.kubernetes.io/master"
         operator: "Exists"
-        effect: "NoSchedule"
-      - key: "app"
-        operator: "Equal"
-        values:
-          - compute
         effect: "NoSchedule"
     service:
       enabled: true
