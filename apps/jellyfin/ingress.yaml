@@ -1,3 +1,4 @@
+---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -12,16 +13,6 @@ metadata:
 spec:
   rules:
   - host: jellyfin.app.rick.expresso.lan
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: jellyfin
-            port:
-              name: http-web
-  - host: jellyfin.expresso.lan
     http:
       paths:
       - path: /
