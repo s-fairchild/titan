@@ -29,8 +29,6 @@ ExecStart=/usr/bin/podman run \
 	-v /run/podman/podman.sock:/run/podman/podman.sock:rw \
 	--shm-size 200m \
 	--privileged \
-	-e K3S_URL=https://rick.expresso.lan:6443 \
-	-e K3S_EXTERNAL_IP=10.50.0.1 \
 	--secret agent-token,type=env,target=K3S_TOKEN \
 	--annotation app=k3s \
 	docker.io/rancher/k3s:v1.27.4-k3s1 \

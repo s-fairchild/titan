@@ -8,6 +8,8 @@ main() {
     if [[ $host = "rick" ]]; then
         connection_string="root@rick"
         cp_to_rick
+        cp_manifests
+        cp_flannel_configs
     elif [[ $host = "expresso" ]]; then
         connection_string="root@expresso"
         cp_to_expresso
@@ -41,8 +43,6 @@ cp_to_rick() {
 
     copy_files node/k3s-serverlb.yaml /usr/local/etc/k3s/
     copy_files node/k3s-serverlb.service /usr/lib/systemd/system/
-    
-    cp_manifests
 }
 
 cp_manifests() {
@@ -61,6 +61,12 @@ cp_manifests() {
     # metal-lb configs
     # copy_files clusterconfig/metal-lb/advertisements.yaml "$manifests"
     # copy_files clusterconfig/metal-lb/pools.yaml "$manifests"
+}
+
+cp_flannel_configs() {
+    flannel_dir="/var/local/etc/k3s/flannel/"
+  	copy_files clusterconfig/flannel/cni0-pods.json "$flannel_dir"
+  	copy_files clusterconfig/flannel/flannel-services.json "$flannel_dir"
 }
 
 cp_to_expresso() {

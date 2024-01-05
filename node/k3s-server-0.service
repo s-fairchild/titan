@@ -13,10 +13,9 @@ TimeoutStopSec=70
 ExecStartPre=modprobe iptable_filter
 ExecStartPre=modprobe iptable_nat
 ExecStart=/usr/bin/podman run \
-	--network=rick:ip=10.91.0.2,alias=server-0 \
-	--network=service:ip=10.43.0.1,alias=server-0 \
-	--add-host=k3s-rick-agent-1:10.50.0.1 \
-	-p 10.50.0.2:6443:6443/tcp \
+	--network=pods-rick:ip=10.42.0.2,alias=server-0 \
+	--network=services-rick:ip=10.43.0.1,alias=server-0 \
+	-p 6443:6443/tcp \
 	--tz=UTC \
 	--cidfile=%t/%n.ctr-id \
 	--cgroups=no-conmon \
@@ -39,6 +38,7 @@ ExecStart=/usr/bin/podman run \
 	-v /usr/local/etc/k3s/k3s-server-0.yaml:/etc/rancher/k3s/config.yaml:ro \
   	-v /var/local/etc/k3s/manifests:/var/lib/rancher/k3s/server/manifests/compute:Z \
   	-v /var/local/etc/k3s/skip/traefik.yaml.skip:/var/lib/rancher/k3s/server/manifests/traefik.yaml.skip:ro \
+  	-v /var/local/etc/k3s/flannel:/var/lib/rancher/k3s/agent/flannel:Z \
 	-v /root/.kube/config:/root/admin.kubeconfig:Z \
 	-v /etc/machine-id:/etc/machine-id:ro \
 	--shm-size 5g \

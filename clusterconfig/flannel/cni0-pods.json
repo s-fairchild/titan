@@ -1,0 +1,38 @@
+[
+     {
+          "name": "pods-rick",
+          "id": "9f5f45a74836c84c015e0799254625b25cb5ebb90b6b98420df32a0e4fd78ec2",
+          "driver": "bridge",
+          "network_interface": "pods-rick",
+          "created": "2024-01-04T20:05:48.690302537-05:00",
+          "subnets": [
+               {
+                    "subnet": "10.42.0.0/16",
+                    "gateway": "10.42.0.254"
+               }
+          ],
+          "routes": [
+               {
+                    "destination": "10.50.0.0/24",
+                    "gateway": "10.42.0.254"
+               }
+          ],
+          "ipv6_enabled": false,
+          "internal": false,
+          "dns_enabled": true,
+          "labels": {
+               "app": "k3s",
+               "cluster": "rick",
+               "network": "pods"
+          },
+          "options": {
+               "isolate": "true",
+               "mtu": "1472",
+               "no_default_route": "true",
+               "vlan": "1"
+          },
+          "ipam_options": {
+               "driver": "dhcp"
+          }
+     }
+]

@@ -1,0 +1,38 @@
+[
+     {
+          "name": "services-rick",
+          "id": "659b2d8468204244dde66b8b3578f3eb0ce189b1d904927a2fc993e3e6c197b4",
+          "driver": "bridge",
+          "network_interface": "services-rick",
+          "created": "2024-01-04T20:05:48.717190932-05:00",
+          "subnets": [
+               {
+                    "subnet": "10.43.0.0/16",
+                    "gateway": "10.43.0.254"
+               }
+          ],
+          "routes": [
+               {
+                    "destination": "10.50.0.0/24",
+                    "gateway": "10.43.0.254"
+               }
+          ],
+          "ipv6_enabled": false,
+          "internal": false,
+          "dns_enabled": true,
+          "labels": {
+               "app": "k3s",
+               "cluster": "rick",
+               "network": "services"
+          },
+          "options": {
+               "isolate": "true",
+               "mtu": "1472",
+               "no_default_route": "true",
+               "vlan": "2"
+          },
+          "ipam_options": {
+               "driver": "dhcp"
+          }
+     }
+]

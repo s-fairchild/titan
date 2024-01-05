@@ -15,11 +15,11 @@ TimeoutStartSec=600
 TimeoutStopSec=70
 ExecStart=/usr/bin/podman run \
 	--name k3s-rick-serverlb \
+	--network=pods-rick:alias=loadbalancer \
+	--network=services-rick:alias=loadbalancer \
 	-h k3s-rick-serverlb \
-	--network=rick:ip=10.91.0.3,alias=loadbalancer \
-	--network=service:alias=loadbalancer \
-	-p 80:80 \
-	-p 443:443 \
+	-p 10.50.0.2:80:80 \
+	-p 10.50.0.2:443:443 \
 	--dns-search=expresso.lan \
 	--tz=UTC \
 	--cidfile=%t/%n.ctr-id \

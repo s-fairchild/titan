@@ -1,6 +1,4 @@
 selinux: true
-servicelb-namespace: kube-system-traefik
-node-ip: 10.91.0.2
 debug: false
 etcd-expose-metrics: true
 tls-san:
@@ -22,11 +20,22 @@ kube-proxy-arg:
   - metrics-bind-address=0.0.0.0
   - pod-bridge-interface=k3s
 write-kubeconfig: /root/admin.kubeconfig
-flannel-backend: wireguard-native
 
-# kube apiserver
-advertise-port: 6443
-https-listen-port: 6443
-advertise-address: 10.50.0.2
-# kube-apiserver-arg:
-#   - valid-arg-here: false
+# Networking
+# https://docs.k3s.io/cli/server#networking
+flannel-external-ip: false
+servicelb-namespace: kube-system-traefik
+cluster-domain: rick.expresso.lan
+# Agents use loopback tunnel, or the node's IP address
+# egress-selector-mode: pod
+
+## flannel
+flannel-iface: enp5s0
+flannel-backend: vxlan
+# flannel-conf: /var/lib/rancher/k3s/agent/flannel/cni0-pods.json
+# flannel-cni-conf: /var/lib/rancher/k3s/agent/flannel/flannel-services.json
+
+## kube apiserver
+node-ip: 10.43.0.1
+node-external-ip: 10.50.0.2
+advertise-address: 10.43.0.1

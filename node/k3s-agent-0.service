@@ -14,8 +14,8 @@ RestartSec=30
 TimeoutStartSec=600
 TimeoutStopSec=70
 ExecStart=/usr/bin/podman run \
-	--network=rick:ip=10.91.0.10 \
-	--network=service \
+	--network=pods-rick:ip=10.42.0.50,alias=agent-0 \
+	--network=services-rick:ip=10.43.0.50,alias=agent-0 \
 	--tz=UTC \
 	--cidfile=%t/%n.ctr-id \
 	--cgroups=no-conmon \

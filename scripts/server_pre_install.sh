@@ -76,6 +76,7 @@ init_volumes() {
         /var/lib/k3s/server-0/containers
         /var/local/etc/k3s/manifests
         /var/local/var/k3s/persistentVolumes
+        /var/local/etc/k3s/flannel
     )
 
     # shellcheck disable=SC2068
@@ -96,66 +97,43 @@ init_volumes() {
 
 init_network() {
     cluster_network="${1:-k3s}"
-    # podman network rm "${cluster_network}"
-    # TODO replace interface name with cluster_network
-                    # --route=10.99.0.0/24,10.50.0.2 \
+
+    # Required to use dhcp ipam driver with netavark backend
+    systemctl enable netavark-dhcp-proxy.socket
+
+    # This is getting replaced with flannel configuration
+    # -o=com.docker.network.driver.mtu=1472 \
     podman network create \
-                    --ignore \
-                    --subnet 10.91.0.0/24 \
-                    --gateway 10.91.0.254 \
-                    --interface-name k3s \
                     --label app=k3s \
                     --label cluster="${cluster_network}" \
-                    "${cluster_network}"
+                    --label network=pods \
+                    --driver=macvlan \
+                    -o=parent=enp5s0 \
+                    -o=mode=passthru \
+                    -o=no_default_route=1 \
+                    --interface-name="pods-${cluster_network}" \
+                    --subnet=10.42.0.0/16 \
+                    --gateway=10.42.0.254 \
+                    --ip-range=10.42.0.1-10.42.0.100 \
+                    --ipam-driver=host-local \
+                    "pods-${cluster_network}"
 
-    # TODO setup section for agent nodes
-    # podman remote should work well for this
-                    # --route=10.91.0.0/24,10.50.0.1 \
+    # --subnet=10.43.0.0/16 \
+    # --gateway=10.43.0.254 \
+    # --route 10.50.0.0/24,10.43.0.254 \
     podman network create \
-                    --ignore \
-                    --subnet 10.99.0.0/24 \
-                    --gateway 10.99.0.254 \
-                    --interface-name k3s \
                     --label app=k3s \
                     --label cluster="${cluster_network}" \
-                    "${cluster_network}"
-
-    
-    # Required to facilitate communication with kubernetes service network
-    # kubernetes has a default address of 10.43.0.1, which is why the default gateway is the last address
-    podman network create \
-                    --ignore \
-                    --gateway 10.43.0.254 \
-                    --label app=k3s \
-                    --label cluster="${cluster_network}" \
-                    --interface-name service \
-                    --subnet 10.43.0.0/24 \
-                    service
-
-    # podman network create \
-    #                 --ignore \
-    #                 --gateway 10.0.0.254 \
-    #                 --label app=k3s \
-    #                 --label loadbalancer=metallb \
-    #                 --label cluster="${cluster_network}" \
-    #                 --interface-name ext-pool \
-    #                 --subnet 10.0.0.0/24 \
-    #                 external
-    
-    # TODO Create an internal podman network using
-    # podman network create --internal
-}
-
-init_agent_network() {
-    podman network create \
-                    --ignore \
-                    --disable-dns \
-                    --gateway 10.52.0.1 \
-                    --label app=k3s \
-                    --label loadbalancer=metallb \
-                    --interface-name lb-pool2 \
-                    --subnet 10.52.0.0/24 \
-                    pool2
+                    --label network=services \
+                    --driver=macvlan \
+                    -o=parent=eno1 \
+                    -o=mode=bridge \
+                    --interface-name="services-${cluster_network}" \
+                    --subnet=10.43.0.0/16 \
+                    --gateway=10.43.0.254 \
+                    --ip-range=10.43.0.1-10.43.0.100 \
+                    --ipam-driver=host-local \
+                    "services-${cluster_network}"
 }
 
 install_pkgs() {
