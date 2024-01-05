@@ -11,7 +11,7 @@ apiVersion: helm.cattle.io/v1
 kind: HelmChartConfig
 metadata:
   name: traefik
-  namespace: kube-system
+  namespace: kube-system-traefik
 spec:
   chart: https://%{KUBERNETES_API}%/static/charts/traefik-21.2.1+up21.2.0.tgz
   set:
@@ -40,7 +40,7 @@ spec:
     hostNetwork: false
     rbac:
       enabled: true
-      namespaced: false
+      namespaced: true
     priorityClassName: "system-cluster-critical"
     nodeSelector:
       svccontroller.k3s.cattle.io/enablelb: "true"
