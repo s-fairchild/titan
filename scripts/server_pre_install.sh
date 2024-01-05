@@ -107,20 +107,6 @@ init_network() {
                     --label app=k3s \
                     --label cluster="${cluster_network}" \
                     "${cluster_network}"
-
-    # TODO setup section for agent nodes
-    # podman remote should work well for this
-                    # --route=10.91.0.0/24,10.50.0.1 \
-    podman network create \
-                    --ignore \
-                    --subnet 10.99.0.0/24 \
-                    --gateway 10.99.0.254 \
-                    --interface-name k3s \
-                    --label app=k3s \
-                    --label cluster="${cluster_network}" \
-                    "${cluster_network}"
-
-    
     # Required to facilitate communication with kubernetes service network
     # kubernetes has a default address of 10.43.0.1, which is why the default gateway is the last address
     podman network create \
