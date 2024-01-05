@@ -25,7 +25,6 @@ write-kubeconfig: /root/admin.kubeconfig
 flannel-backend: wireguard-native
 
 # kube apiserver
-advertise-port: 6443
 https-listen-port: 6443
 advertise-address: 10.50.0.2
 # kube-apiserver-arg:
