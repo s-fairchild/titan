@@ -1,9 +1,7 @@
 selinux: true
-node-ip: 10.91.0.10
-node-external-ip: 10.50.0.2
+node-ip: 10.98.0.100
 node-label:
   - app=compute
-# server: https://k3s-rick-server-0:6443
-server: https://server-0:6443
+server: https://k3s-rick-server-0:6443
 debug: false
 node-name: k3s-rick-agent-0

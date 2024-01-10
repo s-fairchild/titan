@@ -1,8 +1,12 @@
-selinux: true
-servicelb-namespace: kube-system-traefik
-node-ip: 10.91.0.2
+---
+# https://docs.k3s.io/cli/server
+# Use embedded etcd
+cluster-init: true
+# Log level
+# v: 4
 debug: false
-etcd-expose-metrics: true
+selinux: false
+servicelb-namespace: kube-system-traefik
 tls-san:
   - rick.expresso.lan
   - app.rick.expresso.lan
@@ -12,20 +16,42 @@ tls-san:
   - k3s-rick-agent-1
   - k3s-rick-agent-2
   - k3s-rick-server-0
+  - k3s-rick-server-1
+  - k3s-rick-server-2
   - k3s-rick-serverlb
   - server-0
   - loadbalancer
   - 10.50.0.2
   - 10.50.0.1
 secrets-encryption: true
-kube-proxy-arg:
-  - metrics-bind-address=0.0.0.0
-  - pod-bridge-interface=k3s
-write-kubeconfig: /root/admin.kubeconfig
+
+# Network
 flannel-backend: wireguard-native
+node-ip: 10.98.0.1
+# node-external-ip: 10.50.0.2
+# https://docs.k3s.io/installation/network-options#control-plane-egress-selector-configuration
+# egress-selector-mode: pod
+# flannel-external-ip: true
+# flannel-conf: /var/lib/rancher/k3s/server/flannel.json
+# flannel-iface: cni0
 
 # kube apiserver
+write-kubeconfig: /root/admin.kubeconfig
+etcd-expose-metrics: true
+advertise-port: 6443
 https-listen-port: 6443
-advertise-address: 10.50.0.2
-# kube-apiserver-arg:
-#   - valid-arg-here: false
+# advertise-address: 10.50.0.2
+
+
+# kubelet
+kubelet-arg:
+  - cgroup-root=/
+
+# Kube Proxy
+kube-proxy-arg:
+  - metrics-bind-address=0.0.0.0
+  - pod-bridge-interface=pods
+
+# Podman
+# docker: true
+# container-runtime-endpoint: /run/podman/podman.sock

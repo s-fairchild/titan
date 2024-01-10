@@ -8,6 +8,7 @@ Before=k3s-agent-0.service
 Before=k3s-agent-2.service
 
 [Service]
+Delegate=yes
 Environment=PODMAN_SYSTEMD_UNIT=%n-%i
 Restart=always
 RestartSec=30
@@ -16,41 +17,45 @@ TimeoutStopSec=70
 ExecStartPre=modprobe iptable_filter
 ExecStartPre=modprobe iptable_nat
 ExecStart=/usr/bin/podman run \
-	--network=rick:ip=10.91.0.2,alias=server-0 \
-	--network=service:ip=10.43.0.1,alias=server-0 \
-	--add-host=k3s-rick-agent-1:10.50.0.1 \
-	-p 10.50.0.2:6443:6443/tcp \
-	--tz=UTC \
-	--cidfile=%t/%n.ctr-id \
+	--name=k3s-rick-server-0 \
+	-h k3s-rick-server-0 \
+	--network=nodes:ip=10.98.0.1 \
+	--network=services:ip=10.43.0.1 \
+	--systemd=always \
 	--cgroups=no-conmon \
 	--cgroupns=host \
-	--rm \
+	--userns=host \
 	--sdnotify=conmon \
+	--tz=UTC \
+	--cidfile=%t/%n.ctr-id \
+	--events-backend=journald \
+	--rm \
 	-d \
 	--replace \
 	--pull missing \
-	--name k3s-rick-server-0 \
 	--device /dev/fuse:/dev/fuse \
-	-h k3s-rick-server-0 \
+	-v /etc/machine-id:/etc/machine-id:ro \
+	-v /run/podman/podman.sock:/run/podman/podman.sock \
+	-v /root/.kube/config:/root/admin.kubeconfig:Z \
 	-v k3s-server-0-data:/var/lib/rancher/k3s \
 	-v k3s-server-0-etc-rancher:/etc/rancher \
 	-v kubelet:/var/lib/kubelet \
 	-v pod_logs:/var/log/pod \
 	-v local-path:/var/lib/rancher/k3s/storage \
 	-v pod_logs:/var/log/pod \
-	-v /var/lib/k3s/server-0/containers:/var/lib/containers:Z \
+	-v server-0-containers:/var/lib/containers:Z \
 	-v /usr/local/etc/k3s/k3s-server-0.yaml:/etc/rancher/k3s/config.yaml:ro \
   	-v /var/local/etc/k3s/manifests:/var/lib/rancher/k3s/server/manifests/compute:Z \
   	-v /var/local/etc/k3s/skip/traefik.yaml.skip:/var/lib/rancher/k3s/server/manifests/traefik.yaml.skip:ro \
-	-v /root/.kube/config:/root/admin.kubeconfig:Z \
-	-v /etc/machine-id:/etc/machine-id:ro \
+	-v /usr/local/etc/k3s/flannel/flannel.json:/var/lib/rancher/k3s/server/flannel.json:ro \
 	--shm-size 5g \
 	--privileged \
 	--cap-add=ALL \
-	--systemd=true \
+	--security-opt label=disable \
+	--security-opt seccomp=unconfined \
 	--oom-score-adj=1000 \
 	--secret k3s-token,type=env,target=K3S_TOKEN \
-	--annotation app=k3s \
+	--annotation=app=k3s \
 	docker.io/rancher/k3s:v1.28.1-k3s1 \
 	server
 	

@@ -15,8 +15,9 @@ TimeoutStopSec=70
 ExecStart=/usr/bin/podman run \
 	--name k3s-rick-serverlb \
 	-h k3s-rick-serverlb \
-	--network=rick:ip=10.91.0.3,alias=loadbalancer \
-	--network=service:alias=loadbalancer \
+	--network=nodes:ip=10.98.0.253 \
+	--network=services:ip=10.43.0.253 \
+	--systemd=always \
 	-p 80:80 \
 	-p 443:443 \
 	--dns-search=expresso.lan \
@@ -28,6 +29,7 @@ ExecStart=/usr/bin/podman run \
 	-d \
 	--replace \
 	--pull missing \
+	-v /etc/machine-id:/etc/machine-id:ro \
 	-v k3s-serverlb-data:/var/lib/rancher/k3s \
 	-v k3s-serverlb-etc-rancher:/etc/rancher \
 	-v /usr/local/etc/k3s/k3s-serverlb.yaml:/etc/rancher/k3s/config.yaml \
