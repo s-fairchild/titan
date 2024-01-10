@@ -9,8 +9,11 @@ tls-san:
 secrets-encryption: true
 
 # Network
-flannel-backend: host-gw
+# https://docs.k3s.io/installation/network-options#flannel-options
+flannel-backend: vxlan
 node-ip: 10.98.0.3
+cluster-cidr: 10.42.0.0/16
+service-cidr: 10.43.0.0/16
 
 # kubelet
 kubelet-arg:
@@ -19,3 +22,4 @@ kubelet-arg:
 # Kube Proxy
 kube-proxy-arg:
   - pod-bridge-interface=pods
+  - metrics-bind-address=0.0.0.0

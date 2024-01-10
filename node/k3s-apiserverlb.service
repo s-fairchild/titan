@@ -14,7 +14,7 @@ ExecStart=/usr/bin/podman run \
 	--name k3s-rick-apiserverlb \
 	-h k3s-rick-apiserverlb \
 	--network=nodes:ip=10.98.0.5,alias=loadbalancer \
-	--network=services \
+	--network=services:ip=10.43.0.253 \
 	-p 6443:6443 \
 	--tz=UTC \
 	--cidfile=%t/%n.ctr-id \

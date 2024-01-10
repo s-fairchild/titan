@@ -4,3 +4,4 @@ node-label:
   - app=compute
 server: https://loadbalancer:6443
 node-name: k3s-rick-agent-2
+node-ip: 10.98.0.102

@@ -99,30 +99,33 @@ init_network() {
     cluster_network="${1:-k3s}"
 
     podman network create \
-                    --subnet 10.98.0.0/16 \
-                    --gateway 10.98.254.254 \
+                    --subnet 10.98.0.0/24 \
+                    --gateway 10.98.0.254 \
                     --interface-name=nodes \
                     --dns=10.50.0.1 \
                     --label=app=k3s \
                     --label=cluster="${cluster_network}" \
+                    --route=10.43.0.0/16,10.98.0.5 \
                     nodes
 
     podman network create \
-                    --gateway=10.43.0.254 \
+                    --gateway=10.43.254.254 \
                     --subnet=10.43.0.0/16 \
                     --interface-name=services \
                     --dns=10.43.0.10 \
                     --label=app=k3s \
                     --label=cluster="${cluster_network}" \
+                    --route=10.98.0.0/24,10.43.0.253 \
                     services
 
     podman network create \
-                    --gateway 10.43.0.254 \
-                    --subnet 10.43.0.0/16 \
-                    --dns=10.43.0.10 \
+                    --gateway=10.42.0.254 \
+                    --subnet=10.42.0.0/24 \
+                    --dns=10.42.0.10 \
                     --interface-name=pods \
-                    --label app=k3s \
-                    --label cluster="${cluster_network}" \
+                    --label=app=k3s \
+                    --label=cluster="${cluster_network}" \
+                    --route=10.43.0.0/16,10.98.0.5 \
                     pods
 }
 
