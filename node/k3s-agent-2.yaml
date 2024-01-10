@@ -1,6 +1,6 @@
+debug: false
 selinux: false
 node-label:
   - app=compute
 server: https://loadbalancer:6443
-debug: false
-node-name: k3s-rick-agent-0
+node-name: k3s-rick-agent-2

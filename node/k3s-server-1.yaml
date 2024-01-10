@@ -1,12 +1,8 @@
 ---
 # https://docs.k3s.io/cli/server
-# Use embedded etcd
-cluster-init: true
-# Log level
-# v: 4
 debug: false
 selinux: false
-servicelb-namespace: kube-system-traefik
+server: https://loadbalancer:6443
 tls-san:
   - 10.98.0.5
   - loadbalancer
@@ -14,14 +10,7 @@ secrets-encryption: true
 
 # Network
 flannel-backend: host-gw
-node-ip: 10.98.0.1
-
-# kube apiserver
-write-kubeconfig: /root/admin.kubeconfig
-etcd-expose-metrics: true
-advertise-port: 6443
-https-listen-port: 6443
-
+node-ip: 10.98.0.2
 
 # kubelet
 kubelet-arg:
