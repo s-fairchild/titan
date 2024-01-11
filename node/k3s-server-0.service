@@ -39,7 +39,7 @@ ExecStart=/usr/bin/podman run \
 	--device /dev/fuse:/dev/fuse \
 	-v /etc/machine-id:/etc/machine-id:ro \
 	-v /run/podman/podman.sock:/run/podman/podman.sock \
-	-v /root/.kube/config:/root/admin.kubeconfig:Z \
+	-v /root/.kube/config:/root/admin.kubeconfig:z \
 	-v k3s-server-0-data:/var/lib/rancher/k3s \
 	-v k3s-server-0-etc-rancher:/etc/rancher \
 	-v k3s-server-0-kubelet:/var/lib/kubelet \
@@ -47,8 +47,8 @@ ExecStart=/usr/bin/podman run \
 	-v k3s-server-0-logs:/var/log/pod \
 	-v k3s-server-0-containers:/var/lib/containers:Z \
 	-v /usr/local/etc/k3s/k3s-server-0.yaml:/etc/rancher/k3s/config.yaml:ro \
-  	-v /var/local/etc/k3s/manifests:/var/lib/rancher/k3s/server/manifests/compute:Z \
-  	-v /var/local/etc/k3s/skip/traefik.yaml.skip:/var/lib/rancher/k3s/server/manifests/traefik.yaml.skip:ro \
+  	-v /var/local/etc/k3s/manifests:/var/lib/rancher/k3s/server/manifests/compute:z \
+  	-v /var/local/etc/k3s/skip:/var/lib/rancher/k3s/server/manifests/skip:z \
 	--shm-size=5g \
 	--privileged \
 	--cap-add=ALL \

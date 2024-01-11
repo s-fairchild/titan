@@ -55,6 +55,7 @@ spec:
           privileged: true
           capabilities:
             drop:
+            - NET_ADMIN
             - CAP_MKNOD
             - CAP_NET_RAW
             - CAP_AUDIT_WRITE

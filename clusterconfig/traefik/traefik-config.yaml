@@ -1,21 +1,10 @@
----
-apiVersion: helm.cattle.io/v1
-kind: HelmChart
-metadata:
-  name: traefik-crd
-  namespace: kube-system
-spec:
-  chart: https://%{KUBERNETES_API}%/static/charts/traefik-crd-25.0.2+up25.0.0.tgz
----
 apiVersion: helm.cattle.io/v1
 kind: HelmChartConfig
 metadata:
   name: traefik
-  namespace: kube-system-traefik
+  namespace: kube-system
 spec:
-  chart: https://%{KUBERNETES_API}%/static/charts/traefik-25.0.2+up25.0.0.tgz
   set:
-    global.systemDefaultRegistry: ""
   valuesContent: |-
     podAnnotations:
       prometheus.io/port: "8082"
@@ -32,21 +21,16 @@ spec:
         allowExternalNameServices: true
         # -- Allows to return 503 when there is no endpoints available
         allowEmptyServices: true
-        publishedService:
-          enabled: true
-          # Published Kubernetes Service to copy status from. Format: namespace/servicename
-          # By default this Traefik service
-          # pathOverride: ""
-    hostNetwork: false
+    hostNetwork: true
     rbac:
       enabled: true
-      namespaced: true
+      namespaced: false
     priorityClassName: "system-cluster-critical"
     nodeSelector:
       svccontroller.k3s.cattle.io/enablelb: "true"
     image:
       repository: "rancher/mirrored-library-traefik"
-      tag: "2.9.10"
+      tag: "2.10.5"
       pullPolicy: IfNotPresent
     tolerations:
       - key: "CriticalAddonsOnly"
@@ -69,7 +53,8 @@ spec:
       single: true
       type: LoadBalancer
       annotations: {}
-      labels: {}
+      labels:
+        svccontroller.k3s.cattle.io/lbpool: pool1
       ipFamilyPolicy: "SingleStack"
       spec:
         loadBalancerSourceRanges:
@@ -78,10 +63,9 @@ spec:
       general:
         # format: json
         # -- Alternative logging levels are DEBUG, PANIC, FATAL, ERROR, WARN, and INFO.
-        level: ERROR
+        level: INFO
       access:
-        enabled: false
-
+        enabled: true
 
     # ports:
     #   traefik:
@@ -107,9 +91,12 @@ spec:
     #       app.kubernetes.io/network: internal
     #     annotations: {}
     #     spec: {}
-    #     loadBalancerSourceRanges: []
+    #     loadBalancerSourceRanges:
+    #       - 10.98.0.0/16
+    #       - 10.43.0.0/16
+    #       - 10.42.0.0/16
     #     externalIPs: []
-    #     ipFamilies: [ "IPv4","IPv6" ]
+    #     ipFamilies: [ "IPv4" ]
     #     ingressClass:
     #       enabled: true
     #       isDefaultClass: true
