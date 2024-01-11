@@ -1,10 +1,9 @@
 [Unit]
-Description=Podman container-k3s-rick-agent-1.service for %I
+Description=Podman k3s-rick-agent-1.service for %I
 Wants=network-online.target
 After=network-online.target
 RequiresMountsFor=%t/containers
-Requires=k3s-server-0.service
-After=k3s-server-0.service
+After=k3s-server-2.service
 
 [Service]
 Environment=PODMAN_SYSTEMD_UNIT=%n-%i
@@ -17,7 +16,9 @@ KillMode=mixed
 ExecStart=/usr/bin/podman run \
 	--name k3s-rick-agent-1 \
 	--network=nodes:ip=10.98.0.101 \
-	--network=services:ip=10.43.0.101 \
+	--network=services \
+	--dns-search=expresso.lan \
+	--dns=10.50.0.1 \
 	--systemd=always \
 	-h k3s-rick-agent-1 \
 	--tz=UTC \

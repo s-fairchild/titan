@@ -1,16 +1,16 @@
 [Unit]
-Description=Podman k3s-rick-server-0.service for %I
+Description=Podman container-k3s-rick-server-2.service for %I
 Wants=network-online.target
 After=network-online.target
 RequiresMountsFor=%t/containers
+After=k3s-server-1.service
 Before=k3s-agent-0.service
 Before=k3s-agent-1.service
 Before=k3s-agent-2.service
+PartOf=k3s-server-0.service
 PartOf=k3s-server-1.service
-PartOf=k3s-server-2.service
 
 [Service]
-# Delegate=yes
 Environment=PODMAN_SYSTEMD_UNIT=%n-%i
 Restart=always
 RestartSec=30
@@ -19,12 +19,12 @@ TimeoutStopSec=70
 ExecStartPre=modprobe iptable_filter
 ExecStartPre=modprobe iptable_nat
 ExecStart=/usr/bin/podman run \
-	--name=k3s-rick-server-0 \
-	-h k3s-rick-server-0 \
-	--network=nodes:ip=10.98.0.1 \
-	--network=services \
+	--name=k3s-rick-server-2 \
+	-h k3s-rick-server-2 \
+	--network=nodes:ip=10.98.0.3 \
 	--dns-search=expresso.lan \
 	--dns=10.50.0.1 \
+	--network=services \
 	--systemd=always \
 	--cgroups=no-conmon \
 	--userns=host \
@@ -40,24 +40,23 @@ ExecStart=/usr/bin/podman run \
 	-v /etc/machine-id:/etc/machine-id:ro \
 	-v /run/podman/podman.sock:/run/podman/podman.sock \
 	-v /root/.kube/config:/root/admin.kubeconfig:z \
-	-v k3s-server-0-data:/var/lib/rancher/k3s \
-	-v k3s-server-0-etc-rancher:/etc/rancher \
-	-v k3s-server-0-kubelet:/var/lib/kubelet \
-	-v /var/local/lib/k3s/storage:/var/lib/rancher/k3s/storage \
-	-v k3s-server-0-logs:/var/log/pod \
-	-v k3s-server-0-containers:/var/lib/containers:Z \
-	-v /usr/local/etc/k3s/k3s-server-0.yaml:/etc/rancher/k3s/config.yaml:ro \
+	-v k3s-server-2-rancher-data:/var/lib/rancher/k3s \
+	-v k3s-server-2-rancher-config:/etc/rancher \
+	-v k3s-server-2-kubelet:/var/lib/kubelet \
+	-v k3s-server-2-pod_logs:/var/log/pod \
+	-v k3s-server-2-local-path:/var/lib/rancher/k3s/storage \
+	-v k3s-server-2-containers:/var/lib/containers \
+	-v /usr/local/etc/k3s/k3s-server-2.yaml:/etc/rancher/k3s/config.yaml:ro \
   	-v /var/local/etc/k3s/manifests:/var/lib/rancher/k3s/server/manifests/compute:z \
   	-v /var/local/etc/k3s/skip:/var/lib/rancher/k3s/server/manifests/skip:z \
-	--shm-size=5g \
+	--shm-size 5g \
 	--privileged \
 	--cap-add=ALL \
 	--security-opt label=disable \
 	--security-opt seccomp=unconfined \
 	--oom-score-adj=1000 \
-	--secret=k3s-token,type=env,target=K3S_TOKEN \
+	--secret k3s-token,type=env,target=K3S_TOKEN \
 	--annotation=app=k3s \
-	--annotation=cluster=rick \
 	docker.io/rancher/k3s:v1.29.0-k3s1 \
 	server
 	

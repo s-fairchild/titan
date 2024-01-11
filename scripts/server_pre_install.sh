@@ -76,6 +76,7 @@ init_volumes() {
         /var/lib/k3s/server-0/containers
         /var/local/etc/k3s/manifests
         /var/local/var/k3s/persistentVolumes
+	    /var/local/lib/k3s/storage
     )
 
     # shellcheck disable=SC2068
@@ -99,29 +100,28 @@ init_network() {
 
     podman network create \
                     --subnet 10.98.0.0/16 \
-                    --gateway 10.98.254.254 \
+                    --gateway 10.98.0.254 \
                     --interface-name=nodes \
-                    --dns=10.50.0.1 \
-                    --label=app=k3s \
+                    --dns=10.43.0.10 \
                     --label=cluster="${cluster_network}" \
                     nodes
 
     podman network create \
-                    --gateway=10.43.0.254 \
+                    --gateway=10.43.254.254 \
                     --subnet=10.43.0.0/16 \
+                    --disable-dns \
                     --interface-name=services \
-                    --dns=10.43.0.10 \
                     --label=app=k3s \
                     --label=cluster="${cluster_network}" \
                     services
 
     podman network create \
-                    --gateway 10.43.0.254 \
-                    --subnet 10.43.0.0/16 \
-                    --dns=10.43.0.10 \
+                    --gateway=10.42.0.254 \
+                    --subnet=10.42.0.0/16 \
+                    --disable-dns \
                     --interface-name=pods \
-                    --label app=k3s \
-                    --label cluster="${cluster_network}" \
+                    --label=app=k3s \
+                    --label=cluster="${cluster_network}" \
                     pods
 }
 

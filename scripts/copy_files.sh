@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 # Copy k3s files to remote server
 
 set -o nounset
@@ -9,6 +9,7 @@ main() {
         connection_string="root@rick"
         cp_to_rick
         cp_manifests
+        cp_configs "/usr/local/etc/k3s/"
     elif [[ $host = "expresso" ]]; then
         connection_string="root@expresso"
         cp_to_expresso
@@ -17,6 +18,9 @@ main() {
     elif [[ $host = "manifests" ]]; then
         connection_string="root@rick"
         cp_manifests
+    elif [[ $host = "configs" ]]; then
+        connection_string="root@rick"
+        cp_configs "/usr/local/etc/k3s/"
     else
         echo "Usage: ${0} < rick | expresso | all >"
     fi
@@ -36,34 +40,45 @@ cp_to_rick() {
     copy_files k3s_install.env
     copy_files scripts/server_pre_install.sh
 
+    # Apiserver loadbalancer
+    copy_files clusterconfig/nginx/nginx.conf /usr/local/etc/k3s/
+    copy_files node/k3s-apiserverlb.service /usr/lib/systemd/system/
+
     # Server
     copy_files node/k3s-server-0.service /usr/lib/systemd/system/
-    copy_files node/k3s-server-0.yaml /usr/local/etc/k3s/
-    copy_files node/k3s-serverlb.yaml /usr/local/etc/k3s/
-    copy_files node/k3s-serverlb.service /usr/lib/systemd/system/
+    copy_files node/k3s-server-1.service /usr/lib/systemd/system/
+    copy_files node/k3s-server-2.service /usr/lib/systemd/system/
+    copy_files node/k3s-applb.service /usr/lib/systemd/system/
     # Agent
     copy_files node/k3s-agent-0.service /usr/lib/systemd/system/
-    copy_files node/k3s-agent-0.yaml /usr/local/etc/k3s/
     copy_files node/k3s-agent-1.service /usr/lib/systemd/system/
-    copy_files node/k3s-agent-1.yaml /usr/local/etc/k3s/
+    copy_files node/k3s-agent-2.service /usr/lib/systemd/system/
+}
+
+cp_configs() {
+    # Server
+    etc="${1}"
+    copy_files node/k3s-server-0.yaml "$etc"
+    copy_files node/k3s-server-1.yaml "$etc"
+    copy_files node/k3s-server-2.yaml "$etc"
+    copy_files node/k3s-applb.yaml "$etc"
+    # Agent
+    copy_files node/k3s-agent-0.yaml "$etc"
+    copy_files node/k3s-agent-1.yaml "$etc"
+    copy_files node/k3s-agent-2.yaml "$etc"
 }
 
 cp_manifests() {
     manifests="/var/local/etc/k3s/manifests/"
-    skip_files="/var/local/etc/k3s/skip/"
+    # skip_files="/var/local/etc/k3s/skip/"
 
     oc kustomize apps/jellyfin > manifests/jellyfin.yaml 
-    # oc kustomize apps/motion > manifests/motion.yaml
-    # oc kustomize apps/v4l2rtspserver > manifests/v4l2rtspserver.yaml
     copy_files manifests/jellyfin.yaml "$manifests"
 
     # Traefik helm chart
     copy_files clusterconfig/traefik/traefik-config.yaml "$manifests"
-    copy_files clusterconfig/traefik/traefik.yaml.skip "$skip_files"
 
-    # metal-lb configs
-    # copy_files clusterconfig/metal-lb/advertisements.yaml "$manifests"
-    # copy_files clusterconfig/metal-lb/pools.yaml "$manifests"
+    copy_files clusterconfig/coredns/coredns-custom-cm.yaml "$manifests"
 }
 
 cp_to_expresso() {
