@@ -24,6 +24,8 @@ ExecStart=/usr/bin/podman run \
 	--name=k3s-rick-server-2 \
 	-h k3s-rick-server-2 \
 	--network=nodes:ip=10.98.0.3 \
+	--dns-search=expresso.lan \
+	--dns=10.50.0.1 \
 	--network=services \
 	--systemd=always \
 	--cgroups=no-conmon \

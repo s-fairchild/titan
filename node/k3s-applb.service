@@ -12,14 +12,14 @@ RestartSec=30
 TimeoutStartSec=600
 TimeoutStopSec=70
 ExecStart=/usr/bin/podman run \
-	--name k3s-rick-applb \
-	-h k3s-rick-applb \
+	--name=k3s-rick-applb \
+	-h=k3s-rick-applb \
 	--network=nodes:ip=10.98.0.253 \
-	--network=services \
-	--systemd=always \
-	-p 80:80 \
-	-p 443:443 \
 	--dns-search=expresso.lan \
+	--dns=10.50.0.1 \
+	--systemd=always \
+	-p=80:80 \
+	-p=443:443 \
 	--tz=UTC \
 	--cidfile=%t/%n.ctr-id \
 	--cgroups=no-conmon \
@@ -27,15 +27,15 @@ ExecStart=/usr/bin/podman run \
 	--sdnotify=conmon \
 	-d \
 	--replace \
-	--pull missing \
-	-v /etc/machine-id:/etc/machine-id:ro \
-	-v k3s-applb-data:/var/lib/rancher/k3s \
-	-v k3s-applb-etc-rancher:/etc/rancher \
-	-v /usr/local/etc/k3s/k3s-applb.yaml:/etc/rancher/k3s/config.yaml \
-	--shm-size 5g \
+	--pull=missing \
+	-v=/etc/machine-id:/etc/machine-id:ro \
+	-v=k3s-applb-data:/var/lib/rancher/k3s \
+	-v=k3s-applb-etc-rancher:/etc/rancher \
+	-v=/usr/local/etc/k3s/k3s-applb.yaml:/etc/rancher/k3s/config.yaml \
+	--shm-size=5g \
 	--privileged \
-	--secret k3s-token,type=env,target=K3S_TOKEN \
-	--annotation app=k3s \
+	--secret=k3s-token,type=env,target=K3S_TOKEN \
+	--annotation=app=k3s \
 	docker.io/rancher/k3s:v1.28.1-k3s1 \
 	agent
 	

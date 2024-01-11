@@ -16,6 +16,8 @@ ExecStart=/usr/bin/podman run \
 	-h=k3s-rick-agent-0 \
 	--network=nodes:ip=10.98.0.100 \
 	--network=services \
+	--dns-search=expresso.lan \
+	--dns=10.50.0.1 \
 	--systemd=always \
 	--tz=UTC \
 	--cidfile=%t/%n.ctr-id \

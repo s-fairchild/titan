@@ -21,6 +21,7 @@ ExecStart=/usr/bin/podman run \
 	--network=rick:ip=10.99.0.20 \
 	--systemd=true \
 	--dns-search=expresso.lan \
+	--dns=10.50.0.1 \
 	--add-host rick.expresso.lan:10.50.0.2 \
 	--add-host=k3s-rick-server-0:10.50.0.2 \
 	--tz=UTC \

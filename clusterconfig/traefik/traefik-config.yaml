@@ -24,12 +24,12 @@ spec:
       kubernetesCRD:
         enabled: true
         allowCrossNamespace: true
-        allowExternalNameServices: false
+        allowExternalNameServices: true
         # -- Allows to return 503 when there is no endpoints available
         allowEmptyServices: true
       kubernetesIngress:
         enabled: true
-        allowExternalNameServices: false
+        allowExternalNameServices: true
         # -- Allows to return 503 when there is no endpoints available
         allowEmptyServices: true
         publishedService:
