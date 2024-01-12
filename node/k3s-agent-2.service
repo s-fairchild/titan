@@ -11,8 +11,6 @@ Restart=always
 RestartSec=30
 TimeoutStartSec=600
 TimeoutStopSec=70
-KillSignal=SIGTERM
-KillMode=mixed
 ExecStart=/usr/bin/podman run \
 	--name k3s-rick-agent-2 \
 	--network=nodes:ip=10.98.0.102 \
@@ -29,8 +27,10 @@ ExecStart=/usr/bin/podman run \
 	-d \
 	--replace \
 	--pull missing \
-	--device /dev/dri/card1:/dev/dri/card1 \
-	--device /dev/dri/renderD128:/dev/dri/renderD128 \
+	--device=/dev/v4l/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-video-index0:/dev/video0 \
+	--device=/dev/v4l/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-video-index1:/dev/video1 \
+	--device=/dev/snd:/dev/snd \
+	--device=/dev/dri:/dev/dri \
 	-v /etc/machine-id:/etc/machine-id:ro \
 	-v k3s-agent-2-kubelet:/var/lib/kubelet \
 	-v k3s-agent-2-pod_logs:/var/log/pods \
@@ -42,6 +42,7 @@ ExecStart=/usr/bin/podman run \
   	-v /var/data/jellyfin:/var/data/jellyfin:Z \
 	--shm-size 5g \
 	--privileged \
+	--group-add=keep-groups \
 	--secret k3s-token,type=env,target=K3S_TOKEN \
 	--annotation app=k3s \
 	docker.io/rancher/k3s:v1.28.1-k3s1 \

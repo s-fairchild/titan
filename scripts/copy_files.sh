@@ -5,16 +5,16 @@ set -o nounset
 
 main() {
     host="${1:-all}"
-    if [[ $host = "rick" ]]; then
+    if [[ $host = "systemd" ]]; then
         connection_string="root@rick"
-        cp_to_rick
-        cp_manifests
+        cp_systemd
         cp_configs "/usr/local/etc/k3s/"
     elif [[ $host = "expresso" ]]; then
         connection_string="root@expresso"
         cp_to_expresso
     elif [[ $host = "all" ]]; then
-        cp_to_all
+        echo "Not implimented yet."
+        # cp_to_all
     elif [[ $host = "manifests" ]]; then
         connection_string="root@rick"
         cp_manifests
@@ -22,7 +22,7 @@ main() {
         connection_string="root@rick"
         cp_configs "/usr/local/etc/k3s/"
     else
-        echo "Usage: ${0} < rick | expresso | all >"
+        echo "Usage: ${0} < configs | systemd | manifests | all >"
     fi
 }
 
@@ -32,16 +32,13 @@ copy_files() {
 }
 
 cp_to_all() {
-    cp_to_rick
-    cp_to_expresso
+    cp_systemd
+    cp_configs
 }
 
-cp_to_rick() {
-    copy_files k3s_install.env
+cp_systemd() {
     copy_files scripts/server_pre_install.sh
-
     # Apiserver loadbalancer
-    copy_files clusterconfig/nginx/nginx.conf /usr/local/etc/k3s/
     copy_files node/k3s-apiserverlb.service /usr/lib/systemd/system/
 
     # Server
@@ -66,6 +63,8 @@ cp_configs() {
     copy_files node/k3s-agent-0.yaml "$etc"
     copy_files node/k3s-agent-1.yaml "$etc"
     copy_files node/k3s-agent-2.yaml "$etc"
+    # Apiserver loadbalancer
+    copy_files clusterconfig/nginx/nginx.conf /usr/local/etc/k3s/
 }
 
 cp_manifests() {

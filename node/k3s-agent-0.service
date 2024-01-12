@@ -1,5 +1,5 @@
 [Unit]
-Description=Podman container-k3s-rick-agent-0.service for %I
+Description=Podman k3s-rick-agent-0.service for %I
 Wants=network-online.target
 After=network-online.target
 RequiresMountsFor=%t/containers
@@ -26,22 +26,25 @@ ExecStart=/usr/bin/podman run \
 	--sdnotify=conmon \
 	-d \
 	--replace \
-	--pull missing \
-	--device /dev/dri/card1:/dev/dri/card1 \
-	--device /dev/dri/renderD128:/dev/dri/renderD128 \
-	-v /etc/machine-id:/etc/machine-id:ro \
-	-v k3s-agent-0-kubelet:/var/lib/kubelet \
-	-v k3s-agent-0-pod-logs:/var/log/pods \
-	-v k3s-agent-0-data:/var/lib/rancher/k3s \
-	-v k3s-agent-0-etc-rancher:/etc/rancher \
-	-v /usr/local/etc/k3s/k3s-agent-0.yaml:/etc/rancher/k3s/config.yaml \
-  	-v /var/local/var/k3s/persistentVolumes/:/pvs:z \
-  	-v /var/data/motion:/var/data/motion:Z \
-  	-v /var/data/jellyfin:/var/data/jellyfin:Z \
-	--shm-size 5g \
+	--pull=missing \
+	--device=/dev/v4l/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-video-index0:/dev/video0 \
+	--device=/dev/v4l/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-video-index1:/dev/video1 \
+	--device=/dev/snd:/dev/snd \
+	--device=/dev/dri:/dev/dri \
+	-v=/etc/machine-id:/etc/machine-id:ro \
+	-v=k3s-agent-0-kubelet:/var/lib/kubelet \
+	-v=k3s-agent-0-pod-logs:/var/log/pods \
+	-v=k3s-agent-0-data:/var/lib/rancher/k3s \
+	-v=k3s-agent-0-etc-rancher:/etc/rancher \
+	-v=/usr/local/etc/k3s/k3s-agent-0.yaml:/etc/rancher/k3s/config.yaml \
+  	-v=/var/local/var/k3s/persistentVolumes/:/pvs:z \
+  	-v=/var/data/motion:/var/data/motion:Z \
+  	-v=/var/data/jellyfin:/var/data/jellyfin:Z \
+	--shm-size=5g \
 	--privileged \
-	--secret k3s-token,type=env,target=K3S_TOKEN \
-	--annotation app=k3s \
+	--group-add=keep-groups \
+	--secret=k3s-token,type=env,target=K3S_TOKEN \
+	--annotation=app=k3s \
 	docker.io/rancher/k3s:v1.28.1-k3s1 \
 	agent
 	

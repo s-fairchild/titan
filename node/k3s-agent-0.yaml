@@ -1,6 +1,7 @@
 selinux: false
 node-label:
   - app=compute
+  - camera=0
 server: https://10.98.0.5:6443
 debug: false
 node-name: k3s-rick-agent-0

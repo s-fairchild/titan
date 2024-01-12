@@ -1,21 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: v4l2rtspserver
+  name: rtsp0
   namespace: v4l2rtspserver
   labels:
-    app: v4l2rtspserver
+    app: rtsp0
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
-      app: v4l2rtspserver
+      app: rtsp0
   template:
     metadata:
-      name: v4l2rtspserver
+      name: rtsp0
       namespace: v4l2rtspserver
       labels:
-        app: v4l2rtspserver
+        app: rtsp0
     spec:
       affinity:
         nodeAffinity:
@@ -27,15 +29,23 @@ spec:
                   values:
                     - "0"
       containers:
-      - name: v4l2rtspserver
+      - name: camera-default
         args:
+          # TODO setup muticast network once motion is deployed
+          # HTTP over HLS port
           - "-p"
-          - "8080"
+          - "8085"
+          # RTSP port
+          - "-P"
+          - "8554"
+          - "-u"
+          - ""
+          - "/dev/video0,/dev/video0"
         livenessProbe:
           tcpSocket:
             port: rtsp-tcp
           initialDelaySeconds: 120
-        image: mpromonet/v4l2rtspserver:latest-arm64
+        image: docker.io/mpromonet/v4l2rtspserver:latest
         ports:
         - containerPort: 8554
           name: rtsp-udp
@@ -43,7 +53,7 @@ spec:
         - containerPort: 8554
           name: rtsp-tcp
           protocol: TCP
-        - containerPort: 8080
+        - containerPort: 8085
           name: rtsp-http
         securityContext:
           privileged: true
