@@ -11,13 +11,14 @@ RestartSec=30
 TimeoutStartSec=600
 TimeoutStopSec=70
 ExecStart=/usr/bin/podman run \
-	--name k3s-rick-apiserverlb \
-	-h k3s-rick-apiserverlb \
-	--network=nodes:ip=10.98.0.5,alias=loadbalancer \
+	--name=k3s-rick-apiserverlb \
+	-h=k3s-rick-apiserverlb \
+	--network=nodes:ip=10.98.0.5 \
 	--network=services:ip=10.43.0.253 \
+	--network-alias=loadbalancer \
 	--dns-search=expresso.lan \
 	--dns=10.50.0.1 \
-	-p 6443:6443 \
+	-p=6443:6443 \
 	--tz=UTC \
 	--cidfile=%t/%n.ctr-id \
 	--cgroups=no-conmon \
@@ -25,7 +26,7 @@ ExecStart=/usr/bin/podman run \
 	--sdnotify=conmon \
 	-d \
 	--replace \
-	--pull missing \
+	--pull=missing \
 	--privileged \
 	--annotation=app=k3s \
 	--annotation=cluster=rick \

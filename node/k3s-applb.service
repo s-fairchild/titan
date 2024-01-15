@@ -21,8 +21,8 @@ ExecStart=/usr/bin/podman run \
 	--systemd=always \
 	-p=80:80 \
 	-p=443:443 \
-	-p=8554/tcp \
-	-p=8554/udp \
+	-p=8554:8554/tcp \
+	-p=8554:8554/udp \
 	--tz=UTC \
 	--cidfile=%t/%n.ctr-id \
 	--cgroups=no-conmon \
@@ -37,6 +37,8 @@ ExecStart=/usr/bin/podman run \
 	-v=/usr/local/etc/k3s/k3s-applb.yaml:/etc/rancher/k3s/config.yaml \
 	--shm-size=5g \
 	--privileged \
+	--userns=host \
+	--group-add=keep-groups \
 	--secret=k3s-token,type=env,target=K3S_TOKEN \
 	--annotation=app=k3s \
 	docker.io/rancher/k3s:v1.28.1-k3s1 \

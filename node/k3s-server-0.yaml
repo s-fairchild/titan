@@ -9,7 +9,7 @@ selinux: false
 servicelb-namespace: kube-system-traefik
 tls-san:
   - 10.98.0.5
-  - loadbalancer
+  - 10.50.0.2
 secrets-encryption: true
 
 # Network
