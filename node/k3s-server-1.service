@@ -41,12 +41,12 @@ ExecStart=/usr/bin/podman run \
 	-v /etc/machine-id:/etc/machine-id:ro \
 	-v /run/podman/podman.sock:/run/podman/podman.sock \
 	-v /root/.kube/config:/root/admin.kubeconfig:z \
-	-v k3s-server-1-rancher-data:/var/lib/rancher/k3s \
-	-v k3s-server-1-rancher-config:/etc/rancher \
-	-v k3s-server-1-kubelet:/var/lib/kubelet \
-	-v k3s-server-1-pod_logs:/var/log/pod \
-	-v k3s-server-1-local-path:/var/lib/rancher/k3s/storage \
-	-v k3s-server-1-containers:/var/lib/containers \
+	-v /var/local/lib/server-1/rancher/k3s:/var/lib/rancher/k3s \
+	-v /var/local/lib/server-1/rancher/etc:/etc/rancher \
+	-v /var/local/lib/server-1/kubelet:/var/lib/kubelet \
+	-v /var/local/lib/server-1/log/pod:/var/log/pod \
+	-v /var/local/lib/server-1/storage:/var/lib/rancher/k3s/storage \
+	-v /var/local/lib/server-1/containers:/var/lib/containers \
 	-v /usr/local/etc/k3s/k3s-server-1.yaml:/etc/rancher/k3s/config.yaml:ro \
   	-v /var/local/etc/k3s/manifests:/var/lib/rancher/k3s/server/manifests/compute:z \
   	-v /var/local/etc/k3s/skip:/var/lib/rancher/k3s/server/manifests/skip:z \
