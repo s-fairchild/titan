@@ -37,3 +37,4 @@ kube-proxy-arg:
 
 disable:
   - servicelb
+  - local-storage
