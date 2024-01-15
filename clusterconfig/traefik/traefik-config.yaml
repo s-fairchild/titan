@@ -52,13 +52,16 @@ spec:
       ## -- When set to false, it will create two Service, one for TCP and one for UDP.
       single: true
       type: LoadBalancer
-      annotations: {}
+      annotations:
+        metallb.universe.tf/address-pool: ippool-kube-system-traefik-alloc
+        svccontroller.k3s.cattle.io/lbpool: pool1
       labels:
         svccontroller.k3s.cattle.io/lbpool: pool1
       ipFamilyPolicy: "SingleStack"
       spec:
         loadBalancerSourceRanges:
           - 10.50.0.0/24
+        loadBalancerIP: 10.50.0.201
     logs:
       general:
         # format: json

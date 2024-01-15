@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: jellyfin
+  name: http
   namespace: jellyfin
   labels:
     app: jellyfin
@@ -15,4 +15,6 @@ spec:
       protocol: TCP
   selector:
     app: jellyfin
-  type: LoadBalancer
+  type: ClusterIP
+  # See for more information https://metallb.universe.tf/usage/#ip-address-sharing
+  # externalTrafficPolicy: Cluster

@@ -19,7 +19,7 @@ metadata:
     svccontroller.k3s.cattle.io/lbpool: pool1
   labels:
     app: jellyfin
-  name: jellyfin
+  name: http
   namespace: jellyfin
 spec:
   ports:
@@ -29,7 +29,7 @@ spec:
     targetPort: http-web-svc
   selector:
     app: jellyfin
-  type: LoadBalancer
+  type: ClusterIP
 ---
 apiVersion: v1
 kind: PersistentVolume

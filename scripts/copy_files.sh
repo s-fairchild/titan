@@ -78,6 +78,8 @@ cp_manifests() {
     copy_files clusterconfig/traefik/traefik-config.yaml "$manifests"
 
     copy_files clusterconfig/coredns/coredns-custom-cm.yaml "$manifests"
+
+    copy_files manifests/metallb.yaml "$manifests"
 }
 
 cp_to_expresso() {
