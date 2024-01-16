@@ -26,7 +26,3 @@ kubelet-arg:
 kube-proxy-arg:
   - pod-bridge-interface=pods
   - metrics-bind-address=0.0.0.0
-
-disable:
-  - servicelb
-  - local-storage

@@ -19,17 +19,17 @@ metadata:
     svccontroller.k3s.cattle.io/lbpool: pool1
   labels:
     app: jellyfin
-  name: http
+  name: jellyfin
   namespace: jellyfin
 spec:
   ports:
-  - name: http-web
+  - name: www
     port: 8096
     protocol: TCP
-    targetPort: http-web-svc
+    targetPort: http-web
   selector:
     app: jellyfin
-  type: ClusterIP
+  type: LoadBalancer
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -64,7 +64,7 @@ spec:
   capacity:
     storage: 4T
   local:
-    path: /var/data/jellyfin
+    path: /volumes/jellyfin/media
   nodeAffinity:
     required:
       nodeSelectorTerms:
@@ -142,7 +142,7 @@ spec:
       containers:
       - env:
         - name: JELLYFIN_PublishedServerUrl
-          value: https://jellyfin.rick.expresso.lan
+          value: https://jellyfin.app.rick.expresso.lan
         - name: JELLYFIN_DATA_DIR
           value: /data
         - name: PASSWORD
@@ -155,11 +155,11 @@ spec:
         livenessProbe:
           initialDelaySeconds: 120
           tcpSocket:
-            port: http-web-svc
+            port: http-web
         name: jellyfin
         ports:
         - containerPort: 8096
-          name: http-web-svc
+          name: http-web
           protocol: TCP
         resources:
           limits:
@@ -243,6 +243,6 @@ spec:
           service:
             name: jellyfin
             port:
-              name: http-web
+              name: www
         path: /
         pathType: Prefix

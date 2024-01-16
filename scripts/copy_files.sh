@@ -75,11 +75,12 @@ cp_manifests() {
     copy_files manifests/jellyfin.yaml "$manifests"
 
     # Traefik helm chart
+    # traefik-crd must be installed manually with:
+    # helm install -f clusterconfig/traefik/traefik-crd-values.yaml traefik-crd traefik/traefik -n kube-system
+    # copy_files clusterconfig/traefik/traefik-crd-values.yaml "$manifests"
     copy_files clusterconfig/traefik/traefik-config.yaml "$manifests"
 
     copy_files clusterconfig/coredns/coredns-custom-cm.yaml "$manifests"
-
-    copy_files manifests/metallb.yaml "$manifests"
 }
 
 cp_to_expresso() {

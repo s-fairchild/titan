@@ -30,12 +30,12 @@ spec:
       - name: jellyfin
         livenessProbe:
           tcpSocket:
-            port: http-web-svc
+            port: http-web
           initialDelaySeconds: 120
         env:
         # See for more information: https://jellyfin.org/docs/general/administration/configuration/
         - name: JELLYFIN_PublishedServerUrl
-          value: https://jellyfin.rick.expresso.lan
+          value: https://jellyfin.app.rick.expresso.lan
         # Places data dir under /config
         # /config/data
         - name: JELLYFIN_DATA_DIR
@@ -49,7 +49,7 @@ spec:
         image: docker.io/linuxserver/jellyfin:latest
         ports:
         - containerPort: 8096
-          name: http-web-svc
+          name: http-web
           protocol: TCP
         securityContext:
           privileged: true

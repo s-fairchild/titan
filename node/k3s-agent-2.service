@@ -31,14 +31,14 @@ ExecStart=/usr/bin/podman run \
 	--device=/dev/v4l/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-video-index1:/dev/video1 \
 	--device=/dev/snd:/dev/snd \
 	--device=/dev/dri:/dev/dri \
-	--mount=type=bind,source=/dev/md/raid10,destination=/volumes,relabel=shared,U=true \
-	-v /etc/machine-id:/etc/machine-id:ro \
-	-v k3s-agent-2-kubelet:/var/lib/kubelet \
-	-v k3s-agent-2-pod_logs:/var/log/pods \
-	-v k3s-agent-2-data:/var/lib/rancher/k3s \
-	-v k3s-agent-2-etc-rancher:/etc/rancher \
-	-v /usr/local/etc/k3s/k3s-agent-2.yaml:/etc/rancher/k3s/config.yaml \
-  	-v /var/local/var/k3s/persistentVolumes/:/pvs:z \
+	-v=/var/local/lib/agent/datastore:/volumes:Z \
+	-v=/etc/machine-id:/etc/machine-id:ro \
+	-v=k3s-agent-2-kubelet:/var/lib/kubelet \
+	-v=k3s-agent-2-pod_logs:/var/log/pods \
+	-v=k3s-agent-2-data:/var/lib/rancher/k3s \
+	-v=k3s-agent-2-etc-rancher:/etc/rancher \
+	-v=/usr/local/etc/k3s/k3s-agent-2.yaml:/etc/rancher/k3s/config.yaml \
+  	-v=/var/local/var/k3s/persistentVolumes/:/pvs:z \
 	--shm-size 5g \
 	--privileged \
 	--userns=host \

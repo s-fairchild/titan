@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: http
+  name: jellyfin
   namespace: jellyfin
   labels:
     app: jellyfin
@@ -9,12 +9,10 @@ metadata:
     svccontroller.k3s.cattle.io/lbpool: pool1
 spec:
   ports:
-    - name: http-web
+    - name: www
       port: 8096
-      targetPort: http-web-svc
+      targetPort: http-web
       protocol: TCP
   selector:
     app: jellyfin
-  type: ClusterIP
-  # See for more information https://metallb.universe.tf/usage/#ip-address-sharing
-  # externalTrafficPolicy: Cluster
+  type: LoadBalancer

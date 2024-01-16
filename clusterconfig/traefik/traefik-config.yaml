@@ -1,9 +1,19 @@
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: traefik-crd
+  namespace: kube-system
+spec:
+  chart: https://%{KUBERNETES_API}%/static/charts/traefik-crd-25.0.2+up25.0.0.tgz
+---
 apiVersion: helm.cattle.io/v1
 kind: HelmChartConfig
 metadata:
   name: traefik
   namespace: kube-system
 spec:
+  chart: https://%{KUBERNETES_API}%/static/charts/traefik-25.0.2+up25.0.0.tgz
   set:
   valuesContent: |-
     podAnnotations:
@@ -28,6 +38,7 @@ spec:
     priorityClassName: "system-cluster-critical"
     nodeSelector:
       svccontroller.k3s.cattle.io/enablelb: "true"
+      svccontroller.k3s.cattle.io/lbpool: pool1
     image:
       repository: "rancher/mirrored-library-traefik"
       tag: "2.10.5"
@@ -66,40 +77,6 @@ spec:
       general:
         # format: json
         # -- Alternative logging levels are DEBUG, PANIC, FATAL, ERROR, WARN, and INFO.
-        level: INFO
+        level: DEBUG
       access:
         enabled: true
-
-    # ports:
-    #   traefik:
-    #     port: "9000"
-    #     expose: false
-    #     exposedPort: "9000"
-    #     protocol: TCP
-    #   web:
-    #     asDefault: false
-    #     port: 8000
-    #     expose: true
-    #     exposedPort: 80
-    #     protocol: TCP
-    #   websecure:
-    #     asDefault: true
-    #     port: 8443
-    #     expose: true
-    #     exposedPort: 443
-    #     protocol: TCP
-    #   internal:
-    #     type: ClusterIP
-    #     labels:
-    #       app.kubernetes.io/network: internal
-    #     annotations: {}
-    #     spec: {}
-    #     loadBalancerSourceRanges:
-    #       - 10.98.0.0/16
-    #       - 10.43.0.0/16
-    #       - 10.42.0.0/16
-    #     externalIPs: []
-    #     ipFamilies: [ "IPv4" ]
-    #     ingressClass:
-    #       enabled: true
-    #       isDefaultClass: true

@@ -31,7 +31,7 @@ ExecStart=/usr/bin/podman run \
 	--device=/dev/v4l/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-video-index1:/dev/video1 \
 	--device=/dev/snd:/dev/snd \
 	--device=/dev/dri:/dev/dri \
-	--mount=type=bind,source=/dev/md/raid10,destination=/volumes,relabel=shared,U=true \
+	-v=/var/local/lib/agent/datastore:/volumes:Z \
 	-v=/etc/machine-id:/etc/machine-id:ro \
 	-v=k3s-agent-0-kubelet:/var/lib/kubelet \
 	-v=k3s-agent-0-pod-logs:/var/log/pods \

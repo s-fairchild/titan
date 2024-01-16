@@ -19,4 +19,4 @@ spec:
           service:
             name: jellyfin
             port:
-              name: http-web
+              name: www
