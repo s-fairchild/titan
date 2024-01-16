@@ -151,6 +151,7 @@ spec:
               key: password
               name: webpassword
               optional: false
+        externalTrafficPolicy: null
         image: docker.io/linuxserver/jellyfin:latest
         livenessProbe:
           initialDelaySeconds: 120
@@ -194,7 +195,6 @@ spec:
           name: transcodes
           subPath: transcodes
       dnsPolicy: ClusterFirst
-      enableServiceLinks: false
       restartPolicy: Always
       volumes:
       - name: media

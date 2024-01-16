@@ -95,31 +95,32 @@ init_volumes() {
                     compute
 }
 
+# dns is disabled to allow coredns to make use of the node's /etc/resolv.conf file
 init_network() {
     cluster_network="${1:-k3s}"
 
     podman network create \
                     --subnet 10.98.0.0/16 \
                     --gateway 10.98.0.254 \
+                    --disable-dns \
                     --interface-name=nodes \
-                    --dns=10.43.0.10 \
                     --label=cluster="${cluster_network}" \
                     nodes
 
     podman network create \
-                    --gateway=10.43.254.254 \
                     --subnet=10.43.0.0/16 \
-                    --disable-dns \
+                    --gateway=10.43.254.254 \
                     --interface-name=services \
+                    --disable-dns \
                     --label=app=k3s \
                     --label=cluster="${cluster_network}" \
                     services
 
     podman network create \
-                    --gateway=10.42.0.254 \
                     --subnet=10.42.0.0/16 \
-                    --disable-dns \
+                    --gateway=10.42.0.254 \
                     --interface-name=pods \
+                    --disable-dns \
                     --label=app=k3s \
                     --label=cluster="${cluster_network}" \
                     pods

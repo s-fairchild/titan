@@ -1,3 +1,4 @@
+---
 selinux: true
 node-ip: 10.98.0.253
 node-external-ip: 10.50.0.2

@@ -5,6 +5,7 @@ metadata:
   name: traefik-crd
   namespace: kube-system
 spec:
+  targetNamespace: kube-system
   chart: https://%{KUBERNETES_API}%/static/charts/traefik-crd-25.0.2+up25.0.0.tgz
 ---
 apiVersion: helm.cattle.io/v1
@@ -13,9 +14,11 @@ metadata:
   name: traefik
   namespace: kube-system
 spec:
+  targetNamespace: kube-system
   chart: https://%{KUBERNETES_API}%/static/charts/traefik-25.0.2+up25.0.0.tgz
   set:
   valuesContent: |-
+    dnsPolicy: ClusterFirst
     podAnnotations:
       prometheus.io/port: "8082"
       prometheus.io/scrape: "true"
@@ -31,14 +34,17 @@ spec:
         allowExternalNameServices: true
         # -- Allows to return 503 when there is no endpoints available
         allowEmptyServices: true
-    hostNetwork: true
+        # Required for external IP address to be assigned
+        # values documentation isn't clear on what this is used for
+        publishedService:
+          enabled: true
+    hostNetwork: false
     rbac:
       enabled: true
       namespaced: false
     priorityClassName: "system-cluster-critical"
     nodeSelector:
       svccontroller.k3s.cattle.io/enablelb: "true"
-      svccontroller.k3s.cattle.io/lbpool: pool1
     image:
       repository: "rancher/mirrored-library-traefik"
       tag: "2.10.5"
@@ -59,20 +65,12 @@ spec:
         effect: "NoSchedule"
     service:
       enabled: true
-      ## -- Single service is using `MixedProtocolLBService` feature gate.
-      ## -- When set to false, it will create two Service, one for TCP and one for UDP.
       single: true
       type: LoadBalancer
-      annotations:
-        metallb.universe.tf/address-pool: ippool-kube-system-traefik-alloc
-        svccontroller.k3s.cattle.io/lbpool: pool1
-      labels:
-        svccontroller.k3s.cattle.io/lbpool: pool1
       ipFamilyPolicy: "SingleStack"
-      spec:
-        loadBalancerSourceRanges:
-          - 10.50.0.0/24
-        loadBalancerIP: 10.50.0.201
+      externalIPs:
+        - 10.50.0.2
+      spec: {}
     logs:
       general:
         # format: json

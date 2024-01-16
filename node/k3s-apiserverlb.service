@@ -17,7 +17,7 @@ ExecStart=/usr/bin/podman run \
 	--network=services:ip=10.43.0.253 \
 	--network-alias=loadbalancer \
 	--dns-search=expresso.lan \
-	--dns=10.50.0.1 \
+	--dns=10.43.0.10 \
 	-p=6443:6443 \
 	--tz=UTC \
 	--cidfile=%t/%n.ctr-id \

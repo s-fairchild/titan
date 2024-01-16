@@ -28,6 +28,7 @@ spec:
                     - compute
       containers:
       - name: jellyfin
+        externalTrafficPolicy: 
         livenessProbe:
           tcpSocket:
             port: http-web
@@ -83,7 +84,6 @@ spec:
           limits:
             memory: "15G"
             cpu: "5000m"
-      enableServiceLinks: false
       volumes:
       - name: media
         persistentVolumeClaim:
