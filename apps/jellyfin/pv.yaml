@@ -7,11 +7,11 @@ spec:
     storage: 4T
   volumeMode: Filesystem
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteOncePod
   persistentVolumeReclaimPolicy: Retain
   storageClassName: local-path
   local:
-    path: /volumes/jellyfin/media
+    path: /volumes/jellyfin
   nodeAffinity:
     required:
       nodeSelectorTerms:
@@ -30,7 +30,7 @@ spec:
     storage: 5Gi
   volumeMode: Filesystem
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteOncePod
   persistentVolumeReclaimPolicy: Retain
   storageClassName: local-path
   local:

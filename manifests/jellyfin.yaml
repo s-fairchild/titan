@@ -64,7 +64,7 @@ spec:
   capacity:
     storage: 4T
   local:
-    path: /volumes/jellyfin/media
+    path: /volumes/jellyfin
   nodeAffinity:
     required:
       nodeSelectorTerms:

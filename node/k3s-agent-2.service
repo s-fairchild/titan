@@ -32,7 +32,7 @@ ExecStart=/usr/bin/podman run \
 	--device=/dev/v4l/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-video-index1:/dev/video1 \
 	--device=/dev/snd:/dev/snd \
 	--device=/dev/dri:/dev/dri \
-	-v=/var/local/lib/agent/datastore:/volumes:Z \
+	-v=/var/local/lib/agent/datastore/volumes:/volumes:z \
 	-v=/etc/machine-id:/etc/machine-id:ro \
 	-v=k3s-agent-2-kubelet:/var/lib/kubelet \
 	-v=k3s-agent-2-pod_logs:/var/log/pods \
@@ -40,6 +40,7 @@ ExecStart=/usr/bin/podman run \
 	-v=k3s-agent-2-etc-rancher:/etc/rancher \
 	-v=/usr/local/etc/k3s/k3s-agent-2.yaml:/etc/rancher/k3s/config.yaml \
   	-v=/var/local/var/k3s/persistentVolumes/:/pvs:z \
+	-v=/var/local/lib/agent/datastore/volumes:/volumes:z \
 	--shm-size 5g \
 	--privileged \
 	--userns=host \

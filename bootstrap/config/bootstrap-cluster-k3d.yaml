@@ -1,0 +1,84 @@
+apiVersion: k3d.io/v1alpha5
+kind: Simple
+servers: 3
+agents: 3
+image: docker.io/rancher/k3s:v1.29.0-k3s1
+token: "${TOKEN}"
+network: ${CLUSTER_NETWORK_NAME_NODES}
+# subnet: ${CLUSTER_SUBNET_NODES}
+hostAliases:
+  - ip: ${CLUSTER_APISERVER_ADDVERTISE_IP}
+    hostnames:
+      - "bootstapper"
+      - "k3d"
+  - ip: 10.50.0.1
+    hostnames:
+      - "expresso.lan"
+kubeAPI:
+  host: "${CLUSTER_MANAGER}.${CLUSTER_DOMAIN}"
+  hostIP: 127.0.0.1
+  hostPort: "6443"
+metadata:
+  name: bootstrapper
+options:
+  k3d:
+    disableImageVolume: false
+    disableLoadbalancer: false
+    disableRollback: false
+    loadbalancer:
+      configOverrides:
+      - settings.workerConnections=10000
+    timeout: 300000000000
+    wait: true
+  k3s:
+    extraArgs:
+    - arg: --tls-san=10.50.0.2
+      nodeFilters:
+      - server:*
+    nodeLabels:
+    - label: app=compute
+      nodeFilters:
+      - agent:*
+  kubeconfig:
+    switchCurrentContext: true
+    updateDefaultKubeconfig: true
+  runtime:
+    HostPidMode: false
+    ulimits:
+    - hard: 30000
+      name: locks
+      soft: 30000
+    - hard: 30000
+      name: nofile
+      soft: 30000
+    gpuRequest: all
+    labels:
+      - label: cluster=${CLUSTER_MANAGER}
+        nodeFilters:
+          - "server:*"
+      - label: instance=${CLUSTER_INSTANCE}
+        nodeFilters:
+          - "server:*"
+      - label: managed-by=k3d
+        nodeFilters:
+          - "server:*"
+ports:
+  - port: 80:8000
+    nodeFilters:
+      - loadbalancer
+  - port: 443:8443
+    nodeFilters:
+      - loadbalancer
+  - port: ${CLUSTER_APISERVER_ADDVERTISE_IP}:6443:6443
+    nodeFilters:
+      - loadbalancer
+volumes:
+  - nodeFilters:
+    - server:*
+    volume: ${MANIFESTS}:/var/lib/rancher/k3s/server/manifests/compute
+  - nodeFilters:
+    - "server:*"
+    volume: ${MANIFESTS_SKIP}:/var/lib/rancher/k3s/server/manifests/skip
+registries:
+  use:
+    - "${REGISTRY}:5000"
