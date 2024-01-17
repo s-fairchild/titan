@@ -1,18 +1,12 @@
-#!/bin/bash
+#!/bin/bash -x
 # Generate a TLS keypair and self signed certificate for the container registry server
 #
 
 set -o nounset \
-    errexit
+    -o errexit
 
 main() {
     registry_root="/var/local/lib/registry"
-    if [[ -d $registry_root ]]; then
-        abort "$registry_root root already exists. Please backup and remove before proceeding."
-    else
-        mkdir -p $registry_root
-    fi
-
     # Certificate info
     c="hub"
     cn="${c}.$(hostname --fqdn)"
@@ -31,6 +25,38 @@ main() {
         ["$secret_htpasswd"]="$htpasswd_out"
     )
 
+    arg="${1}"
+
+    if [[ $arg == "create-all" ]]; then
+        create_all
+    elif [[ $arg == "delete-all" ]]; then
+        delete_all
+    else
+        echo "usage: [ create-all | delete-all ]"
+    fi
+
+}
+
+delete_all() {
+    for s in ${secrets[@]}; do
+        local -I secrets
+        log "Deleting secrets ${secrets["$s"]}"
+        secret="${secrets["$s"]}"
+        if podman secret exists; then
+            podman secret rm "$secret"
+            log "deleted podman secret $secret"
+        else
+            log "podman secret $secret not found."
+        fi
+    done
+}
+
+create_all() {
+    if [[ -d $registry_root ]]; then
+        abort "$registry_root root already exists. Please backup and remove before proceeding."
+    else
+        mkdir -p $registry_root
+    fi
 
     check_secrets_exist
     generate_tls_keypair
@@ -106,4 +132,4 @@ abort() {
     exit 1
 }
 
-main "${@}"
+main "${1}"
