@@ -6,38 +6,93 @@ set -o nounset \
     errexit
 
 main() {
+    registry_root="/var/local/lib/registry"
+    if [[ -d $registry_root ]]; then
+        abort "$registry_root root already exists. Please backup and remove before proceeding."
+    else
+        mkdir -p $registry_root
+    fi
+
+    # Certificate info
+    c="hub"
+    cn="${c}.$(hostname --fqdn)"
+    keyout="./${cn}.key"
+    crtout="./${cn}.crt"
+    # Podman secret info
+    secret_prefix="k3s-registry"
+    secret_key="$secret_prefix-key"
+    secret_crt="$secret_prefix-crt"
+    secret_htpasswd="$secret_prefix-htpasswd"
+    htpasswd_out=".htpasswd"
+
+    local -A secrets=(
+        ["$secret_key"]="$keyout"
+        ["$secret_crt"]="$crtout"
+        ["$secret_htpasswd"]="$htpasswd_out"
+    )
+
+
+    check_secrets_exist
     generate_tls_keypair
-    setup_container_registry "${REGISTRY_USER}" "${REGISTRY_PASSWORD}"
+    generate_httpd_passwd "${REGISTRY_USER}" "${REGISTRY_PASSWORD}"
 }
 
-setup_container_registry() {
+generate_httpd_passwd() {
     registry_user="${1}"
     registry_password="${2}"
 
-    registry_root="/var/local/lib/registry"
     pushd "$registry_root" || abort "failed to enter $registry_root. Does it exist?"
-    mkdir -p "${registry_root}/{auth,certs,data}"
+    mkdir -p "${registry_root}/"{auth,certs,data}
+
     htpasswd -bBc \
-            ./htpasswd \
+            "${htpasswd_out}" \
             "${registry_user}" \
             "${registry_password}"
+
 }
 
 generate_tls_keypair() {
+    tmp="$(mktemp -d)"
+    pushd "$tmp" || abort "failed to pushd into $tmp"
     log "Creating registry TLS keypair and self signed certificate."
     log "Note: the private key will be unencrypted."
-    c="hub"
-    cn="${c}.$(hostname --fqdn)"
     st="$(hostname -s)"
     openssl req \
             -newkey rsa:4096 \
             -nodes \
             -sha256 \
-            -keyout "./${cn}.key" \
+            -keyout "${keyout}" \
             -x509 \
             -days 365 \
-            -out "./${cn}.crt" \
+            -out "${crtout}" \
             -subj "/ST=${st}/L=expresso/O=Infra/OU=IT/CN=${cn}"
+}
+
+create_all_secrets() {
+    for s in ${secrets[@]}; do
+        create_secret "$s" "${secrets["$s"]}"
+    done
+}
+
+create_secret() {
+    secret="${1}"
+    secret_file="${2}"
+    err_prefix="failed to create ${secret} "
+    if [[ ! -f $secret_file ]]; then
+        abort "${err_prefix}, $secret_file not found."
+    fi
+    podman secret create "${secret}" "${secret_file}" || abort "$err_prefix from ${secret_file}"
+    log "Successfully created ${secret} from ${secret_file}"
+    log "deleting $secret_file now"
+    rm -f "${secret_file}" || abort "failed to delete $secret_file"
+}
+
+check_secrets_exist() {
+    for s in ${secrets[@]}; do
+        if podman secret exists "$s"; then
+            abort "cannot proceed, $s exists. Backup and delete $s to continue."
+        fi
+    done
 }
 
 log() {
