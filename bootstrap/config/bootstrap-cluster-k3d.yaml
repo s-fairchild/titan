@@ -19,7 +19,7 @@ kubeAPI:
   hostIP: 127.0.0.1
   hostPort: "6443"
 metadata:
-  name: bootstrapper
+  name: ${CLUSTER_MANAGER}
 options:
   k3d:
     disableImageVolume: false
@@ -75,10 +75,12 @@ ports:
 volumes:
   - nodeFilters:
     - server:*
-    volume: ${MANIFESTS}:/var/lib/rancher/k3s/server/manifests/compute
+    # TODO place this volume in associative array
+    volume: ${VOLUME_MANIFESTS}:/var/lib/rancher/k3s/server/manifests/compute
   - nodeFilters:
     - "server:*"
-    volume: ${MANIFESTS_SKIP}:/var/lib/rancher/k3s/server/manifests/skip
+    # TODO same as above
+    volume: ${VOLUME_MANIFESTS_SKIP}:/var/lib/rancher/k3s/server/manifests/skip
 registries:
   use:
     - "${REGISTRY}:5000"

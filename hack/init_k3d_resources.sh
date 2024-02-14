@@ -26,10 +26,11 @@ main() {
     local DOCKER_HOST="${DOCKER_HOST:-}"
     local DOCKER_SOCK="${DOCKER_SOCK:-"/run/podman/podman.sock"}"
     # TODO use default value subnets
-    local CLUSTER_SUBNET_NODES="10.94.0.0/16"
-    local CLUSTER_SUBNET_VMS="10.93.0.0/16"
-    local CLUSTER_SUBNET_SERVICES="10.46.0.0/16"
+    local CLUSTER_SUBNET_NODES="${CLUSTER_SUBNET_NODES:-10.94.0.0/16}"
+    local CLUSTER_SUBNET_VMS="${CLUSTER_SUBNET_VMS:-10.93.0.0/16}"
+    local CLUSTER_SUBNET_SERVICES="${CLUSTER_SUBNET_SERVICES:-10.46.0.0/16}"
     local ROLLBACK=${ROLLBACK:-false}
+    # TODO allow overriding vars set in .env with cmd line arg for cluster name
     local CLUSTER_MANAGER="${CLUSTER_MANAGER:-"bootstrapper"}"
     local CLUSTER_DOMAIN="${CLUSTER_DOMAIN:-"cluster.local"}"
     local TOKEN="${TOKEN:?"TOKEN must be set"}"
@@ -43,38 +44,255 @@ main() {
     local INSTANCE="${INSTANCE:-"$(hostname -s)"}"
     local CLUSTER_NETWORK_NAME_NODES="${CLUSTER_NETWORK_NAME_NODES:-"k3d"}"
     local CLUSTER_APISERVER_ADDVERTISE_IP="10.50.0.202"
+    local -r node_server_0="k3d-${CLUSTER_MANAGER}-server-0"
 
+    if [[ ${REMOTE_INSTALL} == "true" ]]; then
+        podman() {
+            command podman -r "${@}"
+        }
+    fi
+
+    local -n arg1="${1:-help}"
     # TODO turn this into a getopts case switch loop
     # TODO add a --debug option for adding `set -T -x`
-    # shellcheck disable=SC2068
-    if [[ ${#@} -ne 0 ]]; then
-        if [[ $1 == "delete-all" ]]; then
-            delete_all
-        elif [[ $1 == "create-all" ]]; then
-            create_all
-        elif [[ $1 == "create-volumes" ]]; then
-           init_volumes 
-        elif [[ $1 == "recreate-all" ]]; then
-            delete_all
-            create_all
-        elif [[ $1 == "get-defaults" ]]; then
-            log "Default Environment: "
-            local -p
-        elif [[ $1 == "help" ]]; then
-            usage
-        else
-            log "${0}: Unkown arg \"${1}\""
-            abort usage
-        fi
+    case $arg1 in
+    "create-all")
+        create_all node_server_0
+        ;;
+    "delete-all")
+        delete_all
+        ;;
+    "recreate-all")
+        delete_all
+        create_all node_server_0
+        ;;
+    "create-volumes")
+        manage_volumes "create"
+        ;;
+    "copy-manifests")
+        copy_all_to_node node_server_0
+        ;;
+    "get-defaults")
+        log "Default Environment: "
+        local -p
+        ;;
+    "help")
+        usage
+        ;;
+    *)
+        log "${0}: Unkown arg \"${1}\""
+        abort usage
+        ;;
+    esac
+}
+
+manage_volumes() {
+    local action="$1"
+    local -a volumes=(
+        "${VOLUME_MANIFESTS}"
+        "${VOLUME_MANIFESTS_SKIP}"
+    )
+
+    if [[ $action == "create" ]]; then
+        init_volumes "${volumes[@]}"
+    elif [[ $action == "delete" ]]; then
+        delete_volumes "${volumes[@]}"
     fi
 }
 
+copy_all_to_node() {
+    local -r err="Node name must be provided"
+    local -n node="$1"
+
+    local -r opt_cluster="clusterconfig"
+    local -r opt_workloads="apps"
+    local -r opt_skip="skip"
+
+    local -a opt_enabled=(
+        "$opt_cluster"
+    )
+
+    # shellcheck disable=SC2068
+    for option in ${opt_enabled[@]}; do
+        copy_to_node "$node" "$option"
+    done
+}
+
+copy_to_node() {
+    local n="${1}"
+    local opt="${2}"
+    local -r node_manifests_path="/var/lib/rancher/k3s/server/manifests/compute"
+    local -r node_manifests_skip_path="/var/lib/rancher/k3s/server/manifests/skip"
+    local local_manifests_path 
+    local_manifests_path="$(pwd)"
+
+    local -a manifests
+    if [[ $opt == "$opt_cluster" ]]; then
+        manifests=(
+            # Required for k3s install, probably not k3d cluster
+            coredns
+            nginx
+            traefik
+        )
+        local_manifests_path+="/${opt_cluster}"
+    # Not implimented but not currently used, future plans are to load this into a volume
+    # attached to the bootstrap cluster for use in creating workload clusters
+    elif [[ $opt == "$opt_workloads" ]]; then
+        abort "argument \"$opt\" is not supported"
+        manifests=(
+            jellyfin
+            motion
+            pihole
+            v4l2rtspserver
+        )
+        local_manifests_path+="/${opt_workloads}"
+    elif [[ $opt == "$opt_skip" ]]; then
+        local_manifests_path+="${opt_cluster}/${opt_skip}"
+    else
+        abort "option: \"$opt\" is unkown"
+    fi
+    local -r local_manifests_path
+
+    # change to debug line
+    log "working directory: ${local_manifests_path}"
+
+    local tarball 
+    local kustom=false
+    local node_path
+    if [[ $opt == "$opt_workloads" ]]; then
+        node_path="$node_manifests_path"
+        kustom=true
+    # TODO set skip as an enabled file option
+    elif [[ $opt == "$opt_skip" ]]; then
+        node_path="$node_manifests_skip_path"
+    fi
+    local -r kustom node_path
+    generate_manifests_tar manifests kustom tarball local_manifests_path
+    
+    log "Attempting to podman cp \"$opt\" manifests now..."
+    podman cp - "${n}:${node_path}" <<< "$tarball"
+    log "Completed uploading \"$opt\" manifests."
+}
+
+#######################################
+# Get configuration directory.
+# References:
+#   arguement 3
+# Arguments:
+#   1) Array of directories containing kustomize yaml files and other manifests to be processed by "oc kustomize ${enabled_dirs[@]}"
+# Outputs:
+#   Modifies reference variable provided in argument 3, populating it with the tar archive
+#######################################
+generate_manifests_tar() {
+    local -n enabled_dirs="$1"
+    local -n o_kustomize="$2"
+    local -n tar_archive="$3"
+    local -n path="$4"
+    local -i enabled_len=${#enabled_dirs[@]}
+    local tmp
+    tmp="$(mktemp -d)"
+
+    # TODO move file extensions enabled up one level in scope, set/unset enabled/disabled options respectively
+    local -ar file_extensions=(
+        '*.tgz'
+        '*.yaml'
+        '*.skip'
+    )
+    local -r tar_archive_file="${tmp}/$(date --rfc-3339=minutes).tar"
+    local -a files_to_archive
+    if [[ $enabled_len -eq 0 ]] && [[ $o_kustomize == true ]]; then
+        abort "input manifests cannot be empty with argument \"$o_kustomize\" provided input \$enabled_dirs length is zero: $enabled_len"
+    elif [[ $o_kustomize == false ]]; then
+        pushd "$path" || abort "failed to change directory into \"$path\""
+        log "Creating tar archive now "
+        for ext in "${file_extensions[@]}"; do
+            files="$(find "$path" -name "$ext")"
+            read -a arr <<< $files
+            files_to_archive+=("${arr[@]}")
+        done
+        popd
+        tar cvf "$tar_archive_file" "${files_to_archive[@]}"
+    # Not Implimenented
+    elif [[ $o_kustomize == true ]]; then
+        abort "loading kustomize files is not implimented yet"
+    fi
+
+    if [[ ! -f $tar_archive_file ]]; then
+        abort "generated tar archive \"$tar_archive_file\" doesn't exist"
+    fi
+
+    tar -tf "$tar_archive_file" > /dev/null || abort "Testing $tar_archive_file failed"
+
+    # TODO set as debug log message
+    log "Extracting tar archive to variable reference in \"\$3\""
+    local -r tar_error_log="$tmp/tar_failure_log_$(date +%F-%T)"
+    if tar_archive="$(tar xf "$tar_archive_file" -O 2> "$tar_error_log")" && error_log_check "$tar_error_log"; then
+        return 0
+    else
+        log "failed to create tar archive, log located at \"$f\""
+        log "deleting temporary archive \"$tar_archive_file\""
+        rm "$tar_archive_file"
+        return 1
+    fi
+}
+
+error_log_check() {
+    local f="$1"
+    if [[ ! -f $f ]]; then
+        log "\"$f\" error log not found"
+        return 1
+    fi
+    c=$(wc -c "$f")
+    if [[ ${c:0:1} -ne 0 ]]; then
+        log "$f: \n$(cat "$f")"
+        return 1
+    fi
+}
+
+delete_volumes() {
+    local -a volumes=("${@}")
+
+    # shellcheck disable=SC2068
+    for v in ${volumes[@]}; do
+        rm_volume "$v"
+    done
+}
+
+init_volumes() {
+    local -a volumes=("${@}")
+
+    # shellcheck disable=SC2068
+    for v in ${volumes[@]}; do
+        recreate_volumes "$v" "$v"
+    done
+}
+
+recreate_volumes() {
+    local volume_name="${1}"
+    local label_name="${2:-${1}}"
+    log "deleting volume ${volume_name}"
+    rm_volume "${volume_name}"
+
+    log "creating volume ${volume_name}"
+    podman volume \
+            create \
+            --label=name="${label_name}" \
+            --label=cluster="${CLUSTER_MANAGER}" \
+            --label=part-of="${CLUSTER_MANAGER}" \
+            --label=instance="${CLUSTER_MANAGER}-${INSTANCE}" \
+            --label=cluster="${CLUSTER_MANAGER}" \
+            "${volume_name}"
+    log "successfully created volume ${volume_name}"
+}
+
 create_all() {
+    local -n node_copy_to="$1"
     init_network
+    manage_volumes "create"
     # TODO include a recreate option for this script to optionally delete components
-    delete_components "registry"
-    init_registry "$REGISTRY" "${CLUSTER_NETWORK_NAME_NODES}"
+    manage_registry "$REGISTRY" "${CLUSTER_NETWORK_NAME_NODES}" "create"
     create_k3d "${CLUSTER_MANAGER}" "${k3d_config}"
+    copy_all_to_node "$node_copy_to"
     succeed
 }
 
@@ -83,8 +301,25 @@ delete_all() {
     succeed
 }
 
-init_registry() {
-    local registry="${1}" default_network="${2}"
+manage_registry() {
+    local registry="${1}"
+    local default_network="${2}"
+    local opt="${3}"
+
+    case "$opt" in
+
+    "create")
+        log "Creating registry ${registry} with default network ${default_network}"
+        ;;
+    "delete")
+        log "Deleting registry ${registry}"
+        ;;
+    "re-create")
+        log "Deleting registry ${registry}, then creating registry ${registry} with default network ${default_network}"
+        delete_registry "${registry}"
+        ;;
+    esac
+
     k3d registry \
         create \
         "$registry" \
@@ -100,7 +335,7 @@ succeed() {
 }
 
 usage() {
-    echo "${0} < delete-all | create-all | create-volumes>"
+    echo "${0} < delete-all | create-all | create-volumes | recreate-all | copy-manifests>"
 }
 
 init_network() {
@@ -152,100 +387,10 @@ init_network() {
             "$pod_net"
 }
 
-init_volumes() {
-    init_workloads="${1:-false}"
-    init_or_recreate_volume "${MANIFESTS}"
-    init_or_recreate_volume "${MANIFESTS_SKIP}"
-    init_or_recreate_volume "${REGISTRY_IMAGE_STORE}" "${REGISTRY}"
-
-    if [[ $init_workloads == true ]]; then
-        init_volume_load_data "${volume_name}" "cluster"
-        init_volume_load_data "${volume_name}" "workloads"
-    fi
-}
-
-init_or_recreate_volume() {
-    local volume_name="${1}"
-    local label_name="${2:-${1}}"
-    log "deleting volume ${volume_name}"
-    rm_volume "${volume_name}"
-
-    log "creating volume ${volume_name}"
-    podman volume \
-            create \
-            --label=name="${label_name}" \
-            --label=cluster="${CLUSTER_MANAGER}" \
-            --label=part-of="${CLUSTER_MANAGER}" \
-            --label=instance="${CLUSTER_MANAGER}-${INSTANCE}" \
-            --label=cluster="${CLUSTER_MANAGER}" \
-            "${volume_name}"
-    log "successfully created volume ${volume_name}"
-}
-
-init_volume_load_data() {
-    local vol="${1}"
-    local opt="${2}"
-
-    generate_manifests
-    local -a manifests
-    if [[ $opt == "cluster" ]]; then
-        manifests=(
-            coredns
-            nginx
-            traefik
-        )
-        pushd ./clusterconfig
-    elif [[ $opt == "workloads" ]]; then
-        manifests=(
-            jellyfin
-            motion
-            pihole
-            v4l2rtspserver
-        )
-        pushd ./apps
-    else
-        abort "$opt unknown"
-    fi
-
-    local -a manifests=("$(generate_manifests "${manifests[@]}")")
-
-    podman volume exists "${vol}" || abort "${vol} not found"
-
-    # TODO get server-0 k3d name and cp files into volume
-    # shellcheck disable=SC2068
-    tar c ${manifests[@]} | podman volume cp - "${vol}"
-
-    popd
-}
-
-generate_manifests() {
-    local -a kdirs=("${@}")
-    if [[ ${#kdirs{@}} -eq 0 ]]; then
-        abort "input manifests cannot be empty, provided input \${@} length is zero."
-    fi
-    tmp="$(mktemp -d)"
-
-    local -a manifests
-    # shellcheck disable=SC2068
-    for k in ${kdirs[@]}; do
-        l="${tmp}/${k}.yaml"
-        oc kustomize \
-            "$k" \
-            -o="$l"
-        manifests+=("$l")
-    done
-
-    echo "${manifests[@]}"
-}
-
-podman() {
-    command podman -r "${@}"
-}
-
 rm_volume() {
-    local vol="${1}"
-    if podman volume exists "${vol}"; then
-        podman volume rm "${vol}"
+    local node="${1}"
+    if podman volume exists "${node}"; then
+        podman volume rm "${node}"
     fi
 }
 
@@ -255,12 +400,12 @@ catch() {
 
     # Search for known exit codes
     # shellcheck disable=SC2068
-    for c in ${safe_return_codes[@]}; do
-        if [[ $c -eq $return_code ]]; then
-            echo "${c}"
-            return 0
-        fi
-    done
+    # for c in ${safe_return_codes[@]}; do
+    #     if [[ $c -eq $return_code ]]; then
+    #         echo "${c}"
+    #         return 0
+    #     fi
+    # done
 
     abort "Something went wrong, ${return_code} was not found in \$safe_return_codes[@] ${safe_return_codes[*]}"
 }
@@ -277,8 +422,9 @@ delete_components() {
     elif [[ $component == "all" ]]; then
         delete_cluster
         delete_registry
+        delete_volumes "${volumes[@]}"
     else
-        abort "unknown option $component"
+        abort "unknown component: ${component}"
     fi
 }
 
@@ -294,9 +440,12 @@ delete_cluster() {
 }
 
 delete_registry() {
+    # TODO cleanup references to delete_registry, ensuring they all pass in the desired registry name, rather than using the inhereted $want_registry
+    # remove default value after this
+    local registry="${1:-$want_registry}"
     local registry_found
-    registry_found=$(k3d registry list -o=json | jq -r '.[].name')
-    if [ "$want_registry" == "$registry_found" ]; then
+    registry_found=$(k3d registry list -o=json 2> /dev/null | jq -r '.[].name')
+    if [ "$registry" == "$registry_found" ]; then
         k3d \
             registry \
             delete \
@@ -305,7 +454,8 @@ delete_registry() {
 }
 
 create_k3d() {
-    local cluster="$1" config="$2"
+    local cluster="${1:?Cluster name must be provided}"
+    local config="${2:?Cluster config location must be provided}"
     k3d \
         cluster \
         create \
@@ -325,4 +475,5 @@ abort() {
     exit 1
 }
 
-main "${@}"
+option="$1"
+main option
