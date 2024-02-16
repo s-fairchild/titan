@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 # Initialize podman resources required to run k3d
 
 set -o nounset \
@@ -31,20 +31,26 @@ main() {
     local CLUSTER_SUBNET_SERVICES="${CLUSTER_SUBNET_SERVICES:-10.46.0.0/16}"
     local ROLLBACK=${ROLLBACK:-false}
     # TODO allow overriding vars set in .env with cmd line arg for cluster name
-    local CLUSTER_MANAGER="${CLUSTER_MANAGER:-"bootstrapper"}"
-    local CLUSTER_DOMAIN="${CLUSTER_DOMAIN:-"cluster.local"}"
-    local TOKEN="${TOKEN:?"TOKEN must be set"}"
-    local MANIFESTS="${MANIFESTS:-"k3d-${CLUSTER_MANAGER}-manifests"}"
-    local MANIFESTS_SKIP="${MANIFESTS_SKIP:-"k3d-${CLUSTER_MANAGER}-skip-manifests"}"
-    local MANAGEMENT_MIRROR_URL="${MANAGEMENT_MIRROR_URL:-"https://registry-1.docker.io"}"
-    local MANAGEMENT_REGISTRY_USER="${MANAGEMENT_REGISTRY_USER:-}"
-    local MANAGEMENT_REGISTRY_PASS="${MANAGEMENT_REGISTRY_PASS:-}"
-    local REGISTRY="${REGISTRY:-"${CLUSTER_MANAGER}-registry.localhost"}"
-    local REGISTRY_IMAGE_STORE="${REGISTRY_IMAGE_STORE:-"k3d-registry-images"}"
-    local INSTANCE="${INSTANCE:-"$(hostname -s)"}"
-    local CLUSTER_NETWORK_NAME_NODES="${CLUSTER_NETWORK_NAME_NODES:-"k3d"}"
-    local CLUSTER_APISERVER_ADDVERTISE_IP="10.50.0.202"
-    local -r node_server_0="k3d-${CLUSTER_MANAGER}-server-0"
+    local -rl CLUSTER_MANAGER="${CLUSTER_MANAGER:-"cluster-manager"}"
+    local -rl CLUSTER_DOMAIN="${CLUSTER_DOMAIN:-"cluster.local"}"
+    local -rl MANIFESTS_SKIP="${MANIFESTS_SKIP:-"k3d-${CLUSTER_MANAGER}-skip-manifests"}"
+    local -r MANAGEMENT_MIRROR_URL="${MANAGEMENT_MIRROR_URL:-"https://registry-1.docker.io"}"
+    local -r MANAGEMENT_REGISTRY_USER="${MANAGEMENT_REGISTRY_USER:-}"
+    local -r MANAGEMENT_REGISTRY_PASS="${MANAGEMENT_REGISTRY_PASS:-}"
+    local -rl REGISTRY="${REGISTRY:-"${CLUSTER_MANAGER}-registry.localhost"}"
+    local -rl REGISTRY_IMAGE_STORE="${REGISTRY_IMAGE_STORE:-"k3d-registry-images"}"
+    local -r INSTANCE="${INSTANCE:-"$(hostname -s)"}"
+    local -rl CLUSTER_NETWORK_NAME_NODES="${CLUSTER_NETWORK_NAME_NODES:-"k3d"}"
+    local -r CLUSTER_APISERVER_ADDVERTISE_IP="10.50.0.202"
+    local -r OPTION_COPY_MANIFESTS="${OPTION_COPY_MANIFESTS:-false}"
+    local -rl node_server_0="k3d-${CLUSTER_MANAGER}-server-0"
+    # Logging options
+    local debug="${DEBUG:-false}"
+    # TODO save this token as a podman secret
+    local -r TOKEN="${TOKEN:?"TOKEN must be set"}"
+    # Constants
+    local -r token_podman_secret_name="k3d-${CLUSTER_MANAGER}-token"
+    local -r MANIFESTS="${MANIFESTS:-"k3d-${CLUSTER_MANAGER}-manifests"}"
 
     if [[ ${REMOTE_INSTALL} == "true" ]]; then
         podman() {
@@ -52,38 +58,50 @@ main() {
         }
     fi
 
+    if [[ "$debug" == true ]]; then
+        set -x
+    fi
+
     local -n arg1="${1:-help}"
     # TODO turn this into a getopts case switch loop
     # TODO add a --debug option for adding `set -T -x`
     case $arg1 in
     "create-all")
-        create_all node_server_0
+        create_all node_server_0 OPTION_COPY_MANIFESTS
         ;;
     "delete-all")
         delete_all
         ;;
     "recreate-all")
         delete_all
-        create_all node_server_0
+        create_all node_server_0 OPTION_COPY_MANIFESTS
         ;;
     "create-volumes")
         manage_volumes "create"
         ;;
     "copy-manifests")
-        copy_all_to_node node_server_0
+        exit_not_implimented
+        ;;
+    "token-update-new")
+        save_secret token_podman_secret_name TOKEN
         ;;
     "get-defaults")
         log "Default Environment: "
         local -p
         ;;
-    "help")
-        usage
+    "help")token=TOKEN
         ;;
     *)
         log "${0}: Unkown arg \"${1}\""
-        abort usage
+        usage
+        abort
         ;;
     esac
+}
+
+exit_not_implimented() {
+    log "\"$arg1\" is not currently implimented. "
+    return 0
 }
 
 manage_volumes() {
@@ -285,14 +303,36 @@ recreate_volumes() {
     log "successfully created volume ${volume_name}"
 }
 
+# save_token
+# arguments: 2
+# 1) podman secret name
+# 2) podman secret value
+save_secret() {
+    local -n secret_name="$1"
+
+    if podman secret exists "$secret_name"; then
+        log "secret \"$secret_name\" already exists, skipping
+        to regenerate \"$secret_name\", run: \"podman secret delete $secret_name\""
+    else
+        podman secret create "$secret_name" --env "$2"
+    fi
+}
+
 create_all() {
     local -n node_copy_to="$1"
+    local -n opt_cp_manifests="$2"
     init_network
     manage_volumes "create"
     # TODO include a recreate option for this script to optionally delete components
     manage_registry "$REGISTRY" "${CLUSTER_NETWORK_NAME_NODES}" "create"
     create_k3d "${CLUSTER_MANAGER}" "${k3d_config}"
-    copy_all_to_node "$node_copy_to"
+
+    if [[ $opt_cp_manifests == true ]]; then
+        copy_all_to_node "$node_copy_to"
+    else
+        log "Skipping node copy"
+    fi
+
     succeed
 }
 
@@ -335,7 +375,7 @@ succeed() {
 }
 
 usage() {
-    echo "${0} < delete-all | create-all | create-volumes | recreate-all | copy-manifests>"
+    echo "${0} < delete-all | create-all | create-volumes | recreate-all | copy-manifests | token-update-new>"
 }
 
 init_network() {
@@ -464,14 +504,24 @@ create_k3d() {
         "$cluster"
 }
 
+# log
+# arguments: 2
+# 1) error message to log
+# 2) optional: custom stack level, changes the function stack level the message is logged from
+#    defaults to one function above itself
 log() {
     local msg="${1:?Log message cannot be unset}"
     local stack_level="${2:-1}"
     echo "${FUNCNAME[${stack_level}]}: ${msg}"
 }
 
+# abort
+# arguments: 2
+# 1) error message to log
+# 2) optional: custom stack level, changes the function stack level the message is logged from
+#    defaults to 2 above itself
 abort() {
-    log "${1}" "2"
+    log "${1:-"aborting..."}" "${2:-2}"
     exit 1
 }
 
