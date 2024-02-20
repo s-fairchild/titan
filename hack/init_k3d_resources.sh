@@ -65,7 +65,7 @@ main() {
         }
     fi
 
-    if [[ "$debug" == true ]]; then
+    if [[ $debug == true ]]; then
         set -x
     fi
 
@@ -81,26 +81,40 @@ main() {
             CLUSTER_MANAGER_NAME
         ;;
     "delete-all")
-        delete_all CLUSTER_MANAGER_NAME REGISTRY 
+        delete_all \
+            CLUSTER_MANAGER_NAME \
+            REGISTRY 
         ;;
     "recreate-all")
-        delete_all
-        create_all node_server_0 OPTION_COPY_MANIFESTS kubevirt_network_name enabled_volumes
+        delete_all \
+            CLUSTER_MANAGER_NAME \
+            REGISTRY 
+
+        create_all \
+            cluster_network_name_nodes \
+            kubevirt_network_name \
+            enabled_volumes \
+            CLUSTER_MANAGER_NAME
         ;;
     "create-volumes")
-        manage_volumes "create" enabled_volumes
+        manage_volumes "create" \
+                        enabled_volumes
         ;;
     "registry-create")
-        manage_registry  "create" REGISTRY CLUSTER_NETWORK_NAME_NODES
+        manage_registry "create" \
+                        REGISTRY \
+                        CLUSTER_NETWORK_NAME_NODES
         ;;
     "registry-delete")
-        manage_registry "delete" REGISTRY
+        manage_registry "delete" \
+                        REGISTRY
         ;;
     "copy-manifests")
         exit_not_implimented
         ;;
     "token-update-new")
-        save_secret token_podman_secret_name TOKEN
+        save_secret token_podman_secret_name \
+                    TOKEN
         ;;
     "get-defaults")
         log "Default Environment: "
@@ -384,23 +398,21 @@ catch() {
 }
 
 delete_components() {
-    local component="$1"
+    local type="$1"
     local -n want_cluster="$2"
-    local -n want_registry="$3"
+    local -n registry="$3"
     local -n volumes="$4"
 
-    if [[ $component == "registry" ]]; then
-        # log "Starting component deletion \"$component\""
+    if [[ $type == "registry" ]]; then
         manage_registry "delete" registry
-    elif [[ $component == "cluster" ]]; then
-        # log "Starting component deletion \"$component\""
+    elif [[ $type == "cluster" ]]; then
         delete_cluster want_cluster
-    elif [[ $component == "all" ]]; then
+    elif [[ $type == "all" ]]; then
         delete_cluster want_cluster
         manage_registry "delete" registry
         delete_volumes volumes
     else
-        log "unknown component: ${component}"
+        log "unknown component type: ${type}"
         return 1
     fi
 
