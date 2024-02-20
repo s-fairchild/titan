@@ -14,10 +14,10 @@ main() {
     local -r k3d_config="bootstrap/config/bootstrap-cluster-k3d.yaml"
     # TODO create registry via config file values
     # local -r k3d_config="bootstrap/config/bootstrap-registry-k3d.yaml"
-    if [[ -f  $user_cluster_env ]]; then
-        # shellcheck source=../bootstrap/config/env/bootstrap-cluster-k3d.env
+    if [[ -f $user_cluster_env ]]; then
+        # shellcheck source=../bootstrap/config/env/bootstrap-cluster-k3d.dev.env
         source "$user_cluster_env"
-    elif [[ -f $default_cluster_env ]]; then
+    elif [[ -f  $user_cluster_env ]]; then
         # shellcheck source=../bootstrap/config/env/bootstrap-cluster-k3d.env.example
         source "$default_cluster_env"
     fi
@@ -31,30 +31,37 @@ main() {
     local CLUSTER_SUBNET_SERVICES="${CLUSTER_SUBNET_SERVICES:-10.46.0.0/16}"
     local ROLLBACK=${ROLLBACK:-false}
     # TODO allow overriding vars set in .env with cmd line arg for cluster name
-    local -rl CLUSTER_MANAGER="${CLUSTER_MANAGER:-"cluster-manager"}"
+    local -rl CLUSTER_MANAGER_NAME="${CLUSTER_MANAGER_NAME:-"cluster-manager"}"
     local -rl CLUSTER_DOMAIN="${CLUSTER_DOMAIN:-"cluster.local"}"
-    local -rl MANIFESTS_SKIP="${MANIFESTS_SKIP:-"k3d-${CLUSTER_MANAGER}-skip-manifests"}"
+    local -rl MANIFESTS_SKIP="${MANIFESTS_SKIP:-"k3d-${CLUSTER_MANAGER_NAME}-skip-manifests"}"
     local -r MANAGEMENT_MIRROR_URL="${MANAGEMENT_MIRROR_URL:-"https://registry-1.docker.io"}"
     local -r MANAGEMENT_REGISTRY_USER="${MANAGEMENT_REGISTRY_USER:-}"
     local -r MANAGEMENT_REGISTRY_PASS="${MANAGEMENT_REGISTRY_PASS:-}"
-    local -rl REGISTRY="${REGISTRY:-"${CLUSTER_MANAGER}-registry.localhost"}"
+    local -rl REGISTRY="${REGISTRY:-"${CLUSTER_MANAGER_NAME}-registry.localhost"}"
     local -rl REGISTRY_IMAGE_STORE="${REGISTRY_IMAGE_STORE:-"k3d-registry-images"}"
     local -r INSTANCE="${INSTANCE:-"$(hostname -s)"}"
-    local -rl CLUSTER_NETWORK_NAME_NODES="${CLUSTER_NETWORK_NAME_NODES:-"k3d"}"
     local -r CLUSTER_APISERVER_ADDVERTISE_IP="10.50.0.202"
     local -r OPTION_COPY_MANIFESTS="${OPTION_COPY_MANIFESTS:-false}"
-    local -rl node_server_0="k3d-${CLUSTER_MANAGER}-server-0"
+    local -rl node_server_0="k3d-${CLUSTER_MANAGER_NAME}-server-0"
+    # Volumes
+
     # Logging options
     local debug="${DEBUG:-false}"
     # TODO save this token as a podman secret
     local -r TOKEN="${TOKEN:?"TOKEN must be set"}"
     # Constants
-    local -r token_podman_secret_name="k3d-${CLUSTER_MANAGER}-token"
-    local -r MANIFESTS="${MANIFESTS:-"k3d-${CLUSTER_MANAGER}-manifests"}"
+    local -r token_podman_secret_name="k3d-${CLUSTER_MANAGER_NAME}-token"
+    local -r MANIFESTS="${MANIFESTS:-"k3d-${CLUSTER_MANAGER_NAME}-manifests"}"
+    local -r kubevirt_network_name="k3d-${CLUSTER_MANAGER_NAME}-vms"
+    local -rl cluster_network_name_nodes="${CLUSTER_NETWORK_NAME_NODES:-"k3d"}"
+    local -ra enabled_volumes=(
+        VOLUME_MANIFESTS
+        VOLUME_MANIFESTS_SKIP
+    )
 
     if [[ ${REMOTE_INSTALL} == "true" ]]; then
         podman() {
-            command podman -r "${@}"
+            command podman -r ${@}
         }
     fi
 
@@ -67,17 +74,27 @@ main() {
     # TODO add a --debug option for adding `set -T -x`
     case $arg1 in
     "create-all")
-        create_all node_server_0 OPTION_COPY_MANIFESTS
+        create_all \
+            cluster_network_name_nodes \
+            kubevirt_network_name \
+            enabled_volumes \
+            CLUSTER_MANAGER_NAME
         ;;
     "delete-all")
-        delete_all
+        delete_all CLUSTER_MANAGER_NAME REGISTRY 
         ;;
     "recreate-all")
         delete_all
-        create_all node_server_0 OPTION_COPY_MANIFESTS
+        create_all node_server_0 OPTION_COPY_MANIFESTS kubevirt_network_name enabled_volumes
         ;;
     "create-volumes")
-        manage_volumes "create"
+        manage_volumes "create" enabled_volumes
+        ;;
+    "registry-create")
+        manage_registry  "create" REGISTRY CLUSTER_NETWORK_NAME_NODES
+        ;;
+    "registry-delete")
+        manage_registry "delete" REGISTRY
         ;;
     "copy-manifests")
         exit_not_implimented
@@ -89,7 +106,7 @@ main() {
         log "Default Environment: "
         local -p
         ;;
-    "help")token=TOKEN
+    "help")
         ;;
     *)
         log "${0}: Unkown arg \"${1}\""
@@ -106,16 +123,40 @@ exit_not_implimented() {
 
 manage_volumes() {
     local action="$1"
-    local -a volumes=(
-        "${VOLUME_MANIFESTS}"
-        "${VOLUME_MANIFESTS_SKIP}"
-    )
+    local -n volumes="$2"
 
     if [[ $action == "create" ]]; then
-        init_volumes "${volumes[@]}"
+        init_volumes volumes
     elif [[ $action == "delete" ]]; then
-        delete_volumes "${volumes[@]}"
+        delete_volumes volumes
     fi
+}
+
+delete_volumes() {
+    local -n vols="$1"
+
+    # shellcheck disable=SC2068
+    for v in ${vols[@]}; do
+        rm_volume "$v"
+    done
+}
+
+recreate_volumes() {
+    local volume_name="${1}"
+    local label_name="${2:-${1}}"
+    log "deleting volume ${volume_name}"
+    rm_volume "${volume_name}"
+
+    log "creating volume ${volume_name}"
+    podman volume \
+            create \
+            --label=name="${label_name}" \
+            --label=cluster="${CLUSTER_MANAGER_NAME}" \
+            --label=part-of="${CLUSTER_MANAGER_NAME}" \
+            --label=instance="${CLUSTER_MANAGER_NAME}-${INSTANCE}" \
+            --label=cluster="${CLUSTER_MANAGER_NAME}" \
+            "${volume_name}"
+    log "successfully created volume ${volume_name}"
 }
 
 error_log_check() {
@@ -131,40 +172,10 @@ error_log_check() {
     fi
 }
 
-delete_volumes() {
-    local -a volumes=("${@}")
-
-    # shellcheck disable=SC2068
-    for v in ${volumes[@]}; do
-        rm_volume "$v"
-    done
-}
-
 init_volumes() {
-    local -a volumes=("${@}")
-
-    # shellcheck disable=SC2068
-    for v in ${volumes[@]}; do
+    for v in ${@}; do
         recreate_volumes "$v" "$v"
     done
-}
-
-recreate_volumes() {
-    local volume_name="${1}"
-    local label_name="${2:-${1}}"
-    log "deleting volume ${volume_name}"
-    rm_volume "${volume_name}"
-
-    log "creating volume ${volume_name}"
-    podman volume \
-            create \
-            --label=name="${label_name}" \
-            --label=cluster="${CLUSTER_MANAGER}" \
-            --label=part-of="${CLUSTER_MANAGER}" \
-            --label=instance="${CLUSTER_MANAGER}-${INSTANCE}" \
-            --label=cluster="${CLUSTER_MANAGER}" \
-            "${volume_name}"
-    log "successfully created volume ${volume_name}"
 }
 
 # save_token
@@ -182,55 +193,118 @@ save_secret() {
     fi
 }
 
+# TODO clean this up by passing in an options associative array
+# create_all
+# arguments: 2
+# 1) node to copy files to - string
+# 2) enable copy manifests - boolean
+# 3) kubevirt network name - string
+# 4) Name of cluster to create
+# 5) cluster_name k3d cluster name to be created
+# 6) cluster_config k3d yaml configuration file location
+# 7) Optional: enabled_volumes containing the name of all volumes to be created - string array
 create_all() {
-    local -n node_copy_to="$1"
-    local -n opt_cp_manifests="$2"
-    init_network
-    manage_volumes "create"
-    # TODO include a recreate option for this script to optionally delete components
-    manage_registry "$REGISTRY" "${CLUSTER_NETWORK_NAME_NODES}" "create"
-    create_k3d "${CLUSTER_MANAGER}" "${k3d_config}"
+    local -n node_network="$1"
+    local -n kubevirt_net="$2"
+    local -n cluster_name="$3"
+    local -n cluster_config="$4"
+    local -n enabled_volumes="${5:-NULL}"
 
-    if [[ $opt_cp_manifests == true ]]; then
-        copy_all_to_node "$node_copy_to"
-    else
-        log "Skipping node copy"
-    fi
+    init_network node_network \
+                 kubevirt_net
+
+    manage_volumes "create" \
+                    enabled_volumes
+
+    manage_registry "create" \
+                    REGISTRY \
+                    CLUSTER_NETWORK_NAME_NODES
+
+    create_k3d cluster_name \
+                cluster_config
 
     succeed
 }
 
 delete_all() {
-    delete_components "all"
+    local -n cluster="$1"
+    local -n registry="$2"
+    # local delete_volumes=(
+    #     "$3"
+    #     "$4"
+    # )
+    # delete_components "all" cluster registry delete_volumes
+    delete_components "cluster" cluster registry
+    delete_components "registry" cluster registry ""
     succeed
 }
 
+# arguments: 3
+# 1) option - Can be: [ "create" | "delete" | "re-create" ]
+# 2) registry name - string
+# 3) Optional: default podman network - string
+#    Note: Required for "create" option 1)
 manage_registry() {
-    local registry="${1}"
-    local default_network="${2}"
-    local opt="${3}"
+    local opt="$1"
+    local -n registry="$2"
+    local -n default_network="${3:-NULL}"
+
+    if [[ $opt == "create" ]] && [[ -z $default_network ]]; then
+        log "Default network must be provided with the option create"
+        return 1
+    fi
 
     case "$opt" in
-
     "create")
-        log "Creating registry ${registry} with default network ${default_network}"
+        log "Creating registry \"${registry}\" with default network ${default_network}"
+        registry_create registry default_network
         ;;
     "delete")
-        log "Deleting registry ${registry}"
+        log "Deleting registry \"${registry}\""
+        delete_registry registry
         ;;
     "re-create")
-        log "Deleting registry ${registry}, then creating registry ${registry} with default network ${default_network}"
-        delete_registry "${registry}"
+        log "Deleting registry \"${registry}\", then creating registry \"${registry}\" with default network \"${default_network}\""
+        delete_registry registry
         ;;
     esac
+}
+
+delete_registry() {
+    local -n r=$1
+    if ! verify_component "registry" "$1"; then
+        log "registry \"$r\" not found"
+        return 1
+    fi
+
+
+    if ! k3d registry delete $r; then
+        log "Delete Registry Failed"
+        return 1
+    fi
+}
+
+registry_create() {
+    local -n r="$1"
+    local -n def_net="$2"
+    if verify_component "registry" "$1"; then
+        return 1
+    elif ! verify_component "network" "$2"; then
+        return 0
+    fi
 
     k3d registry \
         create \
-        "$registry" \
-        --default-network="$default_network" \
-        --port=0.0.0.0:5000 \
+        "$r" \
+        --default-network="$def_net" \
+        --port="$CLUSTER_REGISTRY_EXTERNAL_IP:$CLUSTER_REGISTRY_EXTERNAL_PORT" \
         --no-help \
         --verbose
+    
+    if [[ $? -ne 0 ]]; then
+        log "failed to create registry \"$r\" with default network \"$def_net\""
+        return 1
+    fi
 }
 
 succeed() {
@@ -239,55 +313,50 @@ succeed() {
 }
 
 usage() {
-    echo "${0} < delete-all | create-all | create-volumes | recreate-all | copy-manifests | token-update-new>"
+    echo "${0} < delete-all | create-all | create-volumes | recreate-all | copy-manifests | token-update-new> | registry-delete | registry-create "
 }
 
 init_network() {
-    local node_net="${CLUSTER_NETWORK_NAME_NODES}"
+    local -n node_net="$1"
+    local -n kubevt_net="$2"
     podman network create \
-                    --ignore \
                     --subnet="${CLUSTER_SUBNET_NODES}" \
-                    --interface-name="${CLUSTER_NETWORK_NAME_NODES}-nodes" \
-                    --label=name="k3d-nodes" \
-                    --label=cluster="${CLUSTER_MANAGER}" \
-                    --label=part-of="${CLUSTER_MANAGER}" \
-                    --label=instance="${CLUSTER_MANAGER}-${INSTANCE}" \
+                    --interface-name="k3d0" \
+                    --label=name="$node_net" \
+                    --label=cluster="${CLUSTER_MANAGER_NAME}" \
+                    --label=part-of="${CLUSTER_MANAGER_NAME}" \
+                    --label=instance="${CLUSTER_MANAGER_NAME}-${INSTANCE}" \
                     "$node_net"
 
-    local vm_net="k3d-${CLUSTER_MANAGER}-vms"
     podman network create \
-                    --ignore \
                     --subnet="${CLUSTER_SUBNET_VMS}" \
-                    --interface-name="k3d-vms" \
-                    --label=name="${CLUSTER_NETWORK_NAME_NODES}-vms" \
-                    --label=cluster="${CLUSTER_MANAGER}" \
-                    --label=part-of="$CLUSTER_MANAGER" \
-                    --label=instance="${CLUSTER_MANAGER}-${INSTANCE}" \
-                    "$vm_net"
+                    --interface-name="k3d1" \
+                    --label=name="$kubevt_net" \
+                    --label=cluster="$CLUSTER_MANAGER_NAME" \
+                    --label=part-of="$CLUSTER_MANAGER_NAME" \
+                    --label=instance="${CLUSTER_MANAGER_NAME}-${INSTANCE}" \
+                    "$kubevt_net"
 
-    local services_net="k3d-${CLUSTER_MANAGER}-services"
+    local services_net="k3d-${CLUSTER_MANAGER_NAME}-services"
     podman network create \
-                    --ignore \
                     --subnet="${CLUSTER_SUBNET_SERVICES}" \
-                    --interface-name="${CLUSTER_NETWORK_NAME_NODES}-services" \
+                    --interface-name="k3d2" \
                     --label=name="${services_net}" \
-                    --label=cluster="${CLUSTER_MANAGER}" \
-                    --label=part-of="$CLUSTER_MANAGER" \
-                    --label=instance="${CLUSTER_MANAGER}-${INSTANCE}" \
+                    --label=cluster="${CLUSTER_MANAGER_NAME}" \
+                    --label=part-of="$CLUSTER_MANAGER_NAME" \
+                    --label=instance="${CLUSTER_MANAGER_NAME}-${INSTANCE}" \
                     "$services_net"
 
-    local pod_net="k3d-${CLUSTER_MANAGER}-pods"
+    local pod_net="k3d-${CLUSTER_MANAGER_NAME}-pods"
     podman network \
             create \
-            --ignore \
-            --subnet=10.42.0.0/16 \
-            --gateway=10.42.0.254 \
+            --subnet="${CLUSTER_SUBNET_PODS}" \
             --interface-name="k3d3" \
             --label=name="${pod_net}" \
-            --label=cluster="${CLUSTER_MANAGER}" \
-            --label=part-of="${CLUSTER_MANAGER}" \
-            --label=instance="${CLUSTER_MANAGER}-${INSTANCE}" \
-            --label=cluster="${CLUSTER_MANAGER}" \
+            --label=cluster="${CLUSTER_MANAGER_NAME}" \
+            --label=part-of="${CLUSTER_MANAGER_NAME}" \
+            --label=instance="${CLUSTER_MANAGER_NAME}-${INSTANCE}" \
+            --label=cluster="${CLUSTER_MANAGER_NAME}" \
             "$pod_net"
 }
 
@@ -311,51 +380,60 @@ catch() {
     #     fi
     # done
 
-    abort "Something went wrong, ${return_code} was not found in \$safe_return_codes[@] ${safe_return_codes[*]}"
+    abort "Something went wrong: ${return_code}"
 }
 
 delete_components() {
-    local component="${1}"
-    local want_cluster="${CLUSTER_MANAGER}"
-    local want_registry="k3d-${REGISTRY}"
+    local component="$1"
+    local -n want_cluster="$2"
+    local -n want_registry="$3"
+    local -n volumes="$4"
 
     if [[ $component == "registry" ]]; then
-        delete_registry
+        # log "Starting component deletion \"$component\""
+        manage_registry "delete" registry
     elif [[ $component == "cluster" ]]; then
-        delete_cluster
+        # log "Starting component deletion \"$component\""
+        delete_cluster want_cluster
     elif [[ $component == "all" ]]; then
-        delete_cluster
-        delete_registry
-        delete_volumes "${volumes[@]}"
+        delete_cluster want_cluster
+        manage_registry "delete" registry
+        delete_volumes volumes
     else
-        abort "unknown component: ${component}"
+        log "unknown component: ${component}"
+        return 1
     fi
+
+    return 0
 }
 
 delete_cluster() {
-    local cluster_found
-    cluster_found=$(k3d cluster list -o=json | jq -r '.[].name')
-    if [ "$want_cluster" == "${cluster_found}" ]; then
-        k3d \
-            cluster \
-            delete \
-            "${cluster_found}"
+    local -n c="$1"
+    if ! verify_component "cluster" "$1"; then
+        log "failed to find cluster \"$c\""
+        return 1
+    fi
+
+    if ! k3d cluster delete "$c"; then
+        log "failed to delete cluster \"$c\""
+        return 1
     fi
 }
 
-delete_registry() {
-    # TODO cleanup references to delete_registry, ensuring they all pass in the desired registry name, rather than using the inhereted $want_registry
-    # remove default value after this
-    local registry="${1:-$want_registry}"
-    local registry_found
-    registry_found=$(k3d registry list -o=json 2> /dev/null | jq -r '.[].name')
-    if [ "$registry" == "$registry_found" ]; then
-        k3d \
-            registry \
-            delete \
-            "${registry_found}"
+verify_component() {
+    local type="$1"
+    local -n want="$2"
+    if [[ $type == "cluster" ]]; then
+        if ! k3d cluster list "$want" > /dev/null; then
+            return 1
+        fi
+    elif [[ $type == "registry" ]]; then
+        if ! k3d registry list "$want" > /dev/null; then
+            return 1
+        fi
     fi
 }
+
 
 create_k3d() {
     local cluster="${1:?Cluster name must be provided}"
@@ -388,6 +466,11 @@ abort() {
     log "${1:-"aborting..."}" "${2:-2}"
     exit 1
 }
+
+# NULL variable to use for optional name reference arguements inside functions
+# In other words, it's a pointer and can't be assigned a value as a default option
+# but rather the referencing variable
+declare -r NULL=""
 
 option="$1"
 main option

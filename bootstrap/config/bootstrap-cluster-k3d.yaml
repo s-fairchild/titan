@@ -15,11 +15,11 @@ hostAliases:
     hostnames:
       - "expresso.lan"
 kubeAPI:
-  host: "${CLUSTER_MANAGER}.${CLUSTER_DOMAIN}"
+  host: "${CLUSTER_MANAGER_NAME}.${CLUSTER_DOMAIN}"
   hostIP: 127.0.0.1
   hostPort: "6443"
 metadata:
-  name: ${CLUSTER_MANAGER}
+  name: ${CLUSTER_MANAGER_NAME}
 options:
   k3d:
     disableImageVolume: false
