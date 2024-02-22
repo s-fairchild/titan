@@ -9,81 +9,7 @@ set -o nounset \
 trap 'catch' ERR
 
 main() {
-
-    local -n user_flag_1="${1:-FLAG_HELP}"
-    local -n env_file="$2"
-    local -n k3d_config_file="$3"
-    local -n dev_mode="$4"
-
-    if [[ $dev_mode ]]; then
-        log "Development mode is enabled=$dev_mode"
-    fi
-
-    if [[ -f $env_file ]]; then 
-        log "Sourcing $env_file"
-        # shellcheck source=../bootstrap/config/env/bootstrap-cluster-k3d.dev.env
-        source "$env_file"
-    fi
-
-    if [[ -f $k3d_config_file ]]; then
-        log "Using k3d config file: $k3d_config_file"
-    fi
-
-    # TODO change from default expansion to assignment
-    # Establish defaults environment for unset variables
-    local DOCKER_HOST="${DOCKER_HOST:-}"
-    local DOCKER_SOCK="${DOCKER_SOCK:-"/run/podman/podman.sock"}"
-    local ROLLBACK=${ROLLBACK:-false}
-    # TODO allow overriding vars set in .env with cmd line arg for cluster name
-    local -rl CLUSTER_MANAGER_NAME="${CLUSTER_MANAGER_NAME:-"cluster-manager"}"
-    local -rl CLUSTER_DOMAIN="${CLUSTER_DOMAIN:-"cluster.local"}"
-    local -rl MANIFESTS_SKIP="${MANIFESTS_SKIP:-"k3d-${CLUSTER_MANAGER_NAME}-skip-manifests"}"
-    local -r MANAGEMENT_MIRROR_URL="${MANAGEMENT_MIRROR_URL:-"https://registry-1.docker.io"}"
-    local -r MANAGEMENT_REGISTRY_USER="${MANAGEMENT_REGISTRY_USER:-}"
-    local -r MANAGEMENT_REGISTRY_PASS="${MANAGEMENT_REGISTRY_PASS:-}"
-    local -rl REGISTRY="${REGISTRY:-"${CLUSTER_MANAGER_NAME}-registry.localhost"}"
-    local -rl REGISTRY_IMAGE_STORE="${REGISTRY_IMAGE_STORE:-"k3d-registry-images"}"
-    local -r INSTANCE="${INSTANCE:-"$(hostname -s)"}"
-    local -r OPTION_COPY_MANIFESTS="${OPTION_COPY_MANIFESTS:-false}"
-    local -rl node_server_0="k3d-${CLUSTER_MANAGER_NAME}-server-0"
-    # DEBUG log setting
-    local debug="${DEBUG:-false}"
-    # TODO save this token as a podman secret
-    local -r TOKEN="${TOKEN:?"TOKEN must be set"}"
-
-    # Networking
-    local -r token_podman_secret_name="k3d-${CLUSTER_MANAGER_NAME}-token"
-    local -r DEFAULT_NETWORK_NAME="${CLUSTER_NETWORK_NAME_NODES:-"k3d"}"
-    local -r DEFAULT_NETWORK_SUBNET="${CLUSTER_SUBNET_NODES:-"10.98.0.0/16"}"
-    local -r KUBEVIRT_NETWORK_NAME="${CLUSTER_MANAGER_NAME}-kubevirt"
-    local -r KUBEVIRT_NETWORK_SUBNET="${CLUSTER_SUBNET_VMS:-"10.90.0.0/16"}"
-    local -r SERVICE_NETWORK_NAME="${CLUSTER_MANAGER_NAME}-service"
-    local -r SERVICE_NETWORK_SUBNET="${CLUSTER_SUBNET_SERVICES:-"10.43.0.0/16"}"
-    local -r POD_NETWORK_NAME="${CLUSTER_MANAGER_NAME}-pod"
-    local -r POD_NETWORK_SUBNET="${POD_NETWORK_SUBNET:-"10.42.0.0/16"}"
-    local -r CLUSTER_APISERVER_ADDVERTISE_IP="${CLUSTER_APISERVER_ADDVERTISE_IP:?"Cluster apiserver IP not provided"}"
-
-    local -r vol_manifests="${VOLUME_MANIFESTS:-"k3d-${CLUSTER_MANAGER_NAME}-manifests"}"
-    local -r vol_skip_manifests="${VOLUME_SKIP_MANIFESTS:-"k3d-${CLUSTER_MANAGER_NAME}-skip-manifests"}"
-    local -ra VOLUMES_ALL=(
-            vol_manifests
-            vol_skip_manifests
-        )
-    local -r volume_rm_then_create="$BOOL_FALSE"
-
-    local -a podman_options
-    if [[ $debug == true ]]; then
-        set -x
-        podman_options+=("--log-level=DEBUG")
-    fi
-
-    if [[ ${REMOTE_INSTALL} == "true" ]]; then
-        podman() {
-            command podman -r "${podman_options[@]}" ${@}
-        }
-    fi
-
-    # TODO turn this into a getopts case switch loop
+    # TODO turn this into a getopts case switch loop, using the existing options as long options, and = as the seperator for short options
     # TODO add a --debug option for adding `set -T -x`
     case $user_flag_1 in
     "create-all")
@@ -160,7 +86,7 @@ main() {
                     TOKEN
         return $?
         ;;
-    "get-defaults")
+    "show-env")
         log "Default Environment: "
         local -p
         return $?
@@ -176,6 +102,85 @@ main() {
         ;;
     esac
 }
+
+init_main() {
+    local -n user_flag_1="${1:-FLAG_HELP}"
+    local -n env_file="$2"
+    local -n k3d_config_file="$3"
+    local -n dev_mode="$4"
+
+    if [[ $dev_mode ]]; then
+        log "Development mode is enabled=$dev_mode"
+    fi
+
+    if [[ -f $env_file ]]; then 
+        log "Sourcing $env_file"
+        # shellcheck source=../bootstrap/config/env/bootstrap-cluster-k3d.dev.env
+        source "$env_file"
+    fi
+
+    if [[ -f $k3d_config_file ]]; then
+        log "Using k3d config file: $k3d_config_file"
+    fi
+
+    # TODO change from default expansion to assignment
+    # Establish defaults environment for unset variables
+    local DOCKER_HOST="${DOCKER_HOST:-}"
+    local DOCKER_SOCK="${DOCKER_SOCK:-"/run/podman/podman.sock"}"
+    local -rg ROLLBACK=${ROLLBACK:-false}
+    # TODO allow overriding vars set in .env with cmd line arg for cluster name
+    local -rl CLUSTER_MANAGER_NAME="${CLUSTER_MANAGER_NAME:-"cluster-manager"}"
+    local -rl CLUSTER_DOMAIN="${CLUSTER_DOMAIN:-"cluster.local"}"
+    local -rl MANIFESTS_SKIP="${MANIFESTS_SKIP:-"k3d-${CLUSTER_MANAGER_NAME}-skip-manifests"}"
+    local -r MANAGEMENT_MIRROR_URL="${MANAGEMENT_MIRROR_URL:-"https://registry-1.docker.io"}"
+    local -r MANAGEMENT_REGISTRY_USER="${MANAGEMENT_REGISTRY_USER:-}"
+    local -r MANAGEMENT_REGISTRY_PASS="${MANAGEMENT_REGISTRY_PASS:-}"
+    local -rl REGISTRY="${REGISTRY:-"${CLUSTER_MANAGER_NAME}-registry.localhost"}"
+    local -rl REGISTRY_IMAGE_STORE="${REGISTRY_IMAGE_STORE:-"k3d-registry-images"}"
+    local -r INSTANCE="${INSTANCE:-"$(hostname -s)"}"
+    local -r OPTION_COPY_MANIFESTS="${OPTION_COPY_MANIFESTS:-false}"
+    local -rl node_server_0="k3d-${CLUSTER_MANAGER_NAME}-server-0"
+    # DEBUG log setting
+    local debug="${DEBUG:-false}"
+    # local -r TOKEN="${TOKEN:-}"
+
+    # Networking
+    local -r token_podman_secret_name="k3d-${CLUSTER_MANAGER_NAME}-token"
+    local -r DEFAULT_NETWORK_NAME="${CLUSTER_NETWORK_NAME_NODES:-"k3d"}"
+    local -r DEFAULT_NETWORK_SUBNET="${CLUSTER_SUBNET_NODES:-"10.98.0.0/16"}"
+    local -r KUBEVIRT_NETWORK_NAME="${CLUSTER_MANAGER_NAME}-kubevirt"
+    local -r KUBEVIRT_NETWORK_SUBNET="${CLUSTER_SUBNET_VMS:-"10.90.0.0/16"}"
+    local -r SERVICE_NETWORK_NAME="${CLUSTER_MANAGER_NAME}-service"
+    local -r SERVICE_NETWORK_SUBNET="${CLUSTER_SUBNET_SERVICES:-"10.43.0.0/16"}"
+    local -r POD_NETWORK_NAME="${CLUSTER_MANAGER_NAME}-pod"
+    local -r POD_NETWORK_SUBNET="${POD_NETWORK_SUBNET:-"10.42.0.0/16"}"
+    local -r CLUSTER_APISERVER_ADDVERTISE_IP="${CLUSTER_APISERVER_ADDVERTISE_IP:?"Cluster apiserver IP not provided"}"
+
+    local -r vol_manifests="${VOLUME_MANIFESTS:-"k3d-${CLUSTER_MANAGER_NAME}-manifests"}"
+    local -r vol_skip_manifests="${VOLUME_SKIP_MANIFESTS:-"k3d-${CLUSTER_MANAGER_NAME}-skip-manifests"}"
+    local -ra VOLUMES_ALL=(
+            vol_manifests
+            vol_skip_manifests
+        )
+    local -r volume_rm_then_create="$BOOL_FALSE"
+
+    local -a podman_options
+    if [[ $debug == true ]]; then
+        set -x
+        podman_options+=("--log-level=DEBUG")
+    fi
+
+    if [[ ${REMOTE_INSTALL} == "true" ]]; then
+        podman() {
+            # shellcheck disable=SC2068
+            command podman -r "${podman_options[@]}" ${@}
+        }
+    fi
+
+    log "Starting main function"
+    main
+}
+
 
 exit_not_implimented() {
     log "\"$1\" is not currently implimented. "
@@ -230,7 +235,7 @@ save_secret() {
 # 2) cluster_name - string; Name of cluster to create
 # 4) cluster_config k3d yaml configuration file location
 # 5) Optional: volumes containing the name of all volumes to be created - string array
-# 6) Optional: rm_volumes_enabled - boolean; Will delete volumes before attempting to create them
+# 6) Optional: rm_volumes - boolean; Will delete volumes before attempting to create them
 #    Does not return an error if the volume doesn't exist
 #    Required when used with volumes option
 create_all() {
@@ -341,7 +346,8 @@ succeed() {
 
 usage() {
     # TODO add variable output specifying if an argument is implimented or not
-    echo "${0} < create-all
+    echo "${0} < show-env
+                | create-all
                 | delete-all
                 | recreate-all
                 | volumes-create
@@ -621,8 +627,9 @@ if [[ $DEVELOPEMENT_MODE == false ]]; then
     ENVIRONMENT_FILE=PRODUCTION_ENVIRONMENT_FILE
 fi
 
-# main
-main \
+#init_main 
+# Initialize's environment for main
+init_main \
     USER_OPTION_1 \
     "${ENVIRONMENT_FILE:="DEVELOPMENT_ENVIRONMENT_FILE"}" \
     K3D_CONFIG_FILE \
