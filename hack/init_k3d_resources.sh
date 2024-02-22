@@ -9,18 +9,24 @@ set -o nounset \
 trap 'catch' ERR
 
 main() {
-    # Establish user defined environment
-    local -r user_cluster_env="bootstrap/config/env/bootstrap-cluster-k3d.dev.env"
-    local -r default_cluster_env="bootstrap/config/env/bootstrap-cluster-k3d.env"
-    local -r k3d_config="bootstrap/config/bootstrap-cluster-k3d.yaml"
-    # TODO create registry via config file values
-    # local -r k3d_config="bootstrap/config/bootstrap-registry-k3d.yaml"
-    if [[ -f $user_cluster_env ]]; then
+
+    local -n user_flag_1="${1:-FLAG_HELP}"
+    local -n env_file="$2"
+    local -n k3d_config_file="$3"
+    local -n dev_mode="$4"
+
+    if [[ $dev_mode ]]; then
+        log "Development mode is enabled=$dev_mode"
+    fi
+
+    if [[ -f $env_file ]]; then 
+        log "Sourcing $env_file"
         # shellcheck source=../bootstrap/config/env/bootstrap-cluster-k3d.dev.env
-        source "$user_cluster_env"
-    elif [[ -f  $user_cluster_env ]]; then
-        # shellcheck source=../bootstrap/config/env/bootstrap-cluster-k3d.env.example
-        source "$default_cluster_env"
+        source "$env_file"
+    fi
+
+    if [[ -f $k3d_config_file ]]; then
+        log "Using k3d config file: $k3d_config_file"
     fi
 
     # TODO change from default expansion to assignment
@@ -40,7 +46,7 @@ main() {
     local -r INSTANCE="${INSTANCE:-"$(hostname -s)"}"
     local -r OPTION_COPY_MANIFESTS="${OPTION_COPY_MANIFESTS:-false}"
     local -rl node_server_0="k3d-${CLUSTER_MANAGER_NAME}-server-0"
-    # Logging options
+    # DEBUG log setting
     local debug="${DEBUG:-false}"
     # TODO save this token as a podman secret
     local -r TOKEN="${TOKEN:?"TOKEN must be set"}"
@@ -57,26 +63,29 @@ main() {
     local -r POD_NETWORK_SUBNET="${POD_NETWORK_SUBNET:-"10.42.0.0/16"}"
     local -r CLUSTER_APISERVER_ADDVERTISE_IP="${CLUSTER_APISERVER_ADDVERTISE_IP:?"Cluster apiserver IP not provided"}"
 
-    # Volumes
-    # Named volumes to be mounted on server nodes
-    export VOLUME_MANIFESTS="k3d-${CLUSTER_MANAGER_NAME}-manifests"
-    export VOLUME_MANIFESTS_SKIP="k3d-${CLUSTER_MANAGER_NAME}-skip-manifests"
-    local -ra enabled_volumes="$VOLUME_MANIFESTS $VOLUME_MANIFESTS_SKIP"
+    local -r vol_manifests="${VOLUME_MANIFESTS:-"k3d-${CLUSTER_MANAGER_NAME}-manifests"}"
+    local -r vol_skip_manifests="${VOLUME_SKIP_MANIFESTS:-"k3d-${CLUSTER_MANAGER_NAME}-skip-manifests"}"
+    local -ra VOLUMES_ALL=(
+            vol_manifests
+            vol_skip_manifests
+        )
+    local -r volume_rm_then_create="$BOOL_FALSE"
+
+    local -a podman_options
+    if [[ $debug == true ]]; then
+        set -x
+        podman_options+=("--log-level=DEBUG")
+    fi
 
     if [[ ${REMOTE_INSTALL} == "true" ]]; then
         podman() {
-            command podman -r ${@}
+            command podman -r "${podman_options[@]}" ${@}
         }
     fi
 
-    if [[ $debug == true ]]; then
-        set -x
-    fi
-
-    local -n arg1="${1:-help}"
     # TODO turn this into a getopts case switch loop
     # TODO add a --debug option for adding `set -T -x`
-    case $arg1 in
+    case $user_flag_1 in
     "create-all")
         create_all \
             cluster_network_name_nodes \
@@ -99,10 +108,16 @@ main() {
             CLUSTER_MANAGER_NAME
         ;;
     "volumes-create")
-        exit_not_implimented "$arg1"
+        log "Creating volumes..."
+        manage_volumes "create" \
+                        "${VOLUMES_ALL[@]}"
+                        "$volume_rm_then_create"
         ;;
-    "volumes-delete")
-        exit_not_implimented "$arg1"
+    "volumes-rm")
+        log "Deleting volumes..."
+        manage_volumes "rm" \
+                        "${VOLUMES_ALL[@]}"
+                        "$volume_rm_then_create"
         ;;
     "networks-create")
         manage_networks "create" \
@@ -123,31 +138,39 @@ main() {
                         KUBEVIRT_NETWORK_NAME \
                         SERVICE_NETWORK_NAME \
                         POD_NETWORK_NAME \
+        return $?
         ;;
     "registry-create")
         manage_registry "create" \
                         REGISTRY \
                         CLUSTER_NETWORK_NAME_NODES
+        return $?
         ;;
     "registry-delete")
         manage_registry "delete" \
                         REGISTRY
+        return $?
         ;;
     "copy-manifests")
-        exit_not_implimented "$arg1"
+        exit_not_implimented "$user_flag_1"
+        return $?
         ;;
     "token-update-new")
         save_secret token_podman_secret_name \
                     TOKEN
+        return $?
         ;;
     "get-defaults")
         log "Default Environment: "
         local -p
+        return $?
         ;;
     "help")
+        usage
+        return $?
         ;;
     *)
-        log "${0}: Unkown arg \"${1}\""
+        log "${0}: Unkown arg \"${user_flag_1}\""
         usage
         abort
         ;;
@@ -160,20 +183,28 @@ exit_not_implimented() {
 }
 
 # manage_volumes
-# arguments: 2
+# arguments:
 # 1) action - [ create | rm ]; Create or rm a volume
-# 2) Volumes - string; Gets converted into an array for processing multiple volumes
+# 2) vols - string; Gets converted into an array for processing multiple volumes
+# 3) rm_existing_volumes - boolean true existing volumes will be deleted
 manage_volumes() {
-    local action="$1"
+    local -rl action="$1"
     read -a vols <<< "$2"
+    local rm_existing_volumes="$3"
 
+    # ensure podman volume only gets create or rm
     if [[ $action != "create" ]] && [[ $action != "rm" ]]; then
-        log "Action \"$action\" is not a supported podman volume argument"
         return 1
     fi
 
     for v in ${vols[@]}; do
-        podman volume "$action" "$v" || log "failed to create volume $v" && return 1
+        local -n pending_volume="$v"
+        # This condition is meant to check for deleting an existing volume before creating
+        # Should not be used with rm or the second volume action will fail, because it would be deleted twice
+        if [[ $rm_existing_volumes == true ]] && [[ $action != "rm" ]]; then
+            podman volume exists "$pending_volume" && podman volume rm "$pending_volume" 1> /dev/null
+        fi
+        podman volume "$action" "$pending_volume" || return 1
     done
 }
 
@@ -212,7 +243,7 @@ save_secret() {
 # 2) cluster_name - string; Name of cluster to create
 # 4) cluster_config k3d yaml configuration file location
 # 5) Optional: volumes containing the name of all volumes to be created - string array
-# 6) Optional: rm_volumes - boolean; Will delete volumes before attempting to create them
+# 6) Optional: rm_volumes_enabled - boolean; Will delete volumes before attempting to create them
 #    Does not return an error if the volume doesn't exist
 #    Required when used with volumes option
 create_all() {
@@ -221,13 +252,14 @@ create_all() {
     local -n cluster_name="$3"
     local -n cluster_config="$4"
     read -ar volumes <<< "${5:-NULL}"
-    local -n rm_volumes="${6:-false}"
+    local -n rm_volumes="${6}"
 
     create_networks node_network \
                  kubevirt_net
 
     manage_volumes "create" \
-                    volumes
+                    volumes \
+                    rm_volumes
 
     manage_registry "create" \
                     REGISTRY \
@@ -321,7 +353,21 @@ succeed() {
 }
 
 usage() {
-    echo "${0} < delete-all | create-all | volumes-create | volumes-delete | recreate-all | copy-manifests | token-update-new> | registry-delete | registry-create "
+    # TODO add variable output specifying if an argument is implimented or not
+    echo "${0} < create-all
+                | delete-all
+                | recreate-all
+                | volumes-create
+                | volumes-rm
+                | copy-manifests
+                | network-create
+                | network-rm
+                | registry-create
+                | registry-delete
+                | copy-manifests
+                | token-update-new
+                | registry-delete
+                | registry-create >"
 }
 
 manage_networks() {
@@ -499,8 +545,8 @@ manage_cluster_delete() {
     fi
 }
 
-#check_existance 
-# arguments: 2
+# check_existance 
+# arguments:
 # 1) Component type - string
 # 2) Name of component to check
 check_existance() {
@@ -513,6 +559,20 @@ check_existance() {
     fi
 }
 
+
+# verify_config_files
+# arguments:
+# 1) default_cluster_env - Path to environment file
+# 3) k3d_config - string; Path to k3d configuration file
+verify_config_files() {
+    local -r user_cluster_env="$1"
+    local -r k3d_config="$3"
+    if [[ ! -f $user_cluster_env ]]; then
+        return 1
+    elif [[ ! -f  $user_cluster_env ]]; then
+        return 1
+    fi
+}
 
 create_k3d() {
     local cluster="${1:?Cluster name must be provided}"
@@ -546,10 +606,37 @@ abort() {
     exit 1
 }
 
-# NULL variable to use for optional name reference arguements inside functions
-# In other words, it's a pointer and can't be assigned a value as a default option
-# but rather the referencing variable
+# DEVELOPMENT_ENVIRONMENT="bootstrap/config/env/bootstrap-cluster-k3d.dev.env"
+declare -r DEVELOPMENT_ENVIRONMENT_FILE="bootstrap/config/env/bootstrap-cluster-k3d.dev.env"
+# PRODUCTION_ENVIRONMENT="bootstrap/config/env/bootstrap-cluster-k3d.env"
+declare -r PRODUCTION_ENVIRONMENT_FILE="bootstrap/config/env/bootstrap-cluster-k3d.env"
+# K3D_CONFIG_LOCATION="bootstrap/config/bootstrap-cluster-k3d.yaml"
+declare -r K3D_CONFIG_FILE="bootstrap/config/bootstrap-cluster-k3d.yaml"
+# NULL default empty null value for unset variables
 declare -r NULL=""
+# BOOLEAN False
+declare -r BOOL_FALSE=false
+# BOOLEAN True
+declare -r BOOL_TRUE=true
+# User provided option Flag 1
+declare USER_OPTION_1="$1"
+# FLAG_HELP - Default value to use if USER_OPTION_1 is unset
+# causes print usage then exit
+declare FLAG_HELP
+# DEVELOPEMENT_CLUSTER
+# Used to set development or production file to use
+# Cannot be set in the env file passed to main
+#
+# To create a production cluster, override the shell script's environment
+declare -r DEVELOPEMENT_MODE="${DEVELOPEMENT_MODE:-true}"
 
-option="$1"
-main option
+if [[ $DEVELOPEMENT_MODE == false ]]; then
+    ENVIRONMENT_FILE=PRODUCTION_ENVIRONMENT_FILE
+fi
+
+# main
+main \
+    USER_OPTION_1 \
+    "${ENVIRONMENT_FILE:="DEVELOPMENT_ENVIRONMENT_FILE"}" \
+    K3D_CONFIG_FILE \
+    DEVELOPEMENT_MODE
