@@ -208,19 +208,6 @@ manage_volumes() {
     done
 }
 
-error_log_check() {
-    local f="$1"
-    if [[ ! -f $f ]]; then
-        log "\"$f\" error log not found"
-        return 1
-    fi
-    c=$(wc -c "$f")
-    if [[ ${c:0:1} -ne 0 ]]; then
-        log "$f: \n$(cat "$f")"
-        return 1
-    fi
-}
-
 # save_token
 # arguments: 2
 # 1) podman secret name
