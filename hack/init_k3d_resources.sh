@@ -103,25 +103,42 @@ main() {
     esac
 }
 
+# init_main
+#
+# Uses parent environment to initialize main() environment
+# Sets defaults for certian values, critical settings
+# will cause abort() if unset rather than supplying defaults
+# arguments:
+# 1) user_flag_1 - nameref;
+#      Primary run option
+# 2) env_file - nameref;
+#      Path to the environment file to source
+# 3) k3d_config_file - nameref
+#      Path to k3d yaml configuration file
+# 4) dev_mode - bool; Defaults to true
+#      true: results using the default podman config options
+#      false: results in podman --remote being used with default connection
 init_main() {
     local -n user_flag_1="${1:-FLAG_HELP}"
     local -n env_file="$2"
     local -n k3d_config_file="$3"
-    local -n dev_mode="$4"
+    local dev_mode="$4"
 
-    if [[ $dev_mode ]]; then
+    if [[ ${dev_mode:=true} ]]; then
         log "Development mode is enabled=$dev_mode"
     fi
 
-    if [[ -f $env_file ]]; then 
-        log "Sourcing $env_file"
-        # shellcheck source=../bootstrap/config/env/bootstrap-cluster-k3d.dev.env
-        source "$env_file"
+    if [[ ! -f $env_file ]]; then 
+        abort "env_file \"$env_file\" not found"
     fi
+    log "Sourcing $env_file"
+    # shellcheck source=../bootstrap/config/env/bootstrap-cluster-k3d.dev.env
+    source "$env_file"
 
-    if [[ -f $k3d_config_file ]]; then
-        log "Using k3d config file: $k3d_config_file"
+    if [[ ! -f $k3d_config_file ]]; then
+        abort "k3d_config_file \"$k3d_config_file\" not found"
     fi
+    log "Using k3d config file: $k3d_config_file"
 
     # TODO change from default expansion to assignment
     # Establish defaults environment for unset variables
@@ -146,6 +163,8 @@ init_main() {
 
     # Networking
     local -r token_podman_secret_name="k3d-${CLUSTER_MANAGER_NAME}-token"
+    # Default podman network
+    # used by registry and server nodes
     local -r DEFAULT_NETWORK_NAME="${CLUSTER_NETWORK_NAME_NODES:-"k3d"}"
     local -r DEFAULT_NETWORK_SUBNET="${CLUSTER_SUBNET_NODES:-"10.98.0.0/16"}"
     local -r KUBEVIRT_NETWORK_NAME="${CLUSTER_MANAGER_NAME}-kubevirt"
@@ -181,7 +200,6 @@ init_main() {
     main
 }
 
-
 exit_not_implimented() {
     log "\"$1\" is not currently implimented. "
     return 0
@@ -190,11 +208,11 @@ exit_not_implimented() {
 # manage_volumes
 # arguments:
 # 1) action - [ create | rm ]; Create or rm a volume
-# 2) vols - string; Gets converted into an array for processing multiple volumes
+# 2) pending_volumes - space seperated string of namerefs; Gets converted into an array for processing multiple volumes
 # 3) rm_existing_volumes - boolean true existing volumes will be deleted
 manage_volumes() {
     local -rl action="$1"
-    read -a vols <<< "$2"
+    read -a pending_volumes <<< "$2"
     local rm_existing_volumes="$3"
 
     # ensure podman volume only gets create or rm
@@ -202,7 +220,7 @@ manage_volumes() {
         return 1
     fi
 
-    for v in ${vols[@]}; do
+    for v in ${pending_volumes[@]}; do
         local -n pending_volume="$v"
         # This condition is meant to check for deleting an existing volume before creating
         # Should not be used with rm or the second volume action will fail, because it would be deleted twice
@@ -230,11 +248,11 @@ save_secret() {
 
 # create_all
 # arguments: 2
-# 1) Default network name - string; Used by registry, server nodes
-# 2) kubevirt network name - string; Used by created kubevirt vms
-# 2) cluster_name - string; Name of cluster to create
+# 1) Default network name - space seperated string of namerefs; Used by registry, server nodes
+# 2) kubevirt network name - space seperated string of namerefs; Used by created kubevirt vms
+# 2) cluster_name - space seperated string of namerefs; Name of cluster to create
 # 4) cluster_config k3d yaml configuration file location
-# 5) Optional: volumes containing the name of all volumes to be created - string array
+# 5) Optional: volumes - space seperated string of namerefs, gets converted into an array; containing the name of all volumes to be created
 # 6) Optional: rm_volumes - boolean; Will delete volumes before attempting to create them
 #    Does not return an error if the volume doesn't exist
 #    Required when used with volumes option
@@ -244,7 +262,7 @@ create_all() {
     local -n cluster_name="$3"
     local -n cluster_config="$4"
     read -ar volumes <<< "${5:-NULL}"
-    local -n rm_volumes="${6}"
+    local rm_volumes="${6}"
 
     create_networks node_network \
                  kubevirt_net
@@ -380,7 +398,8 @@ manage_networks() {
 
 # rm_networks
 # arguments: any
-# @) networks - string(s) of network names to delete
+# @) networks - Space seperated string of networks, gets parsed into an array;
+#      Networks to rm
 rm_networks() {
     read -a networks <<< "$@"
 
@@ -490,7 +509,7 @@ delete_components() {
     local type="$1"
     local -n c="$2"
     local -n r="$3"
-    local -n vols="$4"
+    local -n pending_volumes="$4"
 
     if [[ $type == "registry" ]]; then
         manage_registry "delete" \
@@ -502,7 +521,7 @@ delete_components() {
         manage_registry "delete" \
                         r
         manage_volumes "delete" \
-                        "$vols"
+                        "$pending_volumes"
     else
         log "unknown component type: ${type}"
         return 1
@@ -633,4 +652,4 @@ init_main \
     USER_OPTION_1 \
     "${ENVIRONMENT_FILE:="DEVELOPMENT_ENVIRONMENT_FILE"}" \
     K3D_CONFIG_FILE \
-    DEVELOPEMENT_MODE
+    "$DEVELOPEMENT_MODE"
