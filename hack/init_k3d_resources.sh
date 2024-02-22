@@ -3,7 +3,8 @@
 
 set -o nounset \
     -o errexit \
-    -o noclobber
+    -o noclobber \
+    -o monitor
 
 trap 'catch' ERR
 
@@ -22,13 +23,10 @@ main() {
         source "$default_cluster_env"
     fi
 
+    # TODO change from default expansion to assignment
     # Establish defaults environment for unset variables
     local DOCKER_HOST="${DOCKER_HOST:-}"
     local DOCKER_SOCK="${DOCKER_SOCK:-"/run/podman/podman.sock"}"
-    # TODO use default value subnets
-    local CLUSTER_SUBNET_NODES="${CLUSTER_SUBNET_NODES:-10.94.0.0/16}"
-    local CLUSTER_SUBNET_VMS="${CLUSTER_SUBNET_VMS:-10.93.0.0/16}"
-    local CLUSTER_SUBNET_SERVICES="${CLUSTER_SUBNET_SERVICES:-10.46.0.0/16}"
     local ROLLBACK=${ROLLBACK:-false}
     # TODO allow overriding vars set in .env with cmd line arg for cluster name
     local -rl CLUSTER_MANAGER_NAME="${CLUSTER_MANAGER_NAME:-"cluster-manager"}"
@@ -40,24 +38,30 @@ main() {
     local -rl REGISTRY="${REGISTRY:-"${CLUSTER_MANAGER_NAME}-registry.localhost"}"
     local -rl REGISTRY_IMAGE_STORE="${REGISTRY_IMAGE_STORE:-"k3d-registry-images"}"
     local -r INSTANCE="${INSTANCE:-"$(hostname -s)"}"
-    local -r CLUSTER_APISERVER_ADDVERTISE_IP="10.50.0.202"
     local -r OPTION_COPY_MANIFESTS="${OPTION_COPY_MANIFESTS:-false}"
     local -rl node_server_0="k3d-${CLUSTER_MANAGER_NAME}-server-0"
-    # Volumes
-
     # Logging options
     local debug="${DEBUG:-false}"
     # TODO save this token as a podman secret
     local -r TOKEN="${TOKEN:?"TOKEN must be set"}"
-    # Constants
+
+    # Networking
     local -r token_podman_secret_name="k3d-${CLUSTER_MANAGER_NAME}-token"
-    local -r MANIFESTS="${MANIFESTS:-"k3d-${CLUSTER_MANAGER_NAME}-manifests"}"
-    local -r kubevirt_network_name="k3d-${CLUSTER_MANAGER_NAME}-vms"
-    local -rl cluster_network_name_nodes="${CLUSTER_NETWORK_NAME_NODES:-"k3d"}"
-    local -ra enabled_volumes=(
-        VOLUME_MANIFESTS
-        VOLUME_MANIFESTS_SKIP
-    )
+    local -r DEFAULT_NETWORK_NAME="${CLUSTER_NETWORK_NAME_NODES:-"k3d"}"
+    local -r DEFAULT_NETWORK_SUBNET="${CLUSTER_SUBNET_NODES:-"10.98.0.0/16"}"
+    local -r KUBEVIRT_NETWORK_NAME="${CLUSTER_MANAGER_NAME}-kubevirt"
+    local -r KUBEVIRT_NETWORK_SUBNET="${CLUSTER_SUBNET_VMS:-"10.90.0.0/16"}"
+    local -r SERVICE_NETWORK_NAME="${CLUSTER_MANAGER_NAME}-service"
+    local -r SERVICE_NETWORK_SUBNET="${CLUSTER_SUBNET_SERVICES:-"10.43.0.0/16"}"
+    local -r POD_NETWORK_NAME="${CLUSTER_MANAGER_NAME}-pod"
+    local -r POD_NETWORK_SUBNET="${POD_NETWORK_SUBNET:-"10.42.0.0/16"}"
+    local -r CLUSTER_APISERVER_ADDVERTISE_IP="${CLUSTER_APISERVER_ADDVERTISE_IP:?"Cluster apiserver IP not provided"}"
+
+    # Volumes
+    # Named volumes to be mounted on server nodes
+    export VOLUME_MANIFESTS="k3d-${CLUSTER_MANAGER_NAME}-manifests"
+    export VOLUME_MANIFESTS_SKIP="k3d-${CLUSTER_MANAGER_NAME}-skip-manifests"
+    local -ra enabled_volumes="$VOLUME_MANIFESTS $VOLUME_MANIFESTS_SKIP"
 
     if [[ ${REMOTE_INSTALL} == "true" ]]; then
         podman() {
@@ -77,7 +81,6 @@ main() {
         create_all \
             cluster_network_name_nodes \
             kubevirt_network_name \
-            enabled_volumes \
             CLUSTER_MANAGER_NAME
         ;;
     "delete-all")
@@ -93,12 +96,33 @@ main() {
         create_all \
             cluster_network_name_nodes \
             kubevirt_network_name \
-            enabled_volumes \
             CLUSTER_MANAGER_NAME
         ;;
-    "create-volumes")
-        manage_volumes "create" \
-                        enabled_volumes
+    "volumes-create")
+        exit_not_implimented "$arg1"
+        ;;
+    "volumes-delete")
+        exit_not_implimented "$arg1"
+        ;;
+    "networks-create")
+        manage_networks "create" \
+                        DEFAULT_NETWORK_NAME \
+                        KUBEVIRT_NETWORK_NAME \
+                        SERVICE_NETWORK_NAME \
+                        POD_NETWORK_NAME \
+                        DEFAULT_NETWORK_SUBNET \
+                        KUBEVIRT_NETWORK_SUBNET \
+                        SERVICE_NETWORK_SUBNET \
+                        POD_NETWORK_SUBNET \
+                        CLUSTER_MANAGER_NAME \
+                        INSTANCE
+    ;;
+    "networks-rm")
+        manage_networks "rm" \
+                        DEFAULT_NETWORK_NAME \
+                        KUBEVIRT_NETWORK_NAME \
+                        SERVICE_NETWORK_NAME \
+                        POD_NETWORK_NAME \
         ;;
     "registry-create")
         manage_registry "create" \
@@ -110,7 +134,7 @@ main() {
                         REGISTRY
         ;;
     "copy-manifests")
-        exit_not_implimented
+        exit_not_implimented "$arg1"
         ;;
     "token-update-new")
         save_secret token_podman_secret_name \
@@ -131,46 +155,26 @@ main() {
 }
 
 exit_not_implimented() {
-    log "\"$arg1\" is not currently implimented. "
+    log "\"$1\" is not currently implimented. "
     return 0
 }
 
+# manage_volumes
+# arguments: 2
+# 1) action - [ create | rm ]; Create or rm a volume
+# 2) Volumes - string; Gets converted into an array for processing multiple volumes
 manage_volumes() {
     local action="$1"
-    local -n volumes="$2"
+    read -a vols <<< "$2"
 
-    if [[ $action == "create" ]]; then
-        init_volumes volumes
-    elif [[ $action == "delete" ]]; then
-        delete_volumes volumes
+    if [[ $action != "create" ]] && [[ $action != "rm" ]]; then
+        log "Action \"$action\" is not a supported podman volume argument"
+        return 1
     fi
-}
 
-delete_volumes() {
-    local -n vols="$1"
-
-    # shellcheck disable=SC2068
     for v in ${vols[@]}; do
-        rm_volume "$v"
+        podman volume "$action" "$v" || log "failed to create volume $v" && return 1
     done
-}
-
-recreate_volumes() {
-    local volume_name="${1}"
-    local label_name="${2:-${1}}"
-    log "deleting volume ${volume_name}"
-    rm_volume "${volume_name}"
-
-    log "creating volume ${volume_name}"
-    podman volume \
-            create \
-            --label=name="${label_name}" \
-            --label=cluster="${CLUSTER_MANAGER_NAME}" \
-            --label=part-of="${CLUSTER_MANAGER_NAME}" \
-            --label=instance="${CLUSTER_MANAGER_NAME}-${INSTANCE}" \
-            --label=cluster="${CLUSTER_MANAGER_NAME}" \
-            "${volume_name}"
-    log "successfully created volume ${volume_name}"
 }
 
 error_log_check() {
@@ -184,12 +188,6 @@ error_log_check() {
         log "$f: \n$(cat "$f")"
         return 1
     fi
-}
-
-init_volumes() {
-    for v in ${@}; do
-        recreate_volumes "$v" "$v"
-    done
 }
 
 # save_token
@@ -207,28 +205,29 @@ save_secret() {
     fi
 }
 
-# TODO clean this up by passing in an options associative array
 # create_all
 # arguments: 2
-# 1) node to copy files to - string
-# 2) enable copy manifests - boolean
-# 3) kubevirt network name - string
-# 4) Name of cluster to create
-# 5) cluster_name k3d cluster name to be created
-# 6) cluster_config k3d yaml configuration file location
-# 7) Optional: enabled_volumes containing the name of all volumes to be created - string array
+# 1) Default network name - string; Used by registry, server nodes
+# 2) kubevirt network name - string; Used by created kubevirt vms
+# 2) cluster_name - string; Name of cluster to create
+# 4) cluster_config k3d yaml configuration file location
+# 5) Optional: volumes containing the name of all volumes to be created - string array
+# 6) Optional: rm_volumes - boolean; Will delete volumes before attempting to create them
+#    Does not return an error if the volume doesn't exist
+#    Required when used with volumes option
 create_all() {
     local -n node_network="$1"
     local -n kubevirt_net="$2"
     local -n cluster_name="$3"
     local -n cluster_config="$4"
-    local -n enabled_volumes="${5:-NULL}"
+    read -ar volumes <<< "${5:-NULL}"
+    local -n rm_volumes="${6:-false}"
 
-    init_network node_network \
+    create_networks node_network \
                  kubevirt_net
 
     manage_volumes "create" \
-                    enabled_volumes
+                    volumes
 
     manage_registry "create" \
                     REGISTRY \
@@ -243,11 +242,6 @@ create_all() {
 delete_all() {
     local -n cluster="$1"
     local -n registry="$2"
-    # local delete_volumes=(
-    #     "$3"
-    #     "$4"
-    # )
-    # delete_components "all" cluster registry delete_volumes
     delete_components "cluster" cluster registry
     delete_components "registry" cluster registry ""
     succeed
@@ -286,7 +280,7 @@ manage_registry() {
 
 delete_registry() {
     local -n r=$1
-    if ! verify_component "registry" "$1"; then
+    if ! check_existance "registry" "$1"; then
         log "registry \"$r\" not found"
         return 1
     fi
@@ -301,9 +295,9 @@ delete_registry() {
 registry_create() {
     local -n r="$1"
     local -n def_net="$2"
-    if verify_component "registry" "$1"; then
+    if check_existance "registry" "$1"; then
         return 1
-    elif ! verify_component "network" "$2"; then
+    elif ! check_existance "network" "$2"; then
         return 0
     fi
 
@@ -327,58 +321,114 @@ succeed() {
 }
 
 usage() {
-    echo "${0} < delete-all | create-all | create-volumes | recreate-all | copy-manifests | token-update-new> | registry-delete | registry-create "
+    echo "${0} < delete-all | create-all | volumes-create | volumes-delete | recreate-all | copy-manifests | token-update-new> | registry-delete | registry-create "
 }
 
-init_network() {
-    local -n node_net="$1"
-    local -n kubevt_net="$2"
-    podman network create \
-                    --subnet="${CLUSTER_SUBNET_NODES}" \
-                    --interface-name="k3d0" \
-                    --label=name="$node_net" \
-                    --label=cluster="${CLUSTER_MANAGER_NAME}" \
-                    --label=part-of="${CLUSTER_MANAGER_NAME}" \
-                    --label=instance="${CLUSTER_MANAGER_NAME}-${INSTANCE}" \
-                    "$node_net"
-
-    podman network create \
-                    --subnet="${CLUSTER_SUBNET_VMS}" \
-                    --interface-name="k3d1" \
-                    --label=name="$kubevt_net" \
-                    --label=cluster="$CLUSTER_MANAGER_NAME" \
-                    --label=part-of="$CLUSTER_MANAGER_NAME" \
-                    --label=instance="${CLUSTER_MANAGER_NAME}-${INSTANCE}" \
-                    "$kubevt_net"
-
-    local services_net="k3d-${CLUSTER_MANAGER_NAME}-services"
-    podman network create \
-                    --subnet="${CLUSTER_SUBNET_SERVICES}" \
-                    --interface-name="k3d2" \
-                    --label=name="${services_net}" \
-                    --label=cluster="${CLUSTER_MANAGER_NAME}" \
-                    --label=part-of="$CLUSTER_MANAGER_NAME" \
-                    --label=instance="${CLUSTER_MANAGER_NAME}-${INSTANCE}" \
-                    "$services_net"
-
-    local pod_net="k3d-${CLUSTER_MANAGER_NAME}-pods"
-    podman network \
-            create \
-            --subnet="${CLUSTER_SUBNET_PODS}" \
-            --interface-name="k3d3" \
-            --label=name="${pod_net}" \
-            --label=cluster="${CLUSTER_MANAGER_NAME}" \
-            --label=part-of="${CLUSTER_MANAGER_NAME}" \
-            --label=instance="${CLUSTER_MANAGER_NAME}-${INSTANCE}" \
-            --label=cluster="${CLUSTER_MANAGER_NAME}" \
-            "$pod_net"
+manage_networks() {
+    local action="$1"
+    shift
+    case $action in
+    "create")
+        created_networks="$(create_networks "${@}")"
+        log "Succsfully created networks: \"$created_networks\""
+    ;;
+    "rm")
+        deleted_networks="$(rm_networks "${@}")"
+        log "Successfully deleted networks \"$deleted_networks\""
+    ;;
+    esac
 }
 
-rm_volume() {
-    local node="${1}"
-    if podman volume exists "${node}"; then
-        podman volume rm "${node}"
+# rm_networks
+# arguments: any
+# @) networks - string(s) of network names to delete
+rm_networks() {
+    read -a networks <<< "$@"
+
+    if [[ -z ${networks[*]} ]]; then
+        return 1
     fi
+
+    local -a nets_del
+    for n in ${networks[@]}; do
+        local -n net="$n"
+        if podman network exists "$net"; then
+            nets_del+=("$(podman network rm "$net")")
+        fi
+    done
+
+    echo "${nets_created[*]/ / /' '}"
+}
+
+# create_networks
+# arguments: 10
+# 1) default_net_name - string; Name of default network
+# 2) kubevirt_net_name - string; Used by created kubevirt vms
+# 3) service_net_name - string; Kubernetes service network
+# 4) pod_net_name - string; Kubernetes service network
+# 5) default_net_subnet - string; Kubernetes service network
+# 6) kubevirt_net_subet - string; Kubernetes service network
+# 7) service_net_subnet - string; Kubernetes service network
+# 8) pod_net_subnet - string; Kubernetes service network
+# 9) cluster - string; Name of cluster, used for network labels
+# 10) cluster_instance - string; Name of cluster, used for network labels
+create_networks() {
+    local -n default_net_name="$1"
+    local -n kubevirt_net_name="$2"
+    local -n service_net_name="$3"
+    local -n pod_net_name="$4"
+    local -n default_net_subnet="$5"
+    local -n kubevirt_net_subet="$6"
+    local -n service_net_subnet="$7"
+    local -n pod_net_subnet="$8"
+    local -n cluster="$9"
+    local -n cluster_instance="${10}"
+
+    local -r default_net_interface="k3d0"
+    local -r kubevirt_net_interface="k3d1"
+    local -r service_net_interface="k3d2"
+    local -r pod_net_interface="k3d3"
+
+    local -a created_networks=()
+
+    podman network create \
+                    --subnet="$default_net_subnet" \
+                    --interface-name="$default_net_interface" \
+                    --label=name="$default_net_name" \
+                    --label=cluster="$cluster" \
+                    --label=part-of="$cluster" \
+                    --label=instance="$cluster_instance" \
+                    "$default_net_name" && created_networks+=("$default_net_name")
+
+    podman network create \
+                    --subnet="$kubevirt_net_subet" \
+                    --interface-name="$kubevirt_net_interface" \
+                    --label=name="$kubevirt_net_name" \
+                    --label=cluster="$cluster" \
+                    --label=part-of="$cluster" \
+                    --label=instance="$cluster_instance" \
+                    "$kubevirt_net_name" && created_networks+=("$kubevirt_net_name")
+
+    podman network create \
+                    --subnet="$service_net_subnet" \
+                    --interface-name="$service_net_interface" \
+                    --label=name="$service_net_interface" \
+                    --label=cluster="$cluster" \
+                    --label=part-of="$cluster" \
+                    --label=instance="$cluster_instance" \
+                    "$service_net_name" && created_networks+=("$kubevirt_net_name")
+
+    podman network create \
+                    --subnet="$pod_net_subnet" \
+                    --interface-name="$pod_net_interface" \
+                    --label=name="$pod_net_name" \
+                    --label=cluster="$cluster" \
+                    --label=part-of="$cluster" \
+                    --label=instance="$cluster" \
+                    --label=cluster="$cluster_instance" \
+                    "$pod_net_name" && created_networks+=("$pod_net_name")
+
+    echo "${created_networks[*]}"
 }
 
 catch() {
@@ -399,18 +449,21 @@ catch() {
 
 delete_components() {
     local type="$1"
-    local -n want_cluster="$2"
-    local -n registry="$3"
-    local -n volumes="$4"
+    local -n c="$2"
+    local -n r="$3"
+    local -n vols="$4"
 
     if [[ $type == "registry" ]]; then
-        manage_registry "delete" registry
+        manage_registry "delete" \
+                        r
     elif [[ $type == "cluster" ]]; then
-        delete_cluster want_cluster
+        manage_cluster_delete c
     elif [[ $type == "all" ]]; then
-        delete_cluster want_cluster
-        manage_registry "delete" registry
-        delete_volumes volumes
+        manage_cluster_delete c
+        manage_registry "delete" \
+                        r
+        manage_volumes "delete" \
+                        "$vols"
     else
         log "unknown component type: ${type}"
         return 1
@@ -419,9 +472,23 @@ delete_components() {
     return 0
 }
 
-delete_cluster() {
+manage_cluster() {
+    local -n action="$1"
+    local -n cluster="$2"
+
+    if [[ $action == "create" ]]; then
+        manage_cluster_create "$cluster"
+    fi
+}
+
+manage_cluster_create() {
+    # TODO inhert name of var above rather than using var reference here
+    local -n cluster="$1"
+}
+
+manage_cluster_delete() {
     local -n c="$1"
-    if ! verify_component "cluster" "$1"; then
+    if ! check_existance "cluster" "$c"; then
         log "failed to find cluster \"$c\""
         return 1
     fi
@@ -432,17 +499,17 @@ delete_cluster() {
     fi
 }
 
-verify_component() {
+#check_existance 
+# arguments: 2
+# 1) Component type - string
+# 2) Name of component to check
+check_existance() {
     local type="$1"
     local -n want="$2"
     if [[ $type == "cluster" ]]; then
-        if ! k3d cluster list "$want" > /dev/null; then
-            return 1
-        fi
+        k3d cluster list "$want" > /dev/null || return 1
     elif [[ $type == "registry" ]]; then
-        if ! k3d registry list "$want" > /dev/null; then
-            return 1
-        fi
+        k3d registry list "$want" > /dev/null || return 1
     fi
 }
 
