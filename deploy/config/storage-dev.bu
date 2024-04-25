@@ -1,0 +1,150 @@
+variant: fcos
+version: 1.5.0
+storage:
+  disks:
+    # The link to the block device the OS was booted from.
+  - device: /dev/disk/by-id/coreos-boot-disk
+    wipe_table: false
+    partitions:
+    - number: 4
+      label: root
+      size_mib: 8192
+      resize: true
+    - size_mib: 0
+      label: var
+  - device: /dev/disk/by-id/virtio-raid10.1
+    wipe_table: true
+    partitions:
+      - label: raid10.1
+        number: 0
+        size_mib: 0
+        # https://wiki.archlinux.org/title/GPT_fdisk#Partition_type
+        guid: A19D880F-05FC-4D3B-A006-743F0F84911E
+        wipe_partition_entry: true
+        should_exist: true
+  - device: /dev/disk/by-id/virtio-raid10.2
+    wipe_table: true
+    partitions:
+      - label: raid10.2
+        number: 0
+        size_mib: 0
+        # https://wiki.archlinux.org/title/GPT_fdisk#Partition_type
+        guid: A19D880F-05FC-4D3B-A006-743F0F84911E
+        wipe_partition_entry: true
+        should_exist: true
+  - device: /dev/disk/by-id/virtio-raid10.3
+    wipe_table: true
+    partitions:
+      - label: raid10.3
+        number: 0
+        size_mib: 0
+        # https://wiki.archlinux.org/title/GPT_fdisk#Partition_type
+        guid: A19D880F-05FC-4D3B-A006-743F0F84911E
+        wipe_partition_entry: true
+        should_exist: true
+  - device: /dev/disk/by-id/virtio-raid10.4
+    wipe_table: true
+    partitions:
+      - label: raid10.4
+        number: 0
+        size_mib: 0
+        # https://wiki.archlinux.org/title/GPT_fdisk#Partition_type
+        guid: A19D880F-05FC-4D3B-A006-743F0F84911E
+        wipe_partition_entry: true
+        should_exist: true
+  - device: /dev/disk/by-id/virtio-raid5.1
+    wipe_table: true
+    partitions:
+      - label: raid5.1
+        number: 0
+        size_mib: 0
+        # https://wiki.archlinux.org/title/GPT_fdisk#Partition_type
+        guid: A19D880F-05FC-4D3B-A006-743F0F84911E
+        wipe_partition_entry: true
+        should_exist: true
+  - device: /dev/disk/by-id/virtio-raid5.2
+    wipe_table: true
+    partitions:
+      - label: raid5.2
+        number: 0
+        size_mib: 0
+        # https://wiki.archlinux.org/title/GPT_fdisk#Partition_type
+        guid: A19D880F-05FC-4D3B-A006-743F0F84911E
+        wipe_partition_entry: true
+        should_exist: true
+  - device: /dev/disk/by-id/virtio-raid5.3
+    wipe_table: true
+    partitions:
+      - label: raid5.3
+        number: 0
+        size_mib: 0
+        # https://wiki.archlinux.org/title/GPT_fdisk#Partition_type
+        guid: A19D880F-05FC-4D3B-A006-743F0F84911E
+        wipe_partition_entry: true
+        should_exist: true
+  raid:
+    - name: cctv
+      level: raid10
+      devices:
+        - /dev/disk/by-partlabel/raid10.1
+        - /dev/disk/by-partlabel/raid10.2
+        - /dev/disk/by-partlabel/raid10.3
+        - /dev/disk/by-partlabel/raid10.4
+      spares: 0
+    - name: data
+      level: raid5
+      devices:
+        - /dev/disk/by-partlabel/raid5.1
+        - /dev/disk/by-partlabel/raid5.2
+        - /dev/disk/by-partlabel/raid5.3
+      spares: 0
+  filesystems:
+    - path: /var
+      device: /dev/disk/by-partlabel/var
+      format: btrfs
+      with_mount_unit: true
+      # partition label
+      label: var
+      # filesystem label
+      options:
+        - -L
+        - var
+      mount_options:
+        - compress=zstd:1
+    - device: /dev/disk/by-partlabel/root
+      wipe_filesystem: true
+      format: btrfs
+      # partition label
+      label: root
+      # filesystem label
+      options:
+        - -L
+        - root
+      mount_options:
+        - compress=zstd:1
+    - path: /var/local/lib/k3s/agent/cctv
+      wipe_filesystem: true
+      with_mount_unit: true
+      device: /dev/md/cctv
+      format: btrfs
+      # partition label
+      label: cctv
+      # filesystem label
+      options:
+        - -L
+        - cctv
+      mount_options:
+        - compress=zstd:1
+    - path: /var/local/lib/k3s/agent/data
+      with_mount_unit: true
+      wipe_filesystem: true
+      device: /dev/md/data
+      format: btrfs
+      # partition label
+      label: data
+      # filesystem label
+      options:
+        - -L
+        - data
+      mount_options:
+        - compress=zstd:1

@@ -1,0 +1,31 @@
+variant: fcos
+version: 1.5.0
+storage:
+  files:
+    - path: /etc/hostname
+      mode: 0644
+      contents:
+        inline: |
+          rick.expresso.lan
+    - path: /etc/systemd/zram-generator.conf
+      mode: 0644
+      contents:
+        inline: |
+          # This config file enables a /dev/zram0 device with the default settings
+          [zram0]
+    - path: /etc/NetworkManager/system-connections/enp1s0.nmconnection
+      mode: 0600
+      contents:
+        inline: |
+          [connection]
+          id=eno1
+          uuid=0c74648e-5c31-4bfd-b609-8be3c9e36feb
+          type=ethernet
+          interface-name=eno1
+          [ipv4]
+          address1=10.50.0.2/32,10.50.0.1
+          dhcp-hostname=rick-dev
+          dns=10.50.0.1;
+          dns-search=expresso.lan
+          may-fail=false
+          method=manual
