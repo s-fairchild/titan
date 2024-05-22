@@ -297,7 +297,7 @@ systemd:
                                 -v=k3s-rick-agent-0-data:/var/lib/rancher/k3s:Z \
                                 -v=k3s-rick-agent-0-etc-rancher:/etc/rancher:Z \
                                 -v=/usr/local/etc/k3s/config/k3s-rick-agent-0.yaml:/etc/rancher/k3s/config.yaml:Z,ro \
-                                -v=agent-persistent-volumes:/mnt/pvs:z \
+                                -v=agent-persistent-volumes:/mnt/nvme:z \
                                 -v=agent-datastore:/mnt/data:z \
                                 -v=agent-recordings:/mnt/recordings:z \
                                 --shm-size=5g \
@@ -384,7 +384,7 @@ systemd:
                                 -v=k3s-rick-agent-1-data:/var/lib/rancher/k3s:Z \
                                 -v=k3s-rick-agent-1-rancher:/etc/rancher:Z \
                                 -v=/usr/local/etc/k3s/config/k3s-rick-agent-1.yaml:/etc/rancher/k3s/config.yaml:Z,ro \
-                                -v=agent-persistent-volumes:/mnt/pvs:z \
+                                -v=agent-persistent-volumes:/mnt/nvme:z \
                                 -v=agent-datastore:/mnt/data:z \
                                 -v=agent-recordings:/mnt/recordings:z \
                                 --shm-size=5g \
@@ -469,7 +469,7 @@ systemd:
                                 -v=k3s-rick-agent-2-data:/var/lib/rancher/k3s \
                                 -v=k3s-rick-agent-2-etc-rancher:/etc/rancher \
                                 -v=/usr/local/etc/k3s/config/k3s-rick-agent-2.yaml:/etc/rancher/k3s/config.yaml:Z,ro \
-                                -v=agent-persistent-volumes:/mnt/pvs:z \
+                                -v=agent-persistent-volumes:/mnt/nvme:z \
                                 -v=agent-datastore:/mnt/data:z \
                                 -v=agent-recordings:/mnt/recordings:z \
                                 --shm-size 5g \

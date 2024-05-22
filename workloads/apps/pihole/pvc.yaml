@@ -8,7 +8,7 @@ metadata:
 spec:
   volumeName: pihole-conf
   volumeMode: Filesystem
-  storageClassName: local-path
+  storageClassName: nvme-local-path
   accessModes:
     - ReadWriteMany
   resources:
@@ -25,7 +25,7 @@ metadata:
 spec:
   volumeName: unbound-conf
   volumeMode: Filesystem
-  storageClassName: local-path
+  storageClassName: nvme-local-path
   accessModes:
     - ReadOnlyMany
   resources:

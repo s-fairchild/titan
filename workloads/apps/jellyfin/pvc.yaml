@@ -1,14 +1,12 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: jellyfin-conf-pvc
+  name: local-path-conf-pvc
   namespace: jellyfin
   annotations:
-    volumeType: local
+    volumeType: nvme-local-path
 spec:
-  volumeName: jellyfin-conf
-  volumeMode: Filesystem
-  storageClassName: local-path
+  storageClassName: nvme-local-path
   accessModes:
     - ReadWriteOnce
   resources:
@@ -18,14 +16,12 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: jellyfin-media-pvc
+  name: local-path-media-pvc
   namespace: jellyfin
   annotations:
-    volumeType: local
+    volumeType: raid5-local-path
 spec:
-  volumeName: jellyfin-media
-  volumeMode: Filesystem
-  storageClassName: local-path
+  storageClassName: raid5-local-path
   accessModes:
     - ReadWriteOnce
   resources:

@@ -13,7 +13,7 @@ tls-san:
   - app.rick.expresso.lan
   - app.rick-dev.expresso.lan
 secrets-encryption: true
-default-local-storage-path: /data
+default-local-storage-path: /mnt
 
 # Network
 # https://docs.k3s.io/installation/network-options#flannel-options

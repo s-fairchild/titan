@@ -1,0 +1,73 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: local-path-config
+  namespace: kube-system
+data:
+  config.json: |-
+    {
+              "storageClassConfigs":{
+                    "local-path": {
+                            "nodePathMap": [
+                            {
+                                    "node":"DEFAULT_PATH_FOR_NON_LISTED_NODES",
+                                    "paths":["/mnt/nvme/local-path-provisioner"]
+                            }
+                            ]
+                    },
+                    "raid5-local-path": {
+                            "sharedFilesystemPath": "/mnt/data"
+                    },
+                    "raid10-local-path": {
+                            "sharedFilesystemPath": "/mnt/recordings"
+                    },
+                    "nvme-local-path": {
+                            "sharedFilesystemPath": "/mnt/nvme"
+                    }
+              }
+    }
+  setup: |-
+    #!/bin/sh
+    while getopts "m:s:p:" opt
+    do
+        case $opt in
+            p)
+            absolutePath=$OPTARG
+            ;;
+            s)
+            sizeInBytes=$OPTARG
+            ;;
+            m)
+            volMode=$OPTARG
+            ;;
+        esac
+    done
+    mkdir -m 0777 -p ${absolutePath}
+    chmod 700 ${absolutePath}/..
+  teardown: |-
+    #!/bin/sh
+    while getopts "m:s:p:" opt
+    do
+        case $opt in
+            p)
+            absolutePath=$OPTARG
+            ;;
+            s)
+            sizeInBytes=$OPTARG
+            ;;
+            m)
+            volMode=$OPTARG
+            ;;
+        esac
+    done
+    rm -rf ${absolutePath}
+  helperPod.yaml: |-
+    apiVersion: v1
+    kind: Pod
+    metadata:
+      name: helper-pod
+    spec:
+      containers:
+      - name: helper-pod
+        image: rancher/mirrored-library-busybox:1.36.1
+        imagePullPolicy: IfNotPresent
