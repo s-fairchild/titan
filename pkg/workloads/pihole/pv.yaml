@@ -1,17 +1,16 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: jellyfin-media
+  name: pihole-conf
 spec:
   capacity:
-    storage: 4T
+    storage: 1Gi
   volumeMode: Filesystem
   accessModes:
-    - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
+    - ReadWriteMany
   storageClassName: local-path
   local:
-    path: /mnt/data/jellyfin
+    path: /mnt/nvme/pihole/etc
   nodeAffinity:
     required:
       nodeSelectorTerms:
@@ -20,21 +19,21 @@ spec:
               operator: In
               values:
                 - "compute"
+  persistentVolumeReclaimPolicy: Retain
 ---
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: jellyfin-conf
+  name: unbound-conf
 spec:
   capacity:
-    storage: 5Gi
+    storage: 250Mi
   volumeMode: Filesystem
   accessModes:
-    - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
+    - ReadOnlyMany
   storageClassName: local-path
   local:
-    path: /mnt/pvs/jellyfin/conf
+    path: /mnt/nvme/unbound/etc
   nodeAffinity:
     required:
       nodeSelectorTerms:
@@ -43,3 +42,4 @@ spec:
               operator: In
               values:
                 - "compute"
+  persistentVolumeReclaimPolicy: Retain

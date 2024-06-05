@@ -1,5 +1,8 @@
 .vscode/
 *.env
+!gen_kube_manifests.env
+!manage_igntion.env
 *.pub
 *.ign
 *.iso
+*.iso.sig

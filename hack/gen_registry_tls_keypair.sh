@@ -38,6 +38,7 @@ main() {
 }
 
 delete_all() {
+    # shellcheck disable=SC2068
     for s in ${secrets[@]}; do
         local -I secrets
         log "Deleting secrets ${secrets["$s"]}"
@@ -95,6 +96,7 @@ generate_tls_keypair() {
 }
 
 create_all_secrets() {
+    # shellcheck disable=SC2068
     for s in ${secrets[@]}; do
         create_secret "$s" "${secrets["$s"]}"
     done
@@ -114,6 +116,7 @@ create_secret() {
 }
 
 check_secrets_exist() {
+    # shellcheck disable=SC2068
     for s in ${secrets[@]}; do
         if podman secret exists "$s"; then
             abort "cannot proceed, $s exists. Backup and delete $s to continue."
@@ -121,15 +124,10 @@ check_secrets_exist() {
     done
 }
 
-log() {
-    logger -p "local3.${priority:-info}" -s -i --id=$$ "${FUNCNAME[${stack_level:-1}]}: ${*}"
-}
-
-abort() {
-    priority="err"
-    stack_level=2
-    log "${@}"
-    exit 1
-}
+declare -r utils="hack/utils.sh"
+if [ -f "$utils" ]; then
+    # shellcheck source=utils.sh
+    source "$utils"
+fi
 
 main "${1}"

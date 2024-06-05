@@ -12,19 +12,22 @@ main() {
         exit 0
     fi
 
+    # shellcheck disable=SC2034
     local -r remote_ip="$3"
+    # shellcheck disable=SC2034
     local token
     generate_token token
 
     if ! podman system connection list | grep -q rick-dev; then
-        echo "Adding new podman system connection with Name \"$remote_alias\"."
+        log "Adding new podman system connection with Name \"$remote_alias\"."
         add_connection ssh_id remote_alias remote_ip
     else
-        echo "podman system connection already found for Name \"Name\" $remote_alias, skipping connection add."
-        echo "To remove the connection, run:"
-        echo "    podman system connection remove $remote_alias"
+        log "podman system connection already found for Name \"Name\" $remote_alias, skipping connection add.
+            To remove the connection, run:
+                podman system connection remove $remote_alias"
     fi
 
+    # shellcheck disable=SC2034
     local -r secret="k3s-token"
     create_secret secret remote_alias token
 }
@@ -32,7 +35,7 @@ main() {
 generate_token() {
     local -n tok="$1"
     # Reference: https://github.com/alexellis/k3sup#create-a-multi-master-ha-setup-with-external-sql
-    echo "Generating k3s token now"
+    log "Generating k3s token now"
     tok="$(openssl rand -base64 64)"
 }
 
@@ -41,9 +44,9 @@ add_connection() {
     local -n host="$2"
     local -n rem_ip="$3"
     # TODO add an option to recreate for an existing entry
-    echo "Adding host connection \"$host\" with ip \"$rem_ip\""
+    log "Adding host connection \"$host\" with ip \"$rem_ip\""
     podman system connection add --identity "$key" "$host" "root@${rem_ip}"
-    echo "Setting $host as default podman connection"
+    log "Setting $host as default podman connection"
     podman system connection default "$host"
 }
 
@@ -59,12 +62,17 @@ create_secret() {
     local -n tok="$3"
 
     if podman secret exists "$1"; then
-        echo "secret $sec already exists, aborting"
-        return 1
+        abort "secret $sec already exists, aborting"
     fi
 
-    echo "Creating podman secret \"$sec\" on host \"$host\""
+    log "Creating podman secret \"$sec\" on host \"$host\""
     printf '%s' "$tok" | podman -r -c "$host" secret create "$sec" -
 }
+
+declare -r utils="hack/utils.sh"
+if [ -f "$utils" ]; then
+    # shellcheck source=utils.sh
+    source "$utils"
+fi
 
 main "$@"
