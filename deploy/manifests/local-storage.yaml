@@ -10,7 +10,7 @@ metadata:
   name: local-path-provisioner-role
 rules:
 - apiGroups: [""]
-  resources: ["nodes", "persistentvolumeclaims", "configmaps"]
+  resources: ["nodes", "persistentvolumeclaims", "configmaps", "pods/log"]
   verbs: ["get", "list", "watch"]
 - apiGroups: [""]
   resources: ["endpoints", "persistentvolumes", "pods"]
@@ -67,7 +67,7 @@ spec:
             effect: "NoSchedule"
       containers:
       - name: local-path-provisioner
-        image: rancher/local-path-provisioner:v0.0.27
+        image: "rancher/local-path-provisioner:v0.0.26"
         imagePullPolicy: IfNotPresent
         command:
         - local-path-provisioner
@@ -92,20 +92,11 @@ kind: StorageClass
 metadata:
   name: local-path
   annotations:
+    defaultVolumeType: "local"
     storageclass.kubernetes.io/is-default-class: "true"
 provisioner: rancher.io/local-path
 volumeBindingMode: WaitForFirstConsumer
 reclaimPolicy: Delete
----
-apiVersion: storage.k8s.io/v1
-kind: StorageClass
-metadata:
-  name: local-path-retain
-  annotations:
-    storageclass.kubernetes.io/is-default-class: "true"
-provisioner: rancher.io/local-path
-volumeBindingMode: WaitForFirstConsumer
-reclaimPolicy: Retain
 ---
 kind: ConfigMap
 apiVersion: v1
@@ -115,8 +106,12 @@ metadata:
 data:
   config.json: |-
     {
-      "nodePathMap":[]
-      "sharedFileSystemPath": "/mnt/nvme"
+      "nodePathMap":[
+      {
+        "node":"DEFAULT_PATH_FOR_NON_LISTED_NODES",
+        "paths":["/mnt/nvme"]
+      }
+      ]
     }
   setup: |-
     #!/bin/sh
@@ -161,5 +156,5 @@ data:
     spec:
       containers:
       - name: helper-pod
-        image: rancher/mirrored-library-busybox:1.36.1
+        image: "rancher/mirrored-library-busybox:1.36.1"
         imagePullPolicy: IfNotPresent
