@@ -30,84 +30,36 @@ spec:
   type: LoadBalancer
 ---
 apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: jellyfin-conf
-spec:
-  accessModes:
-  - ReadWriteOnce
-  capacity:
-    storage: 5Gi
-  local:
-    path: /pvs/jellyfin/conf
-  nodeAffinity:
-    required:
-      nodeSelectorTerms:
-      - matchExpressions:
-        - key: app
-          operator: In
-          values:
-          - compute
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: local-path
-  volumeMode: Filesystem
----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: jellyfin-media
-spec:
-  accessModes:
-  - ReadWriteOnce
-  capacity:
-    storage: 4T
-  local:
-    path: /volumes/jellyfin
-  nodeAffinity:
-    required:
-      nodeSelectorTerms:
-      - matchExpressions:
-        - key: app
-          operator: In
-          values:
-          - compute
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: local-path
-  volumeMode: Filesystem
----
-apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   annotations:
-    volumeType: local
+    volumeType: hostPath
   name: jellyfin-conf-pvc
   namespace: jellyfin
 spec:
   accessModes:
-  - ReadWriteOnce
+  - ReadWriteMany
   resources:
     requests:
       storage: 3Gi
   storageClassName: local-path
   volumeMode: Filesystem
-  volumeName: jellyfin-conf
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   annotations:
-    volumeType: local
+    volumeType: hostPath
   name: jellyfin-media-pvc
   namespace: jellyfin
 spec:
   accessModes:
-  - ReadWriteOnce
+  - ReadWriteMany
   resources:
     requests:
       storage: 3.9T
   storageClassName: local-path
   volumeMode: Filesystem
-  volumeName: jellyfin-media
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -140,7 +92,7 @@ spec:
       containers:
       - env:
         - name: JELLYFIN_PublishedServerUrl
-          value: https://jellyfin.app.rick-dev.expresso.lan
+          value: https://jellyfin.app.rick.expresso.lan
         - name: JELLYFIN_DATA_DIR
           value: /data
         - name: PASSWORD

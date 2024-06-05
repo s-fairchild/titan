@@ -4,15 +4,13 @@ metadata:
   name: pihole-conf
 spec:
   capacity:
-    storage: 3Gi
+    storage: 1Gi
   volumeMode: Filesystem
   accessModes:
     - ReadWriteMany
-  persistentVolumeReclaimPolicy: Retain
   storageClassName: local-path
   local:
-    path: /mnt/pvs/pihole/etc
-    fsType: xfs
+    path: /mnt/nvme/pihole/etc
   nodeAffinity:
     required:
       nodeSelectorTerms:
@@ -21,6 +19,7 @@ spec:
               operator: In
               values:
                 - "compute"
+  persistentVolumeReclaimPolicy: Retain
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -28,15 +27,13 @@ metadata:
   name: unbound-conf
 spec:
   capacity:
-    storage: 3Gi
+    storage: 250Mi
   volumeMode: Filesystem
   accessModes:
     - ReadOnlyMany
-  persistentVolumeReclaimPolicy: Retain
   storageClassName: local-path
   local:
-    path: /mnt/pvs/unbound/
-    fsType: xfs
+    path: /mnt/nvme/unbound/etc
   nodeAffinity:
     required:
       nodeSelectorTerms:
@@ -45,3 +42,4 @@ spec:
               operator: In
               values:
                 - "compute"
+  persistentVolumeReclaimPolicy: Retain

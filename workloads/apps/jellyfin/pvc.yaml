@@ -4,9 +4,8 @@ metadata:
   name: jellyfin-conf-pvc
   namespace: jellyfin
   annotations:
-    volumeType: local
+    volumeType: hostPath
 spec:
-  volumeName: jellyfin-conf
   volumeMode: Filesystem
   storageClassName: local-path
   accessModes:
@@ -21,9 +20,8 @@ metadata:
   name: jellyfin-media-pvc
   namespace: jellyfin
   annotations:
-    volumeType: local
+    volumeType: hostPath
 spec:
-  volumeName: jellyfin-media
   volumeMode: Filesystem
   storageClassName: local-path
   accessModes:
