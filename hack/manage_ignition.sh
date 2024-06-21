@@ -41,7 +41,7 @@ validate_ignition() {
         --volume "${PWD}":/pwd \
         --workdir /pwd \
         quay.io/coreos/ignition-validate:release \
-        - < "$ign" || echo "failed to validate ignition \"$ign\""; exit 1
+        - < "$ign"
 }
 
 generate_all_ignition() {
@@ -57,6 +57,7 @@ generate_all_ignition() {
     for b in ${!final[@]}; do
         ign="${final[$b]}"
         gen_ignition b ign
+        fix_fcontext ign
     done
 }
 
@@ -77,7 +78,15 @@ gen_ignition() {
             --pretty \
             --strict \
             --files-dir deploy/ \
-            "$butane_file" > "$ignition_file" || echo "failed to generate ignition \"$ignition_file\" from \"$butane_file\""; exit 1
+            "$butane_file" > "$ignition_file"
+}
+
+fix_fcontext() {
+    local -n f="$1"
+    chcon --verbose \
+          --type \
+          svirt_home_t \
+          "$f"
 }
 
 declare -r butane_ignition_files="hack/butane_ignition_files.env"
