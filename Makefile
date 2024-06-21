@@ -10,58 +10,11 @@ ignition_dev_systemd := "deploy/ignitions/systemd.ign"
 ignition_dev_users := "deploy/ignitions/users.ign"
 ignition_storage_dev := "deploy/ignitions/storage-dev.ign"
 ignition_dev_cluster := "deploy/ignitions/dev-cluster.ign"
-ignition-dev-gen:
-	podman run \
-		--pull=newer \
-		--interactive \
-		--rm \
-		--security-opt label=disable \
-		--volume ${PWD}:/pwd \
-		--workdir /pwd \
-		quay.io/coreos/butane:release \
-			--pretty \
-			--strict \
-			--files-dir deploy/ \
-			${butane_dev_systemd} > ${ignition_dev_systemd}
+ignition-gen-dev:
+	hack/generate_ignition.sh dev
 
-	podman run \
-		--pull=newer \
-		--interactive \
-		--rm \
-		--security-opt label=disable \
-		--volume ${PWD}:/pwd \
-		--workdir /pwd \
-		quay.io/coreos/butane:release \
-			--pretty \
-			--strict \
-			--files-dir deploy/ \
-			${butane_dev_users} > ${ignition_dev_users}
-
-	podman run \
-		--pull=newer \
-		--interactive \
-		--rm \
-		--security-opt label=disable \
-		--volume ${PWD}:/pwd \
-		--workdir /pwd \
-		quay.io/coreos/butane:release \
-			--pretty \
-			--strict \
-			--files-dir deploy/ \
-			${butane_storage_dev} > ${ignition_storage_dev}
-
-	podman run \
-		--pull=newer \
-		--interactive \
-		--rm \
-		--security-opt label=disable \
-		--volume ${PWD}:/pwd \
-		--workdir /pwd \
-		quay.io/coreos/butane:release \
-			--pretty \
-			--strict \
-			--files-dir deploy/ \
-			${butane_dev_cluster} > ${ignition_dev_cluster}
+ignition-gen-prod:
+	hack/generate_ignition.sh prod
 
 ignition-validate: ignition-dev-gen
 	podman run \

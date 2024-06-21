@@ -3,9 +3,9 @@ version: 1.5.0
 ignition:
   config:
     merge:
-      - local: ignitions/systemd.ign
-      - local: ignitions/users.ign
-      - local: ignitions/storage-dev.ign
+      - local: ignition/systemd.ign
+      - local: ignition/users.ign
+      - local: ignition/storage-dev.ign
 systemd:
   units:
     - name: serial-getty@ttyS0.service

@@ -1,0 +1,214 @@
+{
+  "ignition": {
+    "version": "3.4.0"
+  },
+  "storage": {
+    "disks": [
+      {
+        "device": "/dev/disk/by-id/coreos-boot-disk",
+        "partitions": [
+          {
+            "label": "root",
+            "number": 4,
+            "resize": true,
+            "sizeMiB": 307200
+          },
+          {
+            "label": "var",
+            "sizeMiB": 0
+          }
+        ],
+        "wipeTable": true
+      },
+      {
+        "device": "/dev/disk/by-id/wwn-0x5000c500e62fb786",
+        "partitions": [
+          {
+            "guid": "A19D880F-05FC-4D3B-A006-743F0F84911E",
+            "label": "raid10.1",
+            "shouldExist": true,
+            "sizeMiB": 0,
+            "wipePartitionEntry": true
+          }
+        ],
+        "wipeTable": true
+      },
+      {
+        "device": "/dev/disk/by-id/wwn-0x5000c500e643147a",
+        "partitions": [
+          {
+            "guid": "A19D880F-05FC-4D3B-A006-743F0F84911E",
+            "label": "raid10.2",
+            "shouldExist": true,
+            "sizeMiB": 0,
+            "wipePartitionEntry": true
+          }
+        ],
+        "wipeTable": true
+      },
+      {
+        "device": "/dev/disk/by-id/wwn-0x5000c500e642d1f3",
+        "partitions": [
+          {
+            "guid": "A19D880F-05FC-4D3B-A006-743F0F84911E",
+            "label": "raid10.3",
+            "shouldExist": true,
+            "sizeMiB": 0,
+            "wipePartitionEntry": true
+          }
+        ],
+        "wipeTable": true
+      },
+      {
+        "device": "/dev/disk/by-id/wwn-0x5000c500c8e4bd14",
+        "partitions": [
+          {
+            "guid": "A19D880F-05FC-4D3B-A006-743F0F84911E",
+            "label": "raid10.4",
+            "shouldExist": true,
+            "sizeMiB": 0,
+            "wipePartitionEntry": true
+          }
+        ],
+        "wipeTable": true
+      },
+      {
+        "device": "/dev/disk/by-id/wwn-0x5000c500c8e196b3",
+        "partitions": [
+          {
+            "guid": "A19D880F-05FC-4D3B-A006-743F0F84911E",
+            "label": "raid5.1",
+            "shouldExist": true,
+            "sizeMiB": 0,
+            "wipePartitionEntry": true
+          }
+        ],
+        "wipeTable": true
+      },
+      {
+        "device": "/dev/disk/by-id/wwn-0x5000c500c8e37087",
+        "partitions": [
+          {
+            "guid": "A19D880F-05FC-4D3B-A006-743F0F84911E",
+            "label": "raid5.2",
+            "shouldExist": true,
+            "sizeMiB": 0,
+            "wipePartitionEntry": true
+          }
+        ],
+        "wipeTable": true
+      },
+      {
+        "device": "/dev/disk/by-id/wwn-0x5000c500c8a40802",
+        "partitions": [
+          {
+            "guid": "A19D880F-05FC-4D3B-A006-743F0F84911E",
+            "label": "raid5.3",
+            "shouldExist": true,
+            "sizeMiB": 0,
+            "wipePartitionEntry": true
+          }
+        ],
+        "wipeTable": true
+      },
+      {
+        "device": "/dev/disk/by-id/wwn-0x5000c500c937816a",
+        "partitions": [
+          {
+            "guid": "A19D880F-05FC-4D3B-A006-743F0F84911E",
+            "label": "BACKUPS",
+            "shouldExist": true,
+            "sizeMiB": 0,
+            "wipePartitionEntry": false
+          }
+        ],
+        "wipeTable": false
+      }
+    ],
+    "filesystems": [
+      {
+        "device": "/dev/disk/by-partlabel/var",
+        "format": "btrfs",
+        "label": "var",
+        "mountOptions": [
+          "compress=zstd:1"
+        ],
+        "options": [
+          "-L",
+          "var"
+        ],
+        "path": "/var"
+      },
+      {
+        "device": "/dev/md/cctv",
+        "format": "btrfs",
+        "label": "cctv",
+        "mountOptions": [
+          "compress=zstd:1"
+        ],
+        "options": [
+          "-L",
+          "cctv"
+        ],
+        "path": "/var/local/lib/k3s/agent/cctv",
+        "wipeFilesystem": true
+      },
+      {
+        "device": "/dev/md/data",
+        "format": "btrfs",
+        "label": "data",
+        "mountOptions": [
+          "compress=zstd:1"
+        ],
+        "options": [
+          "-L",
+          "data"
+        ],
+        "path": "/var/local/lib/k3s/agent/data",
+        "wipeFilesystem": true
+      }
+    ],
+    "raid": [
+      {
+        "devices": [
+          "/dev/disk/by-partlabel/raid10.1",
+          "/dev/disk/by-partlabel/raid10.2",
+          "/dev/disk/by-partlabel/raid10.3",
+          "/dev/disk/by-partlabel/raid10.4"
+        ],
+        "level": "raid10",
+        "name": "cctv",
+        "spares": 0
+      },
+      {
+        "devices": [
+          "/dev/disk/bypartlabel/raid5.1",
+          "/dev/disk/bypartlabel/raid5.2",
+          "/dev/disk/bypartlabel/raid5.3"
+        ],
+        "level": "raid5",
+        "name": "volumestore",
+        "spares": 0
+      }
+    ]
+  },
+  "systemd": {
+    "units": [
+      {
+        "contents": "# Generated by Butane\n[Unit]\nRequires=systemd-fsck@dev-disk-by\\x2dpartlabel-var.service\nAfter=systemd-fsck@dev-disk-by\\x2dpartlabel-var.service\n\n[Mount]\nWhere=/var\nWhat=/dev/disk/by-partlabel/var\nType=btrfs\nOptions=compress=zstd:1\n\n[Install]\nRequiredBy=local-fs.target",
+        "enabled": true,
+        "name": "var.mount"
+      },
+      {
+        "contents": "# Generated by Butane\n[Unit]\nRequires=systemd-fsck@dev-md-cctv.service\nAfter=systemd-fsck@dev-md-cctv.service\n\n[Mount]\nWhere=/var/local/lib/k3s/agent/cctv\nWhat=/dev/md/cctv\nType=btrfs\nOptions=compress=zstd:1\n\n[Install]\nRequiredBy=local-fs.target",
+        "enabled": true,
+        "name": "var-local-lib-k3s-agent-cctv.mount"
+      },
+      {
+        "contents": "# Generated by Butane\n[Unit]\nRequires=systemd-fsck@dev-md-data.service\nAfter=systemd-fsck@dev-md-data.service\n\n[Mount]\nWhere=/var/local/lib/k3s/agent/data\nWhat=/dev/md/data\nType=btrfs\nOptions=compress=zstd:1\n\n[Install]\nRequiredBy=local-fs.target",
+        "enabled": true,
+        "name": "var-local-lib-k3s-agent-data.mount"
+      }
+    ]
+  }
+}
