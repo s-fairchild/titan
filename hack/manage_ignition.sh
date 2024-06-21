@@ -7,13 +7,16 @@ set -o nounset \
 main() {
 
     case "$1" in
-        "dev")
-            generate_all_ign dev_files \
-                            dev_final
+        "generate")
+            if [ "$2" == "dev" ]; then
+                generate_all_ign dev_files \
+                                dev_final
+            elif [ "$2" == "prod" ]; then
+                generate_all_ign prod_files \
+                                prod_final
+            fi
             ;;
         "prod")
-            generate_all_ign prod_files \
-                            prod_final
             ;;
         *)
             echo "Unkown option \"$1\""

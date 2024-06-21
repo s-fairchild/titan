@@ -11,10 +11,10 @@ ignition_dev_users := "deploy/ignitions/users.ign"
 ignition_storage_dev := "deploy/ignitions/storage-dev.ign"
 ignition_dev_cluster := "deploy/ignitions/dev-cluster.ign"
 ignition-gen-dev:
-	hack/generate_ignition.sh dev
+	hack/manage_ignition.sh generate dev
 
 ignition-gen-prod:
-	hack/generate_ignition.sh prod
+	hack/manage_ignition.sh generate prod
 
 ignition-validate: ignition-dev-gen
 	podman run \
