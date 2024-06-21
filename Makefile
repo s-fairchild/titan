@@ -12,19 +12,11 @@ ignition_storage_dev := "deploy/ignitions/storage-dev.ign"
 ignition_dev_cluster := "deploy/ignitions/dev-cluster.ign"
 ignition-gen-dev:
 	hack/manage_ignition.sh generate dev
+	hack/manage_ignition.sh validate dev
 
 ignition-gen-prod:
 	hack/manage_ignition.sh generate prod
-
-ignition-validate: ignition-dev-gen
-	podman run \
-		--pull=newer \
-		--rm \
-		-i \
-		--volume ${PWD}:/pwd \
-		--workdir /pwd \
-		quay.io/coreos/ignition-validate:release \
-		- < ${ignition_dev_cluster}
+	hack/manage_ignition.sh validate prod
 
 stream := "stable"
 download-live-installer:
@@ -76,9 +68,6 @@ vm-dev-create: ignition-validate
 vm-dev-delete:
 	sudo virsh destroy ${vm_name}
 	sudo virsh undefine ${vm_name} --remove-all-storage
-
-upgrade-traefik:
-	helm upgrade -f clusterconfig/traefik/traefik.yaml -f clusterconfig/traefik/traefik-config.yaml traefik clusterconfig/traefik/charts/traefik-21.2.1+up21.2.0.tgz -n kube-system
 
 vm_ip_address := "192.168.122.2"
 ssh_id := ~/.ssh/id_ed25519

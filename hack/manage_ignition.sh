@@ -8,22 +8,43 @@ main() {
 
     case "$1" in
         "generate")
+            # TODO make this cleaner by removing the if statement later
             if [ "$2" == "dev" ]; then
-                generate_all_ign dev_files \
+                generate_all_ignition dev_files \
                                 dev_final
             elif [ "$2" == "prod" ]; then
-                generate_all_ign prod_files \
+            # TODO make this cleaner by removing the if statement later
+                generate_all_ignition prod_files \
                                 prod_final
             fi
             ;;
-        "prod")
+        "validate")
+            # TODO make this cleaner by removing the if statement later
+            if [ "$2" == "dev" ]; then
+                validate_ignition ignition_cluster
+            elif [ "$2" == "prod" ]; then
+                validate_ignition ignition_cluster_dev
+            fi
             ;;
         *)
             echo "Unkown option \"$1\""
     esac
 }
 
-generate_all_ign() {
+validate_ignition() {
+    local -n ign="$1"
+    # TODO add log and abort functions
+    podman run \
+        --pull=newer \
+        --rm \
+        -i \
+        --volume "${PWD}":/pwd \
+        --workdir /pwd \
+        quay.io/coreos/ignition-validate:release \
+        - < "$ign" || echo "failed to validate ignition \"$ign\""; exit 1
+}
+
+generate_all_ignition() {
     local -n files="$1"
     local -n final="$2"
     # shellcheck disable=SC2068
@@ -44,6 +65,7 @@ gen_ignition() {
     local -n ignition_file="$2"
     
     echo "Generating \"$ignition_file\" from \"$butane_file\""
+    # TODO add log and abort functions
     podman run \
         --pull=newer \
         --interactive \
@@ -55,12 +77,12 @@ gen_ignition() {
             --pretty \
             --strict \
             --files-dir deploy/ \
-            "$butane_file" > "$ignition_file"
+            "$butane_file" > "$ignition_file" || echo "failed to generate ignition \"$ignition_file\" from \"$butane_file\""; exit 1
 }
 
 declare -r butane_ignition_files="hack/butane_ignition_files.env"
 if [ -f "$butane_ignition_files" ]; then
-    # shellcheck source=hack/butane_ignition_files.env
+    # shellcheck source=../hack/butane_ignition_files.env
     source "$butane_ignition_files"
 else
     echo "Missing $butane_ignition_files, aborting"
