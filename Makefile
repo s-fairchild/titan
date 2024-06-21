@@ -20,11 +20,31 @@ ignition-gen-prod:
 
 stream := "stable"
 download-live-installer:
-	podman run --security-opt label=disable --pull=always --rm -v ./deploy/isos:/data -w /data quay.io/coreos/coreos-installer:release download -s ${stream} -p metal -f iso
+	podman run --security-opt \
+		   label=disable \
+		   --pull=always \
+		   --rm \
+		   -v ./deploy/isos:/data \
+		   -w /data \
+		   quay.io/coreos/coreos-installer:release \
+		   		download \
+				-s ${stream} \
+				-p metal \
+				-f iso
 
 images := "$(HOME)/.local/share/libvirt/images"
 download-libvirt-installer: $(images)
-	podman run --pull=always --rm -v ${images}:/data -w /data quay.io/coreos/coreos-installer:release download -s stable -p qemu -f qcow2.xz --decompress
+	podman run \
+		   --pull=always \
+		   --rm \
+		   -v ${images}:/data \
+		   -w /data \
+		   quay.io/coreos/coreos-installer:release \
+		   		download \
+				-s ${stream} \
+				-p qemu \
+				-f qcow2.xz \
+				--decompress
 
 image := "$(images)/fedora-coreos-39.20240407.3.0-qemu.x86_64.qcow2"
 vm_name := "rick-dev"
@@ -41,7 +61,10 @@ disk_serial6 := "raid5.2"
 disk_serial7 := "raid5.3"
 disk_serial8 := "backups"
 vm-dev-create: ignition-validate
-	chcon --verbose --type svirt_home_t ${ignition_dev_cluster}
+	chcon --verbose \
+		  --type \
+		  svirt_home_t \
+		  ${ignition_dev_cluster}
 
 # TODO get guest vm working with bridge networking as non root user
 	# Spice graphics are used to allow mounting of /dev/dri to containers
@@ -72,4 +95,6 @@ vm-dev-delete:
 vm_ip_address := "192.168.122.2"
 ssh_id := ~/.ssh/id_ed25519
 k3s-token-upload:
-	hack/upload_k3s_token.sh ${vm_name} ${ssh_id} ${vm_ip_address}
+	hack/upload_k3s_token.sh ${vm_name} \
+							 ${ssh_id} \
+							 ${vm_ip_address}
