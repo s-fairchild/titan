@@ -46,6 +46,7 @@ download-libvirt-installer: $(images)
 				-f qcow2.xz \
 				--decompress
 
+# TODO add target to generate yaml manifests using kustomize
 vm-dev-create: ignition-gen-dev
 	hack/manage_dev_vm.sh create
 

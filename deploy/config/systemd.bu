@@ -57,7 +57,7 @@ systemd:
                                 -v=k3s-rick-server-0-pod-log:/var/log/pod:Z \
                                 -v=k3s-rick-server-0-containers:/var/lib/containers:Z \
                                 -v=/usr/local/etc/k3s/config/k3s-rick-server-0.yaml:/etc/rancher/k3s/config.yaml:Z,ro \
-                                -v=/usr/local/etc/k3s/manifests:/var/lib/rancher/k3s/server/manifests/compute:z,ro \
+                                -v=/usr/local/etc/k3s/manifests:/var/lib/rancher/k3s/server/manifests/compute:z \
                                 -v=/usr/local/etc/k3s/skip:/var/lib/rancher/k3s/server/manifests/skip:z,ro \
                                 --shm-size=5g \
                                 --privileged \
@@ -134,7 +134,7 @@ systemd:
           -v=k3s-rick-server-1-pod-log:/var/log/pod:Z \
           -v=k3s-rick-server-1-containers:/var/lib/containers:Z \
           -v=/usr/local/etc/k3s/config/k3s-rick-server-1.yaml:/etc/rancher/k3s/config.yaml:Z,ro \
-          -v=/usr/local/etc/k3s/manifests:/var/lib/rancher/k3s/server/manifests/compute:z,ro \
+          -v=/usr/local/etc/k3s/manifests:/var/lib/rancher/k3s/server/manifests/compute:z \
           -v=/usr/local/etc/k3s/skip:/var/lib/rancher/k3s/server/manifests/skip:z,ro \
           --shm-size 5g \
           --privileged \
@@ -210,7 +210,7 @@ systemd:
           -v=k3s-rick-server-2-storage:/var/lib/rancher/k3s/storage:Z \
           -v=k3s-rick-server-2-containers:/var/lib/containers:Z \
           -v=/usr/local/etc/k3s/config/k3s-rick-server-2.yaml:/etc/rancher/k3s/config.yaml:Z,ro \
-          -v=/usr/local/etc/k3s/manifests:/var/lib/rancher/k3s/server/manifests/compute:z,ro \
+          -v=/usr/local/etc/k3s/manifests:/var/lib/rancher/k3s/server/manifests/compute:z \
           -v=/usr/local/etc/k3s/skip:/var/lib/rancher/k3s/server/manifests/skip:z,ro \
           --shm-size 5g \
           --privileged \
