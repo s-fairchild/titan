@@ -12,7 +12,9 @@ main() {
         exit 0
     fi
 
+    # shellcheck disable=SC2034
     local -r remote_ip="$3"
+    # shellcheck disable=SC2034
     local token
     generate_token token
 
@@ -25,6 +27,7 @@ main() {
                 podman system connection remove $remote_alias"
     fi
 
+    # shellcheck disable=SC2034
     local -r secret="k3s-token"
     create_secret secret remote_alias token
 }

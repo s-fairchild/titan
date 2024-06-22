@@ -4,13 +4,16 @@ set -o nounset \
     -o errexit
 
 main() {
+    # shellcheck disable=SC2034
     local -r vm_name="rick-dev"
     local -r images="${HOME}/.local/share/libvirt/images"
 
     case "$1" in
         "create")
             # TODO set these variables in a better way
+            # shellcheck disable=SC2034
             local -r image="${images}/fedora-coreos-39.20240407.3.0-qemu.x86_64.qcow2"
+            # shellcheck disable=SC2034
             local -r ignition="${PWD}/$ignition_cluster_dev"
 
             create_vm image \
