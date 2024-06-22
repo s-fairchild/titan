@@ -1,22 +1,41 @@
 #!/bin/bash
 
+set -o nounset \
+    -o errexit
+
 main() {
+    local -r vm_name="rick-dev"
+    local -r images="${HOME}/.local/share/libvirt/images"
+
     case "$1" in
         "create")
             # TODO set these variables in a better way
             local -r image="${images}/fedora-coreos-39.20240407.3.0-qemu.x86_64.qcow2"
-            local -r vm_name="rick-dev"
             local -r ignition="${PWD}/$ignition_cluster_dev"
 
-            create_vm image vm_name ignition
+            create_vm image \
+                      vm_name \
+                      ignition
             ;;
         "delete")
+            delete_vm vm_name
             ;;
         *)
             echo "unknown option \"$1\""
             exit 1
             ;;
     esac
+}
+
+delete_vm() {
+    local -n name="$1"
+
+	sudo virsh destroy \
+               "$name"
+
+	sudo virsh undefine \
+               "$name" \
+               --remove-all-storage
 }
 
 create_vm() {
@@ -67,7 +86,5 @@ else
     echo "Missing $butane_ignition_files, aborting"
     exit 1
 fi
-
-declare -r images="${HOME}/.local/share/libvirt/images"
 
 main "$@"

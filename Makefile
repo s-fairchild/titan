@@ -50,12 +50,11 @@ vm-dev-create: ignition-gen-dev
 	hack/manage_dev_vm.sh create
 
 vm-dev-delete:
-	sudo virsh destroy ${vm_name}
-	sudo virsh undefine ${vm_name} --remove-all-storage
+	hack/manage_dev_vm.sh delete
 
 vm_ip_address := "192.168.122.2"
 ssh_id := ~/.ssh/id_ed25519
 k3s-token-upload:
-	hack/upload_k3s_token.sh ${vm_name} \
+	hack/upload_k3s_token.sh "rick-dev" \
 							 ${ssh_id} \
 							 ${vm_ip_address}
