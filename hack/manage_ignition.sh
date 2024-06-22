@@ -101,13 +101,12 @@ if [ -f "$utils" ]; then
     source "$utils"
 fi
 
-declare -r butane_ignition_files="hack/butane_ignition_files.env"
-if [ -f "$butane_ignition_files" ]; then
-    # shellcheck source=butane_ignition_files.env
-    source "$butane_ignition_files"
+declare -r env_file="hack/env/manage_ignition.env"
+if [ -f "$env_file" ]; then
+    # shellcheck source=env/manage_ignition.env
+    source "$env_file"
 else
-    abort "Missing $butane_ignition_files, aborting"
+    abort "Missing $env_file, aborting"
 fi
-
 
 main "$@"
