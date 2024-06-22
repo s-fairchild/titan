@@ -12,7 +12,7 @@ reclaimPolicy: Delete
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: nvme-local-path
+  name: local-path-nvme
 provisioner: rancher.io/local-path
 volumeBindingMode: Immediate
 reclaimPolicy: Retain
@@ -20,7 +20,7 @@ reclaimPolicy: Retain
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: raid5-local-path
+  name: local-path-raid5
 provisioner: rancher.io/local-path
 volumeBindingMode: Immediate
 reclaimPolicy: Retain
@@ -28,7 +28,7 @@ reclaimPolicy: Retain
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: raid10-local-path
+  name: local-path-raid10
 provisioner: rancher.io/local-path
 volumeBindingMode: Immediate
 reclaimPolicy: Retain

@@ -42,7 +42,7 @@ spec:
   resources:
     requests:
       storage: 3Gi
-  storageClassName: local-path
+  storageClassName: local-path-nvme
   volumeMode: Filesystem
 ---
 apiVersion: v1
@@ -58,7 +58,7 @@ spec:
   resources:
     requests:
       storage: 3.9T
-  storageClassName: local-path
+  storageClassName: local-path-raid5
   volumeMode: Filesystem
 ---
 apiVersion: apps/v1

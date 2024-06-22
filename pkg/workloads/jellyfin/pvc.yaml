@@ -7,7 +7,7 @@ metadata:
     volumeType: hostPath
 spec:
   volumeMode: Filesystem
-  storageClassName: local-path
+  storageClassName: local-path-nvme
   accessModes:
     - ReadWriteOnce
   resources:
@@ -23,7 +23,7 @@ metadata:
     volumeType: hostPath
 spec:
   volumeMode: Filesystem
-  storageClassName: local-path
+  storageClassName: local-path-raid5
   accessModes:
     - ReadWriteOnce
   resources:
