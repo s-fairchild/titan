@@ -4,3 +4,4 @@
 *.pub
 *.ign
 *.iso
+*.iso.sig
