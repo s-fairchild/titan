@@ -1,0 +1,64 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  chart: https://%{KUBERNETES_API}%/static/charts/traefik-25.0.3+up25.0.0.tgz
+  set:
+    global.systemDefaultRegistry: ""
+  valuesContent: |-
+    deployment:
+      podAnnotations:
+        prometheus.io/port: "8082"
+        prometheus.io/scrape: "true"
+    providers:
+      kubernetesCRD:
+        enabled: true
+        allowCrossNamespace: true
+        allowExternalNameServices: true
+        # -- Allows to return 503 when there is no endpoints available
+        allowEmptyServices: true
+      kubernetesIngress:
+        enabled: true
+        allowExternalNameServices: true
+        # -- Allows to return 503 when there is no endpoints available
+        allowEmptyServices: true
+        # Required for external IP address to be assigned
+        publishedService:
+          enabled: true
+    hostNetwork: false
+    priorityClassName: "system-cluster-critical"
+    nodeSelector:
+      svccontroller.k3s.cattle.io/enablelb: "true"
+    image:
+      repository: "rancher/mirrored-library-traefik"
+      tag: "2.10.7"
+      pullPolicy: IfNotPresent
+    tolerations:
+    - key: "CriticalAddonsOnly"
+      operator: "Exists"
+    - key: "node-role.kubernetes.io/control-plane"
+      operator: "Exists"
+      effect: "NoSchedule"
+    - key: "node-role.kubernetes.io/master"
+      operator: "Exists"
+      effect: "NoSchedule"
+    - key: "app"
+      operator: "Equal"
+      values:
+        - compute
+      effect: "NoSchedule"
+    service:
+      enabled: true
+      single: false
+      type: LoadBalancer
+      ipFamilyPolicy: "SingleStack"
+      spec: {}
+    logs:
+      general:
+        # format: json
+        # -- Alternative logging levels are DEBUG, PANIC, FATAL, ERROR, WARN, and INFO.
+        level: INFO
+      access:
+        enabled: true

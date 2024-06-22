@@ -1,9 +1,11 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: local-path-storage
+---
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  annotations:
-    defaultVolumeType: local
-    storageclass.kubernetes.io/is-default-class: "true"
   name: local-path
 provisioner: rancher.io/local-path
 reclaimPolicy: Delete
@@ -12,7 +14,12 @@ volumeBindingMode: WaitForFirstConsumer
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
+  annotations:
+    defaultVolumeType: hostPath
   name: local-path-nvme
+parameters:
+  nodePath: /mnt/nvme
+  pathPattern: '{{ .PVC.Namespace }}/{{ .PVC.Name }}'
 provisioner: rancher.io/local-path
 reclaimPolicy: Retain
 volumeBindingMode: Immediate
@@ -20,7 +27,12 @@ volumeBindingMode: Immediate
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
+  annotations:
+    defaultVolumeType: hostPath
   name: local-path-raid10
+parameters:
+  nodePath: /mnt/recordings
+  pathPattern: '{{ .PVC.Namespace }}/{{ .PVC.Name }}'
 provisioner: rancher.io/local-path
 reclaimPolicy: Retain
 volumeBindingMode: Immediate
@@ -28,7 +40,12 @@ volumeBindingMode: Immediate
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
+  annotations:
+    defaultVolumeType: hostPath
   name: local-path-raid5
+parameters:
+  nodePath: /mnt/data
+  pathPattern: '{{ .PVC.Namespace }}/{{ .PVC.Name }}'
 provisioner: rancher.io/local-path
 reclaimPolicy: Retain
 volumeBindingMode: Immediate
@@ -37,7 +54,26 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: local-path-provisioner-service-account
-  namespace: kube-system
+  namespace: local-path-storage
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: local-path-provisioner-role
+  namespace: local-path-storage
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - patch
+  - update
+  - delete
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -50,6 +86,7 @@ rules:
   - nodes
   - persistentvolumeclaims
   - configmaps
+  - pods
   - pods/log
   verbs:
   - get
@@ -58,11 +95,15 @@ rules:
 - apiGroups:
   - ""
   resources:
-  - endpoints
   - persistentvolumes
-  - pods
   verbs:
-  - '*'
+  - get
+  - list
+  - watch
+  - create
+  - patch
+  - update
+  - delete
 - apiGroups:
   - ""
   resources:
@@ -80,6 +121,20 @@ rules:
   - watch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: local-path-provisioner-bind
+  namespace: local-path-storage
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: local-path-provisioner-role
+subjects:
+- kind: ServiceAccount
+  name: local-path-provisioner-service-account
+  namespace: local-path-storage
+---
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: local-path-provisioner-bind
@@ -90,7 +145,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: local-path-provisioner-service-account
-  namespace: kube-system
+  namespace: local-path-storage
 ---
 apiVersion: v1
 data:
@@ -98,21 +153,21 @@ data:
     {
               "storageClassConfigs":{
                     "local-path": {
-                            "nodePathMap": [
-                            {
-                                    "node":"DEFAULT_PATH_FOR_NON_LISTED_NODES",
-                                    "paths":["/mnt/nvme/local-path-provisioner"]
-                            }
-                            ]
+                    "nodePathMap": [
+                    {
+                            "node":"DEFAULT_PATH_FOR_NON_LISTED_NODES",
+                            "paths":["/mnt/nvme/volatile"]
+                    }
+                    ]
                     },
-                    "raid5-local-path": {
+                    "local-path-nvme": {
+                            "sharedFilesystemPath": "/mnt/nvme"
+                    },
+                    "local-path-raid5": {
                             "sharedFilesystemPath": "/mnt/data"
                     },
-                    "raid10-local-path": {
+                    "local-path-raid10": {
                             "sharedFilesystemPath": "/mnt/recordings"
-                    },
-                    "nvme-local-path": {
-                            "sharedFilesystemPath": "/mnt/nvme"
                     }
               }
     }
@@ -122,55 +177,33 @@ data:
     metadata:
       name: helper-pod
     spec:
+      priorityClassName: system-node-critical
+      tolerations:
+        - key: node.kubernetes.io/disk-pressure
+          operator: Exists
+          effect: NoSchedule
       containers:
       - name: helper-pod
-        image: "rancher/mirrored-library-busybox:1.36.1"
+        image: busybox
         imagePullPolicy: IfNotPresent
   setup: |-
     #!/bin/sh
-    while getopts "m:s:p:" opt
-    do
-        case $opt in
-            p)
-            absolutePath=$OPTARG
-            ;;
-            s)
-            sizeInBytes=$OPTARG
-            ;;
-            m)
-            volMode=$OPTARG
-            ;;
-        esac
-    done
-    mkdir -m 0777 -p ${absolutePath}
-    chmod 700 ${absolutePath}/..
+    set -eu
+    mkdir -m 0777 -p "$VOL_DIR"
   teardown: |-
     #!/bin/sh
-    while getopts "m:s:p:" opt
-    do
-        case $opt in
-            p)
-            absolutePath=$OPTARG
-            ;;
-            s)
-            sizeInBytes=$OPTARG
-            ;;
-            m)
-            volMode=$OPTARG
-            ;;
-        esac
-    done
-    rm -rf ${absolutePath}
+    set -eu
+    rm -rf "$VOL_DIR"
 kind: ConfigMap
 metadata:
   name: local-path-config
-  namespace: kube-system
+  namespace: local-path-storage
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: local-path-provisioner
-  namespace: kube-system
+  namespace: local-path-storage
 spec:
   revisionHistoryLimit: 0
   selector:
@@ -188,6 +221,7 @@ spec:
       containers:
       - command:
         - local-path-provisioner
+        - --debug
         - start
         - --config
         - /etc/config/config.json
@@ -196,7 +230,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: rancher/local-path-provisioner:v0.0.27
+        image: rancher/local-path-provisioner:v0.0.28
         imagePullPolicy: IfNotPresent
         name: local-path-provisioner
         resources:

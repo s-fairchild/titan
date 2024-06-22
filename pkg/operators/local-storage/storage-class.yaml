@@ -2,18 +2,20 @@ apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: local-path
-  annotations:
-    defaultVolumeType: "local"
-    storageclass.kubernetes.io/is-default-class: "true"
 provisioner: rancher.io/local-path
-volumeBindingMode: WaitForFirstConsumer
 reclaimPolicy: Delete
+volumeBindingMode: WaitForFirstConsumer
 ---
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: local-path-nvme
+  annotations:
+    defaultVolumeType: "hostPath"
 provisioner: rancher.io/local-path
+parameters:
+  nodePath: /mnt/nvme
+  pathPattern: "{{ .PVC.Namespace }}/{{ .PVC.Name }}"
 volumeBindingMode: Immediate
 reclaimPolicy: Retain
 ---
@@ -21,7 +23,12 @@ apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: local-path-raid5
+  annotations:
+    defaultVolumeType: "hostPath"
 provisioner: rancher.io/local-path
+parameters:
+  nodePath: /mnt/data
+  pathPattern: "{{ .PVC.Namespace }}/{{ .PVC.Name }}"
 volumeBindingMode: Immediate
 reclaimPolicy: Retain
 ---
@@ -29,6 +36,11 @@ apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: local-path-raid10
+  annotations:
+    defaultVolumeType: "hostPath"
 provisioner: rancher.io/local-path
+parameters:
+  nodePath: /mnt/recordings
+  pathPattern: "{{ .PVC.Namespace }}/{{ .PVC.Name }}"
 volumeBindingMode: Immediate
 reclaimPolicy: Retain

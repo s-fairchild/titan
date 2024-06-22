@@ -7,9 +7,9 @@ metadata:
     volumeType: hostPath
 spec:
   volumeMode: Filesystem
-  storageClassName: local-path-nvme
   accessModes:
     - ReadWriteOnce
+  storageClassName: local-path-nvme
   resources:
     requests:
       storage: 3Gi
@@ -23,9 +23,9 @@ metadata:
     volumeType: hostPath
 spec:
   volumeMode: Filesystem
-  storageClassName: local-path-raid5
   accessModes:
     - ReadWriteOnce
+  storageClassName: local-path-raid5
   resources:
     requests:
       storage: 3.9T

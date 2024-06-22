@@ -1,7 +1,11 @@
 resources:
-- cluster-role-binding.yaml
-- cluster-role.yaml
-- deployment.yaml
-- service-account.yaml
+# - "github.com/rancher/local-path-provisioner/deploy?ref=v0.0.28"
+- namespace.yaml
 - config-map.yaml
 - storage-class.yaml
+- service-account.yaml
+- role.yaml
+- role-binding.yaml
+- cluster-role.yaml
+- cluster-role-binding.yaml
+- deployment.yaml
