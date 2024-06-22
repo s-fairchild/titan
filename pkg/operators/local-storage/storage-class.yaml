@@ -14,7 +14,6 @@ kind: StorageClass
 metadata:
   name: nvme-local-path
 provisioner: rancher.io/local-path
-# volumeBindingMode: WaitForFirstConsumer
 volumeBindingMode: Immediate
 reclaimPolicy: Retain
 ---
@@ -23,7 +22,6 @@ kind: StorageClass
 metadata:
   name: raid5-local-path
 provisioner: rancher.io/local-path
-# volumeBindingMode: WaitForFirstConsumer
 volumeBindingMode: Immediate
 reclaimPolicy: Retain
 ---
@@ -32,6 +30,5 @@ kind: StorageClass
 metadata:
   name: raid10-local-path
 provisioner: rancher.io/local-path
-# volumeBindingMode: WaitForFirstConsumer
 volumeBindingMode: Immediate
 reclaimPolicy: Retain

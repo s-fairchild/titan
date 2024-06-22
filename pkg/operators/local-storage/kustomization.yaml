@@ -3,3 +3,5 @@ resources:
 - cluster-role.yaml
 - deployment.yaml
 - service-account.yaml
+- config-map.yaml
+- storage-class.yaml
