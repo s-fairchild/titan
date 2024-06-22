@@ -27,13 +27,14 @@ main() {
             fi
             ;;
         *)
-            echo "Unkown option \"$1\""
+            abort "Unkown option \"$1\""
     esac
 }
 
 validate_ignition() {
     local -n ign="$1"
-    # TODO add log and abort functions
+    log "starting"
+
     podman run \
         --pull=newer \
         --rm \
@@ -42,11 +43,15 @@ validate_ignition() {
         --workdir /pwd \
         quay.io/coreos/ignition-validate:release \
         - < "$ign"
+    
+    log "ignition validated $ign"
 }
 
 generate_all_ignition() {
     local -n files="$1"
     local -n final="$2"
+    log "starting"
+
     # shellcheck disable=SC2068
     for b in ${!files[@]}; do
         ign="${files[$b]}"
@@ -65,8 +70,7 @@ gen_ignition() {
     local -n butane_file="$1"
     local -n ignition_file="$2"
     
-    echo "Generating \"$ignition_file\" from \"$butane_file\""
-    # TODO add log and abort functions
+    log "Generating \"$ignition_file\" from \"$butane_file\""
     podman run \
         --pull=newer \
         --interactive \
@@ -83,19 +87,27 @@ gen_ignition() {
 
 fix_fcontext() {
     local -n f="$1"
+    log "starting"
+
     chcon --verbose \
           --type \
           svirt_home_t \
           "$f"
 }
 
+declare -r utils="hack/utils.sh"
+if [ -f "$utils" ]; then
+    # shellcheck source=utils.sh
+    source "$utils"
+fi
+
 declare -r butane_ignition_files="hack/butane_ignition_files.env"
 if [ -f "$butane_ignition_files" ]; then
-    # shellcheck source=../hack/butane_ignition_files.env
+    # shellcheck source=butane_ignition_files.env
     source "$butane_ignition_files"
 else
-    echo "Missing $butane_ignition_files, aborting"
-    exit 1
+    abort "Missing $butane_ignition_files, aborting"
 fi
+
 
 main "$@"

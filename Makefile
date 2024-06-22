@@ -46,12 +46,14 @@ download-libvirt-installer: $(images)
 				-f qcow2.xz \
 				--decompress
 
-# TODO add target to generate yaml manifests using kustomize
 vm-dev-create: ignition-gen-dev
 	hack/manage_dev_vm.sh create
 
 vm-dev-delete:
 	hack/manage_dev_vm.sh delete
+
+kube-manifests-gen:
+	hack/generate_manifests.sh pkg deploy/manifests
 
 vm_ip_address := "192.168.122.2"
 ssh_id := ~/.ssh/id_ed25519

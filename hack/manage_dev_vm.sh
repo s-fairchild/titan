@@ -21,14 +21,14 @@ main() {
             delete_vm vm_name
             ;;
         *)
-            echo "unknown option \"$1\""
-            exit 1
+            abort "unknown option \"$1\""
             ;;
     esac
 }
 
 delete_vm() {
     local -n name="$1"
+    log "starting"
 
 	sudo virsh destroy \
                "$name"
@@ -42,6 +42,7 @@ create_vm() {
     local -n img="$1"
     local -n name="$2"
     local -n ign="$3"
+    log "starting"
 
     vcpus="2"
     ram_mb="4096"
@@ -78,13 +79,18 @@ create_vm() {
                  --qemu-commandline="-fw_cfg name=opt/com.coreos/config,file=${ign}"
 }
 
+declare -r utils="hack/utils.sh"
+if [ -f "$utils" ]; then
+    # shellcheck source=utils.sh
+    source "$utils"
+fi
+
 declare -r butane_ignition_files="hack/butane_ignition_files.env"
 if [ -f "$butane_ignition_files" ]; then
     # shellcheck source=../hack/butane_ignition_files.env
     source "$butane_ignition_files"
 else
-    echo "Missing $butane_ignition_files, aborting"
-    exit 1
+    abort "Missing $butane_ignition_files, aborting"
 fi
 
 main "$@"
