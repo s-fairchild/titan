@@ -1,13 +1,13 @@
----
 apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: coredns-custom
-  namespace: kube-system
 data:
-  jellyfin.override: |
+  jellyfin.override: |-
     rewrite name regex (.*)-(rick)\.app.expresso\.lan {1}.cluster.{2}.local
+    rewrite name regex (.*)-(rick-dev)\.app.expresso\.lan {1}.cluster.{2}.local
     rewrite name suffix jellyfin.app.rick.expresso.lan. www.jellyfin.svc.cluster.local
     rewrite name suffix driveway-http.rick.expresso.lan. rtsp0-http.v4l2rtspserver.svc.cluster.local
     rewrite name suffix driveway-tcp.rick.expresso.lan. rtsp0-tcp.v4l2rtspserver.svc.cluster.local
     rewrite name suffix driveway-udp.rick.expresso.lan. rtsp0-udp.v4l2rtspserver.svc.cluster.local
+kind: ConfigMap
+metadata:
+  name: coredns-custom
+  namespace: kube-system
