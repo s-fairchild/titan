@@ -10,11 +10,11 @@ ignition_dev_systemd := "deploy/ignitions/systemd.ign"
 ignition_dev_users := "deploy/ignitions/users.ign"
 ignition_storage_dev := "deploy/ignitions/storage-dev.ign"
 ignition_dev_cluster := "deploy/ignitions/dev-cluster.ign"
-ignition-gen-dev:
+ignition-gen-dev: kube-manifests-gen
 	hack/manage_ignition.sh generate dev
 	hack/manage_ignition.sh validate dev
 
-ignition-gen-prod:
+ignition-gen-prod: kube-manifests-gen
 	hack/manage_ignition.sh generate prod
 	hack/manage_ignition.sh validate prod
 
