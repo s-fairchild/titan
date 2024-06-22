@@ -1,0 +1,81 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: motion
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: motion
+  name: motion
+  namespace: motion
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: motion
+  template:
+    metadata:
+      labels:
+        app: motion
+      name: motion
+      namespace: motion
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - compute
+      containers:
+      - image: docker.io/steve51516/motionplus:latest
+        name: motion
+        ports:
+        - containerPort: 8091
+          name: http-web-svc
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 10G
+          requests:
+            cpu: 1000m
+            memory: 10G
+        securityContext:
+          capabilities:
+            drop:
+            - CAP_MKNOD
+            - CAP_NET_RAW
+            - CAP_AUDIT_WRITE
+          privileged: true
+        volumeMounts:
+        - mountPath: /media
+          name: media
+        - mountPath: /config
+          name: conf
+        - mountPath: /dev/dri/renderD128
+          name: dev-dri
+        - mountPath: /dev/dri/card1
+          name: card1
+      dnsPolicy: ClusterFirst
+      enableServiceLinks: false
+      restartPolicy: Always
+      volumes:
+      - name: media
+        persistentVolumeClaim:
+          claimName: motion-media-pvc
+      - name: conf
+        persistentVolumeClaim:
+          claimName: motion-conf-pvc
+      - hostPath:
+          path: /dev/dri/renderD128
+          type: CharDevice
+        name: dev-dri
+      - hostPath:
+          path: /dev/dri/card1
+          type: CharDevice
+        name: card1
