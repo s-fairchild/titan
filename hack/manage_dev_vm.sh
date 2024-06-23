@@ -10,15 +10,27 @@ main() {
 
     case "$1" in
         "create")
-            # TODO set these variables in a better way
-            # shellcheck disable=SC2034
-            local -r image="${images}/fedora-coreos-39.20240407.3.0-qemu.x86_64.qcow2"
-            # shellcheck disable=SC2034
-            local -r ignition="${PWD}/$ignition_cluster_dev"
+            local -r vm_env="hack/env/manage_dev_vm.env"
+            if [ -f "$vm_env" ]; then
+                # shellcheck source=env/manage_dev_vm.env
+                source "$vm_env"
+            else
+                abort "VM Environment file $vm_env not found"
+            fi
 
-            create_vm image \
-                      vm_name \
-                      ignition
+            # shellcheck disable=SC2034
+            local -rA vm_settings=(
+                ["name"]="$vm_name"
+                ["image"]="${images}/fedora-coreos-39.20240407.3.0-qemu.x86_64.qcow2"
+                ["ignition"]="${PWD}/$ignition_cluster_dev"
+                ["vcpus"]="$VCPUS"
+                ["os_disk_gb"]="$OS_DISK_GB"
+                ["raid_disk_gb"]="$RAID_DISK_GB"
+                ["ram_mb"]="$RAM_MB"
+                ["stream"]="$STREAM"
+            )
+
+            create_vm vm_settings
             ;;
         "delete")
             delete_vm vm_name
@@ -42,9 +54,7 @@ delete_vm() {
 }
 
 create_vm() {
-    local -n img="$1"
-    local -n name="$2"
-    local -n ign="$3"
+    local -n settings="$1"
     log "starting"
 
     vcpus="2"
@@ -62,24 +72,24 @@ create_vm() {
     stream="stable"
 
     virt-install --connect="qemu:///system" \
-                 --name="$name" \
-                 --vcpus="${vcpus}" \
-                 --memory="${ram_mb}" \
-                 --os-variant="fedora-coreos-${stream}" \
+                 --name="${settings["name"]}" \
+                 --vcpus="${settings["vcpus"]}" \
+                 --memory="${settings["ram_mb"]}" \
+                 --os-variant="fedora-coreos-${settings["stream"]}" \
                  --import \
                  --graphics=spice \
-                 --disk="size=${disk_gb},backing_store=${img},serial=coreos-boot-disk,boot.order=1" \
-                 --disk="size=${raid_disk_gb},format=qcow2,serial=${disk_serial1},boot.order=2" \
-                 --disk="size=${raid_disk_gb},format=qcow2,serial=${disk_serial2},boot.order=2" \
-                 --disk="size=${raid_disk_gb},format=qcow2,serial=${disk_serial3},boot.order=2" \
-                 --disk="size=${raid_disk_gb},format=qcow2,serial=${disk_serial4},boot.order=2" \
-                 --disk="size=${raid_disk_gb},format=qcow2,serial=${disk_serial5},boot.order=2" \
-                 --disk="size=${raid_disk_gb},format=qcow2,serial=${disk_serial6},boot.order=2" \
-                 --disk="size=${raid_disk_gb},format=qcow2,serial=${disk_serial7},boot.order=2" \
-                 --disk="size=${raid_disk_gb},format=qcow2,serial=${disk_serial8},boot.order=2" \
+                 --disk="size=${settings["os_disk_gb"]},backing_store=${settings["image"]},serial=coreos-boot-disk,boot.order=1" \
+                 --disk="size=${settings["raid_disk_gb"]},format=qcow2,serial=${disk_serial1},boot.order=2" \
+                 --disk="size=${settings["raid_disk_gb"]},format=qcow2,serial=${disk_serial2},boot.order=2" \
+                 --disk="size=${settings["os_disk_gb"]},format=qcow2,serial=${disk_serial3},boot.order=2" \
+                 --disk="size=${settings["os_disk_gb"]},format=qcow2,serial=${disk_serial4},boot.order=2" \
+                 --disk="size=${settings["os_disk_gb"]},format=qcow2,serial=${disk_serial5},boot.order=2" \
+                 --disk="size=${settings["os_disk_gb"]},format=qcow2,serial=${disk_serial6},boot.order=2" \
+                 --disk="size=${settings["os_disk_gb"]},format=qcow2,serial=${disk_serial7},boot.order=2" \
+                 --disk="size=${settings["os_disk_gb"]},format=qcow2,serial=${disk_serial8},boot.order=2" \
                  --network network=default \
                  --noautoconsole \
-                 --qemu-commandline="-fw_cfg name=opt/com.coreos/config,file=${ign}"
+                 --qemu-commandline="-fw_cfg name=opt/com.coreos/config,file=${settings["ignition"]}"
 }
 
 declare -r utils="hack/utils.sh"
