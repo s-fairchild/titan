@@ -21,6 +21,7 @@ main() {
             # shellcheck disable=SC2034
             local -rA vm_settings=(
                 ["name"]="$vm_name"
+                # TODO get the latest iso file from deploy/isos to use here
                 ["image"]="${images}/fedora-coreos-39.20240407.3.0-qemu.x86_64.qcow2"
                 ["ignition"]="${PWD}/$ignition_cluster_dev"
                 ["vcpus"]="$VCPUS"
@@ -57,10 +58,6 @@ create_vm() {
     local -n settings="$1"
     log "starting"
 
-    vcpus="2"
-    ram_mb="4096"
-    disk_gb="30"
-    raid_disk_gb="5"
     disk_serial1="raid10.1"
     disk_serial2="raid10.2"
     disk_serial3="raid10.3"
@@ -69,7 +66,6 @@ create_vm() {
     disk_serial6="raid5.2"
     disk_serial7="raid5.3"
     disk_serial8="backups"
-    stream="stable"
 
     virt-install --connect="qemu:///system" \
                  --name="${settings["name"]}" \

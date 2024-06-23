@@ -23,6 +23,26 @@ download-live-installer:
 				-p metal \
 				-f iso
 
+# TODO get the latest iso file from deploy/isos to use here
+installer-create-custom-iso: ignition-gen-prod
+	podman run --security-opt \
+		   label=disable \
+		   --pull=always \
+		   --rm \
+		   -v ./deploy:/data \
+		   -w /data \
+		   quay.io/coreos/coreos-installer:release \
+		   		iso \
+				customize \
+				    --dest-device /dev/nvme0n1 \
+    				--dest-ignition ignition/cluster.ign \
+    				--dest-console ttyS0,115200n8 \
+    				--dest-console tty0 \
+    				--network-keyfile config/static-ip.nmconnection \
+    				-o isos/cluster_custom_installer.iso \
+					isos/fedora-coreos-40.20240602.3.0-live.x86_64.iso
+
+
 images := "$(HOME)/.local/share/libvirt/images"
 download-libvirt-installer: $(images)
 	podman run \
