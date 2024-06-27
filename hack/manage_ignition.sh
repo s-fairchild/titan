@@ -21,9 +21,9 @@ main() {
         "validate")
             # TODO make this cleaner by removing the if statement later
             if [ "$2" == "dev" ]; then
-                validate_ignition ignition_cluster
-            elif [ "$2" == "prod" ]; then
                 validate_ignition ignition_cluster_dev
+            elif [ "$2" == "prod" ]; then
+                validate_ignition ignition_cluster
             fi
             ;;
         *)
