@@ -158,7 +158,7 @@ spec:
             memory: "100Mi"
             cpu: "30m"
         volumeMounts:
-          - name: unbound-config
+          - name: unbound-conf
             mountPath: /opt/unbound/etc/unbound
             readOnly: true
         livenessProbe:

@@ -1,8 +1,8 @@
-selinux: false
+selinux: true
 node-label:
   - app=compute
   - camera=0
 server: https://10.98.0.5:6443
 debug: false
-node-name: k3s-rick-agent-0
-node-ip: 10.98.0.100
+node-name: k3s-agent-1
+node-ip: 10.98.0.101

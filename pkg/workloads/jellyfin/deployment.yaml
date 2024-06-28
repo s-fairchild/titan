@@ -85,10 +85,10 @@ spec:
       volumes:
       - name: media
         persistentVolumeClaim:
-          claimName: jellyfin-media-pvc
+          claimName: media-pvc
       - name: conf
         persistentVolumeClaim:
-          claimName: jellyfin-conf-pvc
+          claimName: conf-pvc
       - name: dev-dri
         hostPath:
           path: /dev/dri/renderD128

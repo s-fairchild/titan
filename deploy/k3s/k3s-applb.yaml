@@ -6,5 +6,5 @@ node-label:
   - svccontroller.k3s.cattle.io/enablelb=true
 server: https://10.98.0.5:6443
 debug: false
-node-name: k3s-rick-applb
+node-name: k3s-applb
 with-node-id: true

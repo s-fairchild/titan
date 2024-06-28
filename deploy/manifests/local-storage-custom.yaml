@@ -16,35 +16,35 @@ kind: StorageClass
 metadata:
   annotations:
     defaultVolumeType: hostPath
+  name: local-path-appdata
+parameters:
+  nodePath: /mnt/local-path-appdata
+  pathPattern: '{{ .PVC.Namespace }}/{{ .PVC.Name }}'
+provisioner: rancher.io/local-path
+reclaimPolicy: Retain
+volumeBindingMode: Immediate
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  annotations:
+    defaultVolumeType: hostPath
+  name: local-path-cctv
+parameters:
+  nodePath: /mnt/local-path-cctv
+  pathPattern: '{{ .PVC.Namespace }}/{{ .PVC.Name }}'
+provisioner: rancher.io/local-path
+reclaimPolicy: Retain
+volumeBindingMode: Immediate
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  annotations:
+    defaultVolumeType: hostPath
   name: local-path-nvme
 parameters:
-  nodePath: /mnt/nvme
-  pathPattern: '{{ .PVC.Namespace }}/{{ .PVC.Name }}'
-provisioner: rancher.io/local-path
-reclaimPolicy: Retain
-volumeBindingMode: Immediate
----
-apiVersion: storage.k8s.io/v1
-kind: StorageClass
-metadata:
-  annotations:
-    defaultVolumeType: hostPath
-  name: local-path-raid10
-parameters:
-  nodePath: /mnt/recordings
-  pathPattern: '{{ .PVC.Namespace }}/{{ .PVC.Name }}'
-provisioner: rancher.io/local-path
-reclaimPolicy: Retain
-volumeBindingMode: Immediate
----
-apiVersion: storage.k8s.io/v1
-kind: StorageClass
-metadata:
-  annotations:
-    defaultVolumeType: hostPath
-  name: local-path-raid5
-parameters:
-  nodePath: /mnt/data
+  nodePath: /mnt/local-path-nvme
   pathPattern: '{{ .PVC.Namespace }}/{{ .PVC.Name }}'
 provisioner: rancher.io/local-path
 reclaimPolicy: Retain
@@ -156,18 +156,18 @@ data:
                     "nodePathMap": [
                     {
                             "node":"DEFAULT_PATH_FOR_NON_LISTED_NODES",
-                            "paths":["/mnt/nvme/volatile"]
+                            "paths":["/mnt/local-path-default"]
                     }
                     ]
                     },
                     "local-path-nvme": {
-                            "sharedFilesystemPath": "/mnt/nvme"
+                            "sharedFilesystemPath": "/mnt/local-path-nvme"
                     },
-                    "local-path-raid5": {
-                            "sharedFilesystemPath": "/mnt/data"
+                    "local-path-appdata": {
+                            "sharedFilesystemPath": "/mnt/local-path-appdata"
                     },
-                    "local-path-raid10": {
-                            "sharedFilesystemPath": "/mnt/recordings"
+                    "local-path-cctv": {
+                            "sharedFilesystemPath": "/mnt/local-path-cctv"
                     }
               }
     }

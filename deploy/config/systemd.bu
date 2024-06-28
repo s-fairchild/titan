@@ -7,19 +7,19 @@ systemd:
     - name: rpm-ostree-countme.timer
       enabled: false
       mask: true
-    - name: k3s-rick-server-0.service
+    - name: k3s-server-0.service
       enabled: true
       contents: |
         [Unit]
-        Description=Podman k3s-rick-server-0.service for %I
+        Description=Podman k3s-server-0.service for %I
         Wants=network-online.target
         After=network-online.target
         RequiresMountsFor=%t/containers
-        Before=k3s-rick-server-1.service
-        Before=k3s-rick-agent-0.service
-        Before=k3s-rick-agent-1.service
-        Before=k3s-rick-agent-2.service
-        Upholds=k3s-rick-apiserverlb.service
+        Before=k3s-server-1.service
+        Before=k3s-agent-0.service
+        Before=k3s-agent-1.service
+        Before=k3s-agent-2.service
+        Upholds=k3s-apiserverlb.service
 
         [Service]
         Environment=PODMAN_SYSTEMD_UNIT=%n-%i
@@ -31,10 +31,10 @@ systemd:
         ExecStartPre=modprobe iptable_filter
         ExecStartPre=modprobe iptable_nat
         ExecStart=/usr/bin/podman run \
-                                --name=k3s-rick-server-0 \
-                                -h=k3s-rick-server-0 \
-                                --network=nodes:ip=10.98.0.1 \
-                                --network=services \
+                                --name=k3s-server-0 \
+                                -h=k3s-server-0 \
+                                --network=node:ip=10.98.0.1 \
+                                --network=service \
                                 --dns-search=expresso.lan \
                                 --dns=10.50.0.1 \
                                 --systemd=always \
@@ -50,13 +50,13 @@ systemd:
                                 --pull=missing \
                                 --device=/dev/fuse:/dev/fuse \
                                 -v=/etc/machine-id:/etc/machine-id:ro \
-                                -v=k3s-rick-server-0-kubelet:/var/lib/kubelet:Z \
-                                -v=k3s-rick-server-0-data:/var/lib/rancher/k3s:Z \
-                                -v=k3s-rick-server-0-rancher:/etc/rancher:Z \
-                                -v=k3s-rick-server-0-storage:/var/lib/rancher/k3s/storage:Z \
-                                -v=k3s-rick-server-0-pod-log:/var/log/pod:Z \
-                                -v=k3s-rick-server-0-containers:/var/lib/containers:Z \
-                                -v=/usr/local/etc/k3s/config/k3s-rick-server-0.yaml:/etc/rancher/k3s/config.yaml:Z,ro \
+                                -v=k3s-server-0-kubelet:/var/lib/kubelet:Z \
+                                -v=k3s-server-0-data:/var/lib/rancher/k3s:Z \
+                                -v=k3s-server-0-rancher:/etc/rancher:Z \
+                                -v=k3s-server-0-storage:/var/lib/rancher/k3s/storage:Z \
+                                -v=k3s-server-0-pod-log:/var/log/pod:Z \
+                                -v=k3s-server-0-containers:/var/lib/containers:Z \
+                                -v=/usr/local/etc/k3s/config/k3s-server-0.yaml:/etc/rancher/k3s/config.yaml:Z,ro \
                                 -v=/usr/local/etc/k3s/manifests:/var/lib/rancher/k3s/server/manifests/compute:z \
                                 -v=/usr/local/etc/k3s/skip:/var/lib/rancher/k3s/server/manifests/skip:z,ro \
                                 --shm-size=5g \
@@ -83,19 +83,19 @@ systemd:
 
         [Install]
         WantedBy=default.target
-    - name: k3s-rick-server-1.service
+    - name: k3s-server-1.service
       enabled: true
       contents: |
         [Unit]
-        Description=Podman k3s-rick-server-1.service for %I
+        Description=Podman k3s-server-1.service for %I
         Wants=network-online.target
         After=network-online.target
         RequiresMountsFor=%t/containers
-        Upholds=k3s-rick-apiserverlb.service
-        After=k3s-rick-server-0.service
-        Before=k3s-rick-agent-0.service
-        Before=k3s-rick-agent-1.service
-        Before=k3s-rick-agent-2.service
+        Upholds=k3s-apiserverlb.service
+        After=k3s-server-0.service
+        Before=k3s-agent-0.service
+        Before=k3s-agent-1.service
+        Before=k3s-agent-2.service
 
         [Service]
         KillSignal=SIGKILL
@@ -108,10 +108,10 @@ systemd:
         ExecStartPre=modprobe iptable_filter
         ExecStartPre=modprobe iptable_nat
         ExecStart=/usr/bin/podman run \
-          --name=k3s-rick-server-1 \
-          -h=k3s-rick-server-1 \
-          --network=nodes:ip=10.98.0.2 \
-          --network=services \
+          --name=k3s-server-1 \
+          -h=k3s-server-1 \
+          --network=node:ip=10.98.0.2 \
+          --network=service \
           --dns-search=expresso.lan \
           --dns=10.50.0.1 \
           --systemd=always \
@@ -127,13 +127,13 @@ systemd:
           --pull=missing \
           --device=/dev/fuse:/dev/fuse \
           -v=/etc/machine-id:/etc/machine-id:ro \
-          -v=k3s-rick-server-1-kubelet:/var/lib/kubelet:Z \
-          -v=k3s-rick-server-1-data:/var/lib/rancher/k3s:Z \
-          -v=k3s-rick-server-1-rancher:/etc/rancher:Z \
-          -v=k3s-rick-server-1-storage:/var/lib/rancher/k3s/storage:Z \
-          -v=k3s-rick-server-1-pod-log:/var/log/pod:Z \
-          -v=k3s-rick-server-1-containers:/var/lib/containers:Z \
-          -v=/usr/local/etc/k3s/config/k3s-rick-server-1.yaml:/etc/rancher/k3s/config.yaml:Z,ro \
+          -v=k3s-server-1-kubelet:/var/lib/kubelet:Z \
+          -v=k3s-server-1-data:/var/lib/rancher/k3s:Z \
+          -v=k3s-server-1-rancher:/etc/rancher:Z \
+          -v=k3s-server-1-storage:/var/lib/rancher/k3s/storage:Z \
+          -v=k3s-server-1-pod-log:/var/log/pod:Z \
+          -v=k3s-server-1-containers:/var/lib/containers:Z \
+          -v=/usr/local/etc/k3s/config/k3s-server-1.yaml:/etc/rancher/k3s/config.yaml:Z,ro \
           -v=/usr/local/etc/k3s/manifests:/var/lib/rancher/k3s/server/manifests/compute:z \
           -v=/usr/local/etc/k3s/skip:/var/lib/rancher/k3s/server/manifests/skip:z,ro \
           --shm-size 5g \
@@ -160,19 +160,19 @@ systemd:
         [Install]
         WantedBy=default.target
 
-    - name: k3s-rick-server-2.service
+    - name: k3s-server-2.service
       enabled: true
       contents: |
         [Unit]
-        Description=Podman k3s-rick-server-2.service for %I
+        Description=Podman k3s-server-2.service for %I
         Wants=network-online.target
         After=network-online.target
         RequiresMountsFor=%t/containers
-        After=k3s-rick-server-0.service
-        Before=k3s-rick-agent-0.service
-        Before=k3s-rick-agent-1.service
-        Before=k3s-rick-agent-2.service
-        Upholds=k3s-rick-apiserverlb.service
+        After=k3s-server-0.service
+        Before=k3s-agent-0.service
+        Before=k3s-agent-1.service
+        Before=k3s-agent-2.service
+        Upholds=k3s-apiserverlb.service
 
         [Service]
         Environment=PODMAN_SYSTEMD_UNIT=%n-%i
@@ -184,12 +184,12 @@ systemd:
         ExecStartPre=modprobe iptable_filter
         ExecStartPre=modprobe iptable_nat
         ExecStart=/usr/bin/podman run \
-          --name=k3s-rick-server-2 \
-          -h=k3s-rick-server-2 \
-          --network=nodes:ip=10.98.0.3 \
+          --name=k3s-server-2 \
+          -h=k3s-server-2 \
+          --network=node:ip=10.98.0.3 \
+          --network=service \
           --dns-search=expresso.lan \
           --dns=10.50.0.1 \
-          --network=services \
           --systemd=always \
           --cgroups=no-conmon \
           --userns=host \
@@ -203,13 +203,13 @@ systemd:
           --pull=missing \
           --device=/dev/fuse:/dev/fuse \
           -v=/etc/machine-id:/etc/machine-id:ro \
-          -v=k3s-rick-server-2-kubelet:/var/lib/kubelet:Z \
-          -v=k3s-rick-server-2-data:/var/lib/rancher/k3s:Z \
-          -v=k3s-rick-server-2-rancher:/etc/rancher:Z \
-          -v=k3s-rick-server-2-pod-log:/var/log/pod:Z \
-          -v=k3s-rick-server-2-storage:/var/lib/rancher/k3s/storage:Z \
-          -v=k3s-rick-server-2-containers:/var/lib/containers:Z \
-          -v=/usr/local/etc/k3s/config/k3s-rick-server-2.yaml:/etc/rancher/k3s/config.yaml:Z,ro \
+          -v=k3s-server-2-kubelet:/var/lib/kubelet:Z \
+          -v=k3s-server-2-data:/var/lib/rancher/k3s:Z \
+          -v=k3s-server-2-rancher:/etc/rancher:Z \
+          -v=k3s-server-2-pod-log:/var/log/pod:Z \
+          -v=k3s-server-2-storage:/var/lib/rancher/k3s/storage:Z \
+          -v=k3s-server-2-containers:/var/lib/containers:Z \
+          -v=/usr/local/etc/k3s/config/k3s-server-2.yaml:/etc/rancher/k3s/config.yaml:Z,ro \
           -v=/usr/local/etc/k3s/manifests:/var/lib/rancher/k3s/server/manifests/compute:z \
           -v=/usr/local/etc/k3s/skip:/var/lib/rancher/k3s/server/manifests/skip:z,ro \
           --shm-size 5g \
@@ -236,15 +236,15 @@ systemd:
         [Install]
         WantedBy=default.target
 
-    - name: k3s-rick-agent-0.service
+    - name: k3s-agent-0.service
       enabled: true
       contents: |
         [Unit]
-        Description=Podman k3s-rick-agent-0.service for %I
+        Description=Podman k3s-agent-0.service for %I
         Wants=network-online.target
         After=network-online.target
         RequiresMountsFor=%t/containers
-        After=k3s-rick-server-0.service
+        After=k3s-server-0.service
 
         [Service]
         Environment=PODMAN_SYSTEMD_UNIT=%n-%i
@@ -253,29 +253,29 @@ systemd:
         TimeoutStartSec=600
         TimeoutStopSec=70
         ExecStartPre=podman secret exists k3s-token
-        ExecStartPre=-btrfs subvolume create -p /var/local/lib/k3s/agent/data/datastore
-        ExecStartPre=-btrfs subvolume create -p /var/local/lib/k3s/agent/cctv/recordings
+        ExecStartPre=-btrfs subvolume create -p /var/local/lib/k3s/agent/appdata/local-path-appdata
+        ExecStartPre=-btrfs subvolume create -p /var/local/lib/k3s/agent/cctv/local-path-cctv
         ExecStartPre=/usr/bin/podman volume \
                                      create \
                                      --ignore \
                                      --opt type=btrfs \
-                                     --opt device=/dev/md/data \
-                                     --opt o=compress=zstd:1,subvol=datastore \
-                                     agent-datastore
+                                     --opt device=/dev/disk/by-label/appdata \
+                                     --opt o=compress=zstd:1,subvol=local-path-appdata \
+                                     local-path-appdata
         ExecStartPre=/usr/bin/podman volume \
                                      create \
                                      --ignore \
                                      --opt type=btrfs \
-                                     --opt device=/dev/md/cctv \
-                                     --opt o=compress=zstd:1,subvol=recordings \
-                                     agent-recordings
+                                     --opt device=/dev/disk/by-label/cctv \
+                                     --opt o=compress=zstd:1,subvol=local-path-cctv \
+                                     local-path-cctv
         ExecStart=/usr/bin/podman run \
-                                --name=k3s-rick-agent-0 \
+                                --name=k3s-agent-0 \
                                 --annotation=app=agent \
                                 --annotation=cluster=rick \
-                                -h=k3s-rick-agent-0 \
-                                --network=nodes:ip=10.98.0.100 \
-                                --network=services \
+                                -h=k3s-agent-0 \
+                                --network=node:ip=10.98.0.100 \
+                                --network=service \
                                 --dns-search=expresso.lan \
                                 --dns=10.50.0.1 \
                                 --systemd=always \
@@ -292,14 +292,15 @@ systemd:
                                 --device=/dev/snd:/dev/snd \
                                 --device=/dev/dri:/dev/dri \
                                 -v=/etc/machine-id:/etc/machine-id:ro \
-                                -v=k3s-rick-agent-0-kubelet:/var/lib/kubelet:Z \
-                                -v=k3s-rick-agent-0-pod-logs:/var/log/pods:Z \
-                                -v=k3s-rick-agent-0-data:/var/lib/rancher/k3s:Z \
-                                -v=k3s-rick-agent-0-etc-rancher:/etc/rancher:Z \
-                                -v=/usr/local/etc/k3s/config/k3s-rick-agent-0.yaml:/etc/rancher/k3s/config.yaml:Z,ro \
-                                -v=agent-persistent-volumes:/mnt/nvme:z \
-                                -v=agent-datastore:/mnt/data:z \
-                                -v=agent-recordings:/mnt/recordings:z \
+                                -v=k3s-agent-0-kubelet:/var/lib/kubelet:Z \
+                                -v=k3s-agent-0-pod-logs:/var/log/pods:Z \
+                                -v=k3s-agent-0-data:/var/lib/rancher/k3s:Z \
+                                -v=k3s-agent-0-etc-rancher:/etc/rancher:Z \
+                                -v=/usr/local/etc/k3s/config/k3s-agent-0.yaml:/etc/rancher/k3s/config.yaml:Z,ro \
+                                -v=local-path-default:/mnt/local-path-default:z \
+                                -v=local-path-nvme:/mnt/local-path-nvme:z \
+                                -v=local-path-appdata:/mnt/local-path-appdata:z \
+                                -v=local-path-cctv:/mnt/local-path-cctv:z \
                                 --shm-size=5g \
                                 --privileged \
                                 --group-add=keep-groups \
@@ -321,15 +322,15 @@ systemd:
         [Install]
         WantedBy=default.target
 
-    - name: k3s-rick-agent-1.service
+    - name: k3s-agent-1.service
       enabled: true
       contents: |
         [Unit]
-        Description=Podman k3s-rick-agent-1.service for %I
+        Description=Podman k3s-agent-1.service for %I
         Wants=network-online.target
         After=network-online.target
         RequiresMountsFor=%t/containers
-        After=k3s-rick-server-0.service
+        After=k3s-server-0.service
 
         [Service]
         Environment=PODMAN_SYSTEMD_UNIT=%n-%i
@@ -340,32 +341,32 @@ systemd:
         KillSignal=SIGTERM
         KillMode=mixed
         ExecStartPre=/usr/bin/podman secret exists k3s-token
-        ExecStartPre=-btrfs subvolume create -p /var/local/lib/k3s/agent/data/datastore
-        ExecStartPre=-btrfs subvolume create -p /var/local/lib/k3s/agent/cctv/recordings
+        ExecStartPre=-btrfs subvolume create -p /var/local/lib/k3s/agent/appdata/local-path-appdata
+        ExecStartPre=-btrfs subvolume create -p /var/local/lib/k3s/agent/cctv/local-path-cctv
         ExecStartPre=/usr/bin/podman volume \
                                      create \
                                      --ignore \
                                      --opt type=btrfs \
-                                     --opt device=/dev/md/data \
-                                     --opt o=compress=zstd:1,subvol=datastore \
-                                     agent-datastore
+                                     --opt device=/dev/disk/by-label/appdata \
+                                     --opt o=compress=zstd:1,subvol=local-path-appdata \
+                                     local-path-appdata
         ExecStartPre=/usr/bin/podman volume \
                                      create \
                                      --ignore \
                                      --opt type=btrfs \
-                                     --opt device=/dev/md/cctv \
-                                     --opt o=compress=zstd:1,subvol=recordings \
-                                     agent-recordings
+                                     --opt device=/dev/disk/by-label/cctv \
+                                     --opt o=compress=zstd:1,subvol=local-path-cctv \
+                                     local-path-cctv
         ExecStart=/usr/bin/podman run \
-                                --name=k3s-rick-agent-1 \
+                                --name=k3s-agent-1 \
                                 --annotation=app=agent \
                                 --annotation=cluster=rick \
-                                --network=nodes:ip=10.98.0.101 \
-                                --network=services \
+                                --network=node:ip=10.98.0.101 \
+                                --network=service \
                                 --dns-search=expresso.lan \
                                 --dns=10.50.0.1 \
                                 --systemd=always \
-                                -h=k3s-rick-agent-1 \
+                                -h=k3s-agent-1 \
                                 --tz=UTC \
                                 --cidfile=%t/%n.ctr-id \
                                 --cgroups=no-conmon \
@@ -379,14 +380,15 @@ systemd:
                                 --device=/dev/snd:/dev/snd \
                                 --device=/dev/dri:/dev/dri \
                                 -v=/etc/machine-id:/etc/machine-id:ro \
-                                -v=k3s-rick-agent-1-kubelet:/var/lib/kubelet:Z \
-                                -v=k3s-rick-agent-1-pod-logs:/var/log/pods:Z \
-                                -v=k3s-rick-agent-1-data:/var/lib/rancher/k3s:Z \
-                                -v=k3s-rick-agent-1-rancher:/etc/rancher:Z \
-                                -v=/usr/local/etc/k3s/config/k3s-rick-agent-1.yaml:/etc/rancher/k3s/config.yaml:Z,ro \
-                                -v=agent-persistent-volumes:/mnt/nmve:z \
-                                -v=agent-datastore:/mnt/data:z \
-                                -v=agent-recordings:/mnt/recordings:z \
+                                -v=k3s-agent-1-kubelet:/var/lib/kubelet:Z \
+                                -v=k3s-agent-1-pod-logs:/var/log/pods:Z \
+                                -v=k3s-agent-1-data:/var/lib/rancher/k3s:Z \
+                                -v=k3s-agent-1-rancher:/etc/rancher:Z \
+                                -v=/usr/local/etc/k3s/config/k3s-agent-1.yaml:/etc/rancher/k3s/config.yaml:Z,ro \
+                                -v=local-path-default:/mnt/local-path-default:z \
+                                -v=local-path-nvme:/mnt/local-path-nvme:z \
+                                -v=local-path-appdata:/mnt/local-path-appdata:z \
+                                -v=local-path-cctv:/mnt/local-path-cctv:z \
                                 --shm-size=5g \
                                 --privileged \
                                 --userns=host \
@@ -408,15 +410,15 @@ systemd:
         [Install]
         WantedBy=default.target
 
-    - name: k3s-rick-agent-2.service
+    - name: k3s-agent-2.service
       enabled: true
       contents: |
         [Unit]
-        Description=Podman container-k3s-rick-agent-2.service for %I
+        Description=Podman container-k3s-agent-2.service for %I
         Wants=network-online.target
         After=network-online.target
         RequiresMountsFor=%t/containers
-        After=k3s-rick-server-0.service
+        After=k3s-server-0.service
 
         [Service]
         Environment=PODMAN_SYSTEMD_UNIT=%n-%i
@@ -425,32 +427,32 @@ systemd:
         TimeoutStartSec=600
         TimeoutStopSec=70
         ExecStartPre=podman secret exists k3s-token
-        ExecStartPre=-btrfs subvolume create -p /var/local/lib/k3s/agent/data/datastore
-        ExecStartPre=-btrfs subvolume create -p /var/local/lib/k3s/agent/cctv/recordings
+        ExecStartPre=-btrfs subvolume create -p /var/local/lib/k3s/agent/appdata/local-path-appdata
+        ExecStartPre=-btrfs subvolume create -p /var/local/lib/k3s/agent/cctv/local-path-cctv
         ExecStartPre=/usr/bin/podman volume \
                                      create \
                                      --ignore \
                                      --opt type=btrfs \
-                                     --opt device=/dev/md/data \
-                                     --opt o=compress=zstd:1,subvol=datastore \
-                                     agent-datastore
+                                     --opt device=/dev/disk/by-label/appdata \
+                                     --opt o=compress=zstd:1,subvol=local-path-appdata \
+                                     local-path-appdata
         ExecStartPre=/usr/bin/podman volume \
                                      create \
                                      --ignore \
                                      --opt type=btrfs \
-                                     --opt device=/dev/md/cctv \
-                                     --opt o=compress=zstd:1,subvol=recordings \
-                                     agent-recordings
+                                     --opt device=/dev/disk/by-label/cctv \
+                                     --opt o=compress=zstd:1,subvol=local-path-cctv \
+                                     local-path-cctv
         ExecStart=/usr/bin/podman run \
-                                --name k3s-rick-agent-2 \
+                                --name k3s-agent-2 \
                                 --annotation=app=agent \
                                 --annotation=cluster=rick \
-                                --network=nodes:ip=10.98.0.102 \
-                                --network=services \
+                                --network=node:ip=10.98.0.102 \
+                                --network=service \
                                 --dns-search=expresso.lan \
                                 --dns=10.50.0.1 \
                                 --systemd=always \
-                                -h k3s-rick-agent-2 \
+                                -h k3s-agent-2 \
                                 --tz=UTC \
                                 --cidfile=%t/%n.ctr-id \
                                 --cgroups=no-conmon \
@@ -464,14 +466,15 @@ systemd:
                                 --device=/dev/snd:/dev/snd \
                                 --device=/dev/dri:/dev/dri \
                                 -v=/etc/machine-id:/etc/machine-id:ro \
-                                -v=k3s-rick-agent-2-kubelet:/var/lib/kubelet \
-                                -v=k3s-rick-agent-2-pod_logs:/var/log/pods \
-                                -v=k3s-rick-agent-2-data:/var/lib/rancher/k3s \
-                                -v=k3s-rick-agent-2-etc-rancher:/etc/rancher \
-                                -v=/usr/local/etc/k3s/config/k3s-rick-agent-2.yaml:/etc/rancher/k3s/config.yaml:Z,ro \
-                                -v=agent-persistent-volumes:/mnt/nvme:z \
-                                -v=agent-datastore:/mnt/data:z \
-                                -v=agent-recordings:/mnt/recordings:z \
+                                -v=k3s-agent-2-kubelet:/var/lib/kubelet \
+                                -v=k3s-agent-2-pod_logs:/var/log/pods \
+                                -v=k3s-agent-2-data:/var/lib/rancher/k3s \
+                                -v=k3s-agent-2-etc-rancher:/etc/rancher \
+                                -v=/usr/local/etc/k3s/config/k3s-agent-2.yaml:/etc/rancher/k3s/config.yaml:Z,ro \
+                                -v=local-path-default:/mnt/local-path-default:z \
+                                -v=local-path-nvme:/mnt/local-path-nvme:z \
+                                -v=local-path-appdata:/mnt/local-path-appdata:z \
+                                -v=local-path-cctv:/mnt/local-path-cctv:z \
                                 --shm-size 5g \
                                 --privileged \
                                 --userns=host \
@@ -493,11 +496,11 @@ systemd:
         [Install]
         WantedBy=default.target
 
-    - name: k3s-rick-apiserverlb.service
+    - name: k3s-apiserverlb.service
       enabled: true
       contents: |
         [Unit]
-        Description=Podman container k3s-rick-apiserverlb.service for %I
+        Description=Podman container k3s-apiserverlb.service for %I
         Wants=network-online.target
         After=network-online.target
         RequiresMountsFor=%t/containers
@@ -509,12 +512,12 @@ systemd:
         TimeoutStartSec=600
         TimeoutStopSec=70
         ExecStart=/usr/bin/podman run \
-                                --name=k3s-rick-apiserverlb \
+                                --name=k3s-apiserverlb \
                                 --annotation=app=apiserverlb \
                                 --annotation=cluster=rick \
-                                -h=k3s-rick-apiserverlb \
-                                --network=nodes:ip=10.98.0.5 \
-                                --network=services:ip=10.43.0.253 \
+                                -h=k3s-apiserverlb \
+                                --network=node:ip=10.98.0.5 \
+                                --network=service:ip=10.43.0.253 \
                                 --network-alias=loadbalancer \
                                 --dns-search=expresso.lan \
                                 --dns=10.43.0.10 \
@@ -528,7 +531,7 @@ systemd:
                                 --replace \
                                 --pull=missing \
                                 --privileged \
-                                -v=/usr/local/etc/k3s/config/k3s-rick-apiserverlb-nginx.conf:/etc/nginx/nginx.conf:Z,ro \
+                                -v=/usr/local/etc/k3s/config/k3s-apiserverlb-nginx.conf:/etc/nginx/nginx.conf:Z,ro \
                                 docker.io/nginx:stable
 
         ExecStop=/usr/bin/podman stop \
@@ -543,15 +546,15 @@ systemd:
 
         [Install]
         WantedBy=default.target
-    - name: k3s-rick-applb.service
+    - name: k3s-applb.service
       enabled: true
       contents: |
         [Unit]
-        Description=Podman container k3s-rick-applb.service for %I
+        Description=Podman container k3s-applb.service for %I
         Wants=network-online.target
         After=network-online.target
         RequiresMountsFor=%t/containers
-        After=k3s-rick-server-0.service
+        After=k3s-server-0.service
 
         [Service]
         Environment=PODMAN_SYSTEMD_UNIT=%n-%i
@@ -561,12 +564,12 @@ systemd:
         TimeoutStopSec=70
         ExecStartPre=podman secret exists k3s-token
         ExecStart=/usr/bin/podman run \
-                                --name=k3s-rick-applb \
+                                --name=k3s-applb \
                                 --annotation=app=agent-nginx \
                                 --annotation=cluster=rick \
-                                -h=k3s-rick-applb \
-                                --network=nodes:ip=10.98.0.253 \
-                                --network=services \
+                                -h=k3s-applb \
+                                --network=node:ip=10.98.0.253 \
+                                --network=service \
                                 --dns-search=expresso.lan \
                                 --dns=10.50.0.1 \
                                 --systemd=always \
@@ -583,9 +586,9 @@ systemd:
                                 --replace \
                                 --pull=missing \
                                 -v=/etc/machine-id:/etc/machine-id:ro \
-                                -v=k3s-rick-applb-data:/var/lib/rancher/k3s \
-                                -v=k3s-rick-applb-rancher:/etc/rancher \
-                                -v=/usr/local/etc/k3s/config/k3s-rick-applb.yaml:/etc/rancher/k3s/config.yaml:z,ro \
+                                -v=k3s-applb-data:/var/lib/rancher/k3s \
+                                -v=k3s-applb-rancher:/etc/rancher \
+                                -v=/usr/local/etc/k3s/config/k3s-applb.yaml:/etc/rancher/k3s/config.yaml:z,ro \
                                 --shm-size=5g \
                                 --privileged \
                                 --userns=host \
@@ -684,7 +687,13 @@ storage:
         name: root
       group:
         name: root
-    - path: /var/local/lib/k3s/agent/data
+    - path: /var/local/lib/k3s/agent/appdata
+      mode: 0750
+      user:
+        name: root
+      group:
+        name: root
+    - path: /var/local/lib/k3s/agent/nvme
       mode: 0750
       user:
         name: root

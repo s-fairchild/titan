@@ -2,10 +2,10 @@
 id=eno1
 uuid=0c74648e-5c31-4bfd-b609-8be3c9e36feb
 type=ethernet
-interface-name=eno1
+interface-name=enp5s0
 [ipv4]
 address1=10.50.0.2/32,10.50.0.1
-dhcp-hostname=rick-dev
+dhcp-hostname=rick
 dns=10.50.0.1;
 dns-search=expresso.lan
 may-fail=false

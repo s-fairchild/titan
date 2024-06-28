@@ -11,18 +11,18 @@ data:
                     "nodePathMap": [
                     {
                             "node":"DEFAULT_PATH_FOR_NON_LISTED_NODES",
-                            "paths":["/mnt/nvme/volatile"]
+                            "paths":["/mnt/local-path-default"]
                     }
                     ]
                     },
                     "local-path-nvme": {
-                            "sharedFilesystemPath": "/mnt/nvme"
+                            "sharedFilesystemPath": "/mnt/local-path-nvme"
                     },
-                    "local-path-raid5": {
-                            "sharedFilesystemPath": "/mnt/data"
+                    "local-path-appdata": {
+                            "sharedFilesystemPath": "/mnt/local-path-appdata"
                     },
-                    "local-path-raid10": {
-                            "sharedFilesystemPath": "/mnt/recordings"
+                    "local-path-cctv": {
+                            "sharedFilesystemPath": "/mnt/local-path-cctv"
                     }
               }
     }

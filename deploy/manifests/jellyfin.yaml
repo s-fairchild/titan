@@ -34,7 +34,7 @@ kind: PersistentVolumeClaim
 metadata:
   annotations:
     volumeType: hostPath
-  name: jellyfin-conf-pvc
+  name: conf-pvc
   namespace: jellyfin
 spec:
   accessModes:
@@ -50,7 +50,7 @@ kind: PersistentVolumeClaim
 metadata:
   annotations:
     volumeType: hostPath
-  name: jellyfin-media-pvc
+  name: media-pvc
   namespace: jellyfin
 spec:
   accessModes:
@@ -58,7 +58,7 @@ spec:
   resources:
     requests:
       storage: 3.9T
-  storageClassName: local-path-raid5
+  storageClassName: local-path-appdata
   volumeMode: Filesystem
 ---
 apiVersion: apps/v1
@@ -147,10 +147,10 @@ spec:
       volumes:
       - name: media
         persistentVolumeClaim:
-          claimName: jellyfin-media-pvc
+          claimName: media-pvc
       - name: conf
         persistentVolumeClaim:
-          claimName: jellyfin-conf-pvc
+          claimName: conf-pvc
       - hostPath:
           path: /dev/dri/renderD128
           type: CharDevice

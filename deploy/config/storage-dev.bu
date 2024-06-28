@@ -21,7 +21,6 @@ storage:
         # https://wiki.archlinux.org/title/GPT_fdisk#Partition_type
         guid: A19D880F-05FC-4D3B-A006-743F0F84911E
         wipe_partition_entry: true
-        should_exist: true
   - device: /dev/disk/by-id/virtio-raid10.2
     wipe_table: true
     partitions:
@@ -31,7 +30,6 @@ storage:
         # https://wiki.archlinux.org/title/GPT_fdisk#Partition_type
         guid: A19D880F-05FC-4D3B-A006-743F0F84911E
         wipe_partition_entry: true
-        should_exist: true
   - device: /dev/disk/by-id/virtio-raid10.3
     wipe_table: true
     partitions:
@@ -41,7 +39,6 @@ storage:
         # https://wiki.archlinux.org/title/GPT_fdisk#Partition_type
         guid: A19D880F-05FC-4D3B-A006-743F0F84911E
         wipe_partition_entry: true
-        should_exist: true
   - device: /dev/disk/by-id/virtio-raid10.4
     wipe_table: true
     partitions:
@@ -51,7 +48,6 @@ storage:
         # https://wiki.archlinux.org/title/GPT_fdisk#Partition_type
         guid: A19D880F-05FC-4D3B-A006-743F0F84911E
         wipe_partition_entry: true
-        should_exist: true
   - device: /dev/disk/by-id/virtio-raid5.1
     wipe_table: true
     partitions:
@@ -61,7 +57,6 @@ storage:
         # https://wiki.archlinux.org/title/GPT_fdisk#Partition_type
         guid: A19D880F-05FC-4D3B-A006-743F0F84911E
         wipe_partition_entry: true
-        should_exist: true
   - device: /dev/disk/by-id/virtio-raid5.2
     wipe_table: true
     partitions:
@@ -71,7 +66,6 @@ storage:
         # https://wiki.archlinux.org/title/GPT_fdisk#Partition_type
         guid: A19D880F-05FC-4D3B-A006-743F0F84911E
         wipe_partition_entry: true
-        should_exist: true
   - device: /dev/disk/by-id/virtio-raid5.3
     wipe_table: true
     partitions:
@@ -81,7 +75,6 @@ storage:
         # https://wiki.archlinux.org/title/GPT_fdisk#Partition_type
         guid: A19D880F-05FC-4D3B-A006-743F0F84911E
         wipe_partition_entry: true
-        should_exist: true
   raid:
     - name: cctv
       level: raid10
@@ -91,7 +84,7 @@ storage:
         - /dev/disk/by-partlabel/raid10.3
         - /dev/disk/by-partlabel/raid10.4
       spares: 0
-    - name: data
+    - name: appdata
       level: raid5
       devices:
         - /dev/disk/by-partlabel/raid5.1
@@ -135,16 +128,16 @@ storage:
         - cctv
       mount_options:
         - compress=zstd:1
-    - path: /var/local/lib/k3s/agent/data
+    - path: /var/local/lib/k3s/agent/appdata
       with_mount_unit: true
       wipe_filesystem: true
-      device: /dev/md/data
+      device: /dev/md/appdata
       format: btrfs
       # partition label
-      label: data
+      label: appdata
       # filesystem label
       options:
         - -L
-        - data
+        - appdata
       mount_options:
         - compress=zstd:1

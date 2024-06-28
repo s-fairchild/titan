@@ -1,14 +1,13 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: pihole-conf-pvc
+  name: conf-pvc
   namespace: pihole
   annotations:
-    volumeType: local
+    volumeType: hostPath
 spec:
-  volumeName: pihole-conf
   volumeMode: Filesystem
-  storageClassName: local-path
+  storageClassName: local-path-nvme
   accessModes:
     - ReadWriteMany
   resources:
@@ -18,14 +17,13 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: unbound-conf-pvc
+  name: conf-pvc
   namespace: pihole
   annotations:
-    volumeType: local
+    volumeType: hostPath
 spec:
-  volumeName: unbound-conf
   volumeMode: Filesystem
-  storageClassName: local-path
+  storageClassName: local-path-nvme
   accessModes:
     - ReadOnlyMany
   resources:

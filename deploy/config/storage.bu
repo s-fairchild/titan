@@ -4,7 +4,7 @@ storage:
   disks:
   - # The link to the block device the OS was booted from.
     device: /dev/disk/by-id/coreos-boot-disk
-    wipe_table: true
+    wipe_table: false
     partitions:
     - number: 4
       label: root
@@ -21,7 +21,6 @@ storage:
         # https://wiki.archlinux.org/title/GPT_fdisk#Partition_type
         guid: A19D880F-05FC-4D3B-A006-743F0F84911E
         wipe_partition_entry: true
-        should_exist: true
   - device: /dev/disk/by-id/wwn-0x5000c500e643147a
     wipe_table: true
     partitions:
@@ -31,7 +30,6 @@ storage:
         # https://wiki.archlinux.org/title/GPT_fdisk#Partition_type
         guid: A19D880F-05FC-4D3B-A006-743F0F84911E
         wipe_partition_entry: true
-        should_exist: true
   - device: /dev/disk/by-id/wwn-0x5000c500e642d1f3
     wipe_table: true
     partitions:
@@ -41,7 +39,6 @@ storage:
         # https://wiki.archlinux.org/title/GPT_fdisk#Partition_type
         guid: A19D880F-05FC-4D3B-A006-743F0F84911E
         wipe_partition_entry: true
-        should_exist: true
   - device: /dev/disk/by-id/wwn-0x5000c500c8e4bd14
     wipe_table: true
     partitions:
@@ -51,7 +48,6 @@ storage:
         # https://wiki.archlinux.org/title/GPT_fdisk#Partition_type
         guid: A19D880F-05FC-4D3B-A006-743F0F84911E
         wipe_partition_entry: true
-        should_exist: true
   - device: /dev/disk/by-id/wwn-0x5000c500c8e196b3
     wipe_table: true
     partitions:
@@ -61,7 +57,6 @@ storage:
         # https://wiki.archlinux.org/title/GPT_fdisk#Partition_type
         guid: A19D880F-05FC-4D3B-A006-743F0F84911E
         wipe_partition_entry: true
-        should_exist: true
   - device: /dev/disk/by-id/wwn-0x5000c500c8e37087
     wipe_table: true
     partitions:
@@ -71,7 +66,6 @@ storage:
         # https://wiki.archlinux.org/title/GPT_fdisk#Partition_type
         guid: A19D880F-05FC-4D3B-A006-743F0F84911E
         wipe_partition_entry: true
-        should_exist: true
   - device: /dev/disk/by-id/wwn-0x5000c500c8a40802
     wipe_table: true
     partitions:
@@ -81,16 +75,14 @@ storage:
         # https://wiki.archlinux.org/title/GPT_fdisk#Partition_type
         guid: A19D880F-05FC-4D3B-A006-743F0F84911E
         wipe_partition_entry: true
-        should_exist: true
-  - device: /dev/disk/by-id/wwn-0x5000c500c937816a
-    wipe_table: false
-    partitions:
-      - label: BACKUPS
-        number: 0
-        size_mib: 0
-        guid: A19D880F-05FC-4D3B-A006-743F0F84911E
-        wipe_partition_entry: false
-        should_exist: true
+  # - device: /dev/disk/by-id/wwn-0x5000c500c937816a
+  #   wipe_table: false
+  #   partitions:
+  #     - label: BACKUPS
+  #       number: 0
+  #       size_mib: 0
+  #       guid: A19D880F-05FC-4D3B-A006-743F0F84911E
+  #       wipe_partition_entry: false
   raid:
     - name: cctv
       level: raid10
@@ -100,16 +92,17 @@ storage:
         - /dev/disk/by-partlabel/raid10.3
         - /dev/disk/by-partlabel/raid10.4
       spares: 0
-    - name: volumestore
+    - name: appdata
       level: raid5
       devices:
-        - /dev/disk/bypartlabel/raid5.1
-        - /dev/disk/bypartlabel/raid5.2
-        - /dev/disk/bypartlabel/raid5.3
+        - /dev/disk/by-partlabel/raid5.1
+        - /dev/disk/by-partlabel/raid5.2
+        - /dev/disk/by-partlabel/raid5.3
       spares: 0
   filesystems:
     - path: /var
       device: /dev/disk/by-partlabel/var
+      wipe_filesystem: true
       format: btrfs
       with_mount_unit: true
       # partition label
@@ -118,6 +111,17 @@ storage:
       options:
         - -L
         - var
+      mount_options:
+        - compress=zstd:1
+    - device: /dev/disk/by-partlabel/root
+      wipe_filesystem: true
+      format: btrfs
+      # partition label
+      label: root
+      # filesystem label
+      options:
+        - -L
+        - root
       mount_options:
         - compress=zstd:1
     - path: /var/local/lib/k3s/agent/cctv
@@ -133,16 +137,16 @@ storage:
         - cctv
       mount_options:
         - compress=zstd:1
-    - path: /var/local/lib/k3s/agent/data
-      device: /dev/md/data
+    - path: /var/local/lib/k3s/agent/appdata
+      device: /dev/md/appdata
       format: btrfs
       with_mount_unit: true
       wipe_filesystem: true
       # partition label
-      label: data
+      label: appdata
       # filesystem label
       options:
         - -L
-        - data
+        - appdata
       mount_options:
         - compress=zstd:1

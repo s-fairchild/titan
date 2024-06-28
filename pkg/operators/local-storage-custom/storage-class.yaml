@@ -14,7 +14,7 @@ metadata:
     defaultVolumeType: "hostPath"
 provisioner: rancher.io/local-path
 parameters:
-  nodePath: /mnt/nvme
+  nodePath: /mnt/local-path-nvme
   pathPattern: "{{ .PVC.Namespace }}/{{ .PVC.Name }}"
 volumeBindingMode: Immediate
 reclaimPolicy: Retain
@@ -22,12 +22,12 @@ reclaimPolicy: Retain
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: local-path-raid5
+  name: local-path-appdata
   annotations:
     defaultVolumeType: "hostPath"
 provisioner: rancher.io/local-path
 parameters:
-  nodePath: /mnt/data
+  nodePath: /mnt/local-path-appdata
   pathPattern: "{{ .PVC.Namespace }}/{{ .PVC.Name }}"
 volumeBindingMode: Immediate
 reclaimPolicy: Retain
@@ -35,12 +35,12 @@ reclaimPolicy: Retain
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: local-path-raid10
+  name: local-path-cctv
   annotations:
     defaultVolumeType: "hostPath"
 provisioner: rancher.io/local-path
 parameters:
-  nodePath: /mnt/recordings
+  nodePath: /mnt/local-path-cctv
   pathPattern: "{{ .PVC.Namespace }}/{{ .PVC.Name }}"
 volumeBindingMode: Immediate
 reclaimPolicy: Retain

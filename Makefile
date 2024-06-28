@@ -1,6 +1,9 @@
 ONESHELL:
 SHELL = /bin/bash
 
+kube-manifests-gen:
+	hack/gen_kube_manifests.sh pkg deploy/manifests
+
 ignition-gen-dev: kube-manifests-gen
 	hack/manage_ignition.sh generate dev
 	hack/manage_ignition.sh validate dev
@@ -24,6 +27,7 @@ download-live-installer:
 				-f iso
 
 # TODO get the latest iso file from deploy/isos to use here
+# TODO fix production deployment storage.bu
 installer-create-custom-iso: ignition-gen-prod
 	podman run --security-opt \
 		   label=disable \
@@ -34,7 +38,7 @@ installer-create-custom-iso: ignition-gen-prod
 		   quay.io/coreos/coreos-installer:release \
 		   		iso \
 				customize \
-				    --dest-device /dev/nvme0n1 \
+				    --dest-device /dev/disk/by-id/nvme-WD_Blue_SN570_2TB_22423T802136 \
     				--dest-ignition ignition/cluster.ign \
     				--dest-console ttyS0,115200n8 \
     				--dest-console tty0 \
@@ -62,9 +66,6 @@ vm-dev-create: ignition-gen-dev
 
 vm-dev-delete:
 	hack/manage_dev_vm.sh delete
-
-kube-manifests-gen:
-	hack/gen_kube_manifests.sh pkg deploy/manifests
 
 vm_ip_address := "192.168.122.2"
 ssh_id := ~/.ssh/id_ed25519
