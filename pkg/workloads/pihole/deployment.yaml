@@ -6,7 +6,7 @@ metadata:
   namespace: pihole
   name: pihole
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: pihole
@@ -27,30 +27,21 @@ spec:
           configMap:
             name: pihole-cname-records
             optional: false
-        - name: webpassword
-          secret:
-            secretName: webpassword
-            optional: false
-            defaultMode: 0400
-        - name: unbound-config
+        - name: dnsmasq-port
           configMap:
-            name: unbound-conf
-            optional: false
-        - name: dnsmasq-port-config
-          configMap:
-            name: dnsmasq-port-conf
+            name: dnsmasq-conf-port
             optional: false
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
               - matchExpressions:
-                - key: services
+                - key: app
                   operator: In
                   values:
-                    - dns
+                    - compute
       hostname: pihole
-      automountServiceAccountToken: false
+      # automountServiceAccountToken: false
       dnsPolicy: None
       enableServiceLinks: false
       dnsConfig:
@@ -67,17 +58,19 @@ spec:
         # - name: PROXY_LOCATION
         #   value: "pihole.rick.expresso.lan"
         - name: VIRTUAL_HOST
-          value: "pihole.rick.expresso.lan"
-        - name: ServerIP
-          value: "10.50.0.2"
+          value: "pihole.app.rick.expresso.lan"
+        # - name: FTLCONF_LOCAL_IPV4
+        #   value: "10.50.0.2"
         - name: TZ
           value: "America/New_York"
         - name: DNSMASQ_LISTENING
           value: "all"
-        - name: FTLCONF_LOCAL_IPV4
-          value: "10.50.0.2"
+        # - name: FTLCONF_LOCAL_IPV4
+        #   value: "10.50.0.2"
+        # - name: PIHOLE_DNS_
+        #   value: "127.0.0.1#5335"
         - name: PIHOLE_DNS_
-          value: "127.0.0.1#5335"
+          value: "8.8.8.8;8.8.4.4"
         - name: DHCP_ACTIVE
           value: "false"
         - name: TEMPERATUREUNIT
@@ -86,11 +79,13 @@ spec:
           value: "default-darker"
         - name: WEB_PORT
           value: "8090"
+        - name: QUERY_LOGGING
+          value: "false"
         - name: WEBPASSWORD
           valueFrom:
             secretKeyRef:
-              name: webpassword
-              key: admin
+              name: web-password
+              key: web.password.txt
               optional: false
         resources:
           requests:
@@ -100,14 +95,11 @@ spec:
             memory: "150Mi"
             cpu: "5000m"
         ports:
-        - name: dns-udp
-          containerPort: 1053
+        - containerPort: 1053
           protocol: UDP
-        - name: dns-tcp
-          containerPort: 1053
-          protocol: TCP
-        - name: http-web-admin
-          containerPort: 8090
+        # - containerPort: 1053
+        #   protocol: TCP
+        - containerPort: 8090
           protocol: TCP
         securityContext:
           capabilities:
@@ -134,7 +126,7 @@ spec:
           mountPath: /etc/pihole/custom.list
           mountPropagation: None
           subPath: custom.list
-        - name: dnsmasq-port-config
+        - name: dnsmasq-port
           mountPath: /etc/dnsmasq.d/port.conf
           subPath: port.conf
         livenessProbe:
@@ -147,25 +139,25 @@ spec:
             - "1053"
           initialDelaySeconds: 60
           periodSeconds: 5
-      - name: unbound
-        image: madnuttah/unbound:latest
-        imagePullPolicy: IfNotPresent
-        resources:
-          requests:
-            memory: "100Mi"
-            cpu: "30m"
-          limits:
-            memory: "100Mi"
-            cpu: "30m"
-        volumeMounts:
-          - name: unbound-conf
-            mountPath: /opt/unbound/etc/unbound
-            readOnly: true
-        livenessProbe:
-          exec:
-            command:
-            - nslookup
-            - www.google.com
-            - 127.0.0.1:5335
-          initialDelaySeconds: 60
-          periodSeconds: 5
+      # - name: unbound
+      #   image: madnuttah/unbound:latest
+      #   imagePullPolicy: IfNotPresent
+      #   resources:
+      #     requests:
+      #       memory: "100Mi"
+      #       cpu: "30m"
+      #     limits:
+      #       memory: "100Mi"
+      #       cpu: "30m"
+      #   volumeMounts:
+      #     - name: unbound-conf
+      #       mountPath: /opt/unbound/etc/unbound
+      #       readOnly: true
+      #   livenessProbe:
+      #     exec:
+      #       command:
+      #       - nslookup
+      #       - www.google.com
+      #       - 127.0.0.1:5335
+      #     initialDelaySeconds: 60
+      #     periodSeconds: 5

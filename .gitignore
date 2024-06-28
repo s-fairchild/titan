@@ -6,3 +6,5 @@
 *.ign
 *.iso
 *.iso.sig
+deploy/manifests/*
+*.txt

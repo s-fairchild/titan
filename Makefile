@@ -15,6 +15,7 @@ ignition-gen-prod: kube-manifests-gen
 stream := "stable"
 download-live-installer:
 	podman run --security-opt \
+           --remote=false \
 		   label=disable \
 		   --pull=always \
 		   --rm \
@@ -42,7 +43,7 @@ installer-create-custom-iso: ignition-gen-prod
     				--dest-ignition ignition/cluster.ign \
     				--dest-console ttyS0,115200n8 \
     				--dest-console tty0 \
-    				--network-keyfile config/static-ip.nmconnection \
+    				--network-keyfile config/coreos-files/static-ip.nmconnection \
     				-o isos/cluster_custom_installer.iso \
 					isos/fedora-coreos-40.20240602.3.0-live.x86_64.iso
 
@@ -50,6 +51,7 @@ installer-create-custom-iso: ignition-gen-prod
 images := "$(HOME)/.local/share/libvirt/images"
 download-libvirt-installer: $(images)
 	podman run \
+           --remote=false \
 		   --pull=always \
 		   --rm \
 		   -v ${images}:/data \
@@ -69,6 +71,7 @@ vm-dev-delete:
 
 vm_ip_address := "192.168.122.2"
 ssh_id := ~/.ssh/id_ed25519
+# TODO make this configurable to use with production systems
 k3s-token-upload:
 	hack/upload_k3s_token.sh "rick-dev" \
 							 ${ssh_id} \

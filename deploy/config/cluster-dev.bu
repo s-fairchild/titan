@@ -39,3 +39,8 @@ storage:
           dns-search=expresso.lan
           may-fail=false
           method=manual
+    - path: /var/usrlocal/etc/sysconfig/k3s-applb
+      mode: 0640
+      contents:
+        inline: |
+          HOST_IP="192.168.122.2"
