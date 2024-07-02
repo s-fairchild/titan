@@ -6,7 +6,7 @@ cluster-init: true
 # v: 4
 debug: false
 selinux: false
-servicelb-namespace: kube-system-traefik
+servicelb-namespace: kube-system-lb
 tls-san:
   - 10.98.0.5
   - 10.50.0.2

@@ -56,9 +56,9 @@ systemd:
                                 -v=k3s-server-0-storage:/var/lib/rancher/k3s/storage:Z \
                                 -v=k3s-server-0-pod-log:/var/log/pod:Z \
                                 -v=k3s-server-0-containers:/var/lib/containers:Z \
-                                -v=/usr/local/etc/k3s/config/k3s-server-0.yaml:/etc/rancher/k3s/config.yaml:Z,ro \
-                                -v=/usr/local/etc/k3s/manifests:/var/lib/rancher/k3s/server/manifests/compute:z \
-                                -v=/usr/local/etc/k3s/skip:/var/lib/rancher/k3s/server/manifests/skip:z,ro \
+                                -v=/var/usrlocal/etc/k3s/config/k3s-server-0.yaml:/etc/rancher/k3s/config.yaml:Z,ro \
+                                -v=/var/usrlocal/etc/k3s/manifests:/var/lib/rancher/k3s/server/manifests/compute:z \
+                                -v=/var/usrlocal/etc/k3s/skip:/var/lib/rancher/k3s/server/manifests/skip:z,ro \
                                 --shm-size=5g \
                                 --privileged \
                                 --cap-add=ALL \
@@ -133,9 +133,9 @@ systemd:
           -v=k3s-server-1-storage:/var/lib/rancher/k3s/storage:Z \
           -v=k3s-server-1-pod-log:/var/log/pod:Z \
           -v=k3s-server-1-containers:/var/lib/containers:Z \
-          -v=/usr/local/etc/k3s/config/k3s-server-1.yaml:/etc/rancher/k3s/config.yaml:Z,ro \
-          -v=/usr/local/etc/k3s/manifests:/var/lib/rancher/k3s/server/manifests/compute:z \
-          -v=/usr/local/etc/k3s/skip:/var/lib/rancher/k3s/server/manifests/skip:z,ro \
+          -v=/var/usrlocal/etc/k3s/config/k3s-server-1.yaml:/etc/rancher/k3s/config.yaml:Z,ro \
+          -v=/var/usrlocal/etc/k3s/manifests:/var/lib/rancher/k3s/server/manifests/compute:z \
+          -v=/var/usrlocal/etc/k3s/skip:/var/lib/rancher/k3s/server/manifests/skip:z,ro \
           --shm-size 5g \
           --privileged \
           --cap-add=ALL \
@@ -209,9 +209,9 @@ systemd:
           -v=k3s-server-2-pod-log:/var/log/pod:Z \
           -v=k3s-server-2-storage:/var/lib/rancher/k3s/storage:Z \
           -v=k3s-server-2-containers:/var/lib/containers:Z \
-          -v=/usr/local/etc/k3s/config/k3s-server-2.yaml:/etc/rancher/k3s/config.yaml:Z,ro \
-          -v=/usr/local/etc/k3s/manifests:/var/lib/rancher/k3s/server/manifests/compute:z \
-          -v=/usr/local/etc/k3s/skip:/var/lib/rancher/k3s/server/manifests/skip:z,ro \
+          -v=/var/usrlocal/etc/k3s/config/k3s-server-2.yaml:/etc/rancher/k3s/config.yaml:Z,ro \
+          -v=/var/usrlocal/etc/k3s/manifests:/var/lib/rancher/k3s/server/manifests/compute:z \
+          -v=/var/usrlocal/etc/k3s/skip:/var/lib/rancher/k3s/server/manifests/skip:z,ro \
           --shm-size 5g \
           --privileged \
           --cap-add=ALL \
@@ -296,7 +296,7 @@ systemd:
                                 -v=k3s-agent-0-pod-logs:/var/log/pods:Z \
                                 -v=k3s-agent-0-data:/var/lib/rancher/k3s:Z \
                                 -v=k3s-agent-0-etc-rancher:/etc/rancher:Z \
-                                -v=/usr/local/etc/k3s/config/k3s-agent-0.yaml:/etc/rancher/k3s/config.yaml:Z,ro \
+                                -v=/var/usrlocal/etc/k3s/config/k3s-agent-0.yaml:/etc/rancher/k3s/config.yaml:Z,ro \
                                 -v=local-path-default:/mnt/local-path-default:z \
                                 -v=local-path-nvme:/mnt/local-path-nvme:z \
                                 -v=local-path-appdata:/mnt/local-path-appdata:z \
@@ -384,7 +384,7 @@ systemd:
                                 -v=k3s-agent-1-pod-logs:/var/log/pods:Z \
                                 -v=k3s-agent-1-data:/var/lib/rancher/k3s:Z \
                                 -v=k3s-agent-1-rancher:/etc/rancher:Z \
-                                -v=/usr/local/etc/k3s/config/k3s-agent-1.yaml:/etc/rancher/k3s/config.yaml:Z,ro \
+                                -v=/var/usrlocal/etc/k3s/config/k3s-agent-1.yaml:/etc/rancher/k3s/config.yaml:Z,ro \
                                 -v=local-path-default:/mnt/local-path-default:z \
                                 -v=local-path-nvme:/mnt/local-path-nvme:z \
                                 -v=local-path-appdata:/mnt/local-path-appdata:z \
@@ -470,7 +470,7 @@ systemd:
                                 -v=k3s-agent-2-pod_logs:/var/log/pods \
                                 -v=k3s-agent-2-data:/var/lib/rancher/k3s \
                                 -v=k3s-agent-2-etc-rancher:/etc/rancher \
-                                -v=/usr/local/etc/k3s/config/k3s-agent-2.yaml:/etc/rancher/k3s/config.yaml:Z,ro \
+                                -v=/var/usrlocal/etc/k3s/config/k3s-agent-2.yaml:/etc/rancher/k3s/config.yaml:Z,ro \
                                 -v=local-path-default:/mnt/local-path-default:z \
                                 -v=local-path-nvme:/mnt/local-path-nvme:z \
                                 -v=local-path-appdata:/mnt/local-path-appdata:z \
@@ -531,7 +531,7 @@ systemd:
                                 --replace \
                                 --pull=missing \
                                 --privileged \
-                                -v=/usr/local/etc/k3s/config/k3s-apiserverlb-nginx.conf:/etc/nginx/nginx.conf:Z,ro \
+                                -v=/var/usrlocal/etc/k3s/config/k3s-apiserverlb-nginx.conf:/etc/nginx/nginx.conf:Z,ro \
                                 docker.io/nginx:stable
 
         ExecStop=/usr/bin/podman stop \
@@ -588,7 +588,7 @@ systemd:
                                 -v=/etc/machine-id:/etc/machine-id:ro \
                                 -v=k3s-applb-data:/var/lib/rancher/k3s \
                                 -v=k3s-applb-rancher:/etc/rancher \
-                                -v=/usr/local/etc/k3s/config/k3s-applb.yaml:/etc/rancher/k3s/config.yaml:z,ro \
+                                -v=/var/usrlocal/etc/k3s/config/k3s-applb.yaml:/etc/rancher/k3s/config.yaml:z,ro \
                                 --shm-size=5g \
                                 --privileged \
                                 --userns=host \
@@ -618,12 +618,12 @@ systemd:
         Wants=first-boot-complete.target
         Wants=network-online.target
         After=network-online.target
-        ConditionPathExists=!/var/lib/%N.stamp
+        ConditionPathExists=!/var/usrlocal/lib/%N.stamp
 
         [Service]
         Type=oneshot
         RemainAfterExit=yes
-        ExecStart=/usr/local/bin/init_podman_networks.sh %N
+        ExecStart=/var/usrlocal/bin/init_podman_networks.sh %N
 
         [Install]
         WantedBy=multi-user.target
@@ -699,7 +699,7 @@ storage:
         name: root
       group:
         name: root
-    - path: /usr/local/etc/k3s/skip
+    - path: /var/usrlocal/etc/k3s/skip
       mode: 0755
       user:
         name: root
@@ -707,10 +707,10 @@ storage:
         name: root
   trees:
     - local: k3s
-      path: /usr/local/etc/k3s/config
+      path: /var/usrlocal/etc/k3s/config
     - local: manifests
-      path: /usr/local/etc/k3s/manifests
+      path: /var/usrlocal/etc/k3s/manifests
     - local: skip
-      path: /usr/local/etc/k3s/skip
+      path: /var/usrlocal/etc/k3s/skip
     - local: scripts
-      path: /usr/local/bin
+      path: /var/usrlocal/bin

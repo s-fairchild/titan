@@ -3,6 +3,7 @@
 debug: false
 selinux: false
 server: https://10.98.0.5:6443
+servicelb-namespace: kube-system-lb
 tls-san:
   - 10.98.0.5
   - 10.50.0.2
