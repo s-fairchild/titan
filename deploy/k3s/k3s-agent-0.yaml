@@ -1,4 +1,4 @@
-selinux: false
+selinux: true
 node-label:
   - app=compute
   - camera=0

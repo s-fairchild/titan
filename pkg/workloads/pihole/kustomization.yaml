@@ -3,7 +3,10 @@ resources:
 - service.yaml
 - ingress.yaml
 - namespace.yaml
-- pvc.yaml
-- pv.yaml
-- secret.yaml
 - config-map.yaml
+
+secretGenerator:
+- name: web-password
+  namespace: pihole
+  files:
+  - web.password.txt

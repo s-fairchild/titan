@@ -23,6 +23,7 @@ systemd:
 
         [Service]
         Environment=PODMAN_SYSTEMD_UNIT=%n-%i
+        # TODO add restart and stop commands for running k3skillall script
         Restart=always
         RestartSec=30
         TimeoutStartSec=600
@@ -513,8 +514,7 @@ systemd:
         TimeoutStopSec=70
         ExecStart=/usr/bin/podman run \
                                 --name=k3s-apiserverlb \
-                                --annotation=app=apiserverlb \
-                                --annotation=cluster=rick \
+                                --annotation=app=k3s-apiserverlb \
                                 -h=k3s-apiserverlb \
                                 --network=node:ip=10.98.0.5 \
                                 --network=service:ip=10.43.0.253 \
@@ -558,6 +558,7 @@ systemd:
 
         [Service]
         Environment=PODMAN_SYSTEMD_UNIT=%n-%i
+        EnvironmentFile=/var/usrlocal/etc/sysconfig/%N
         Restart=always
         RestartSec=30
         TimeoutStartSec=600
@@ -565,8 +566,7 @@ systemd:
         ExecStartPre=podman secret exists k3s-token
         ExecStart=/usr/bin/podman run \
                                 --name=k3s-applb \
-                                --annotation=app=agent-nginx \
-                                --annotation=cluster=rick \
+                                --annotation=app=k3s-applb \
                                 -h=k3s-applb \
                                 --network=node:ip=10.98.0.253 \
                                 --network=service \
@@ -575,6 +575,7 @@ systemd:
                                 --systemd=always \
                                 -p=80:80 \
                                 -p=443:443 \
+                                -p=${HOST_IP}:53:30053/udp \
                                 -p=8554:8554/tcp \
                                 -p=8554:8554/udp \
                                 --tz=UTC \
@@ -652,7 +653,69 @@ systemd:
         WantedBy=multi-user.target
 storage:
   files:
-    # Set vim as default editor
+    - path: /var/usrlocal/bin/init_podman_networks.sh
+      overwrite: true
+      mode: 0754
+      contents:
+        local: scripts/init_podman_networks.sh
+    - path: /var/usrlocal/etc/k3s/config/k3s-agent-0.yaml
+      overwrite: true
+      contents:
+        local: k3s/k3s-agent-0.yaml
+    - path: /var/usrlocal/etc/k3s/config/k3s-agent-1.yaml
+      overwrite: true
+      contents:
+        local: k3s/k3s-agent-1.yaml
+    - path: /var/usrlocal/etc/k3s/config/k3s-agent-2.yaml
+      overwrite: true
+      contents:
+        local: k3s/k3s-agent-2.yaml
+    - path: /var/usrlocal/etc/k3s/config/k3s-server-0.yaml
+      overwrite: true
+      contents:
+        local: k3s/k3s-server-0.yaml
+    - path: /var/usrlocal/etc/k3s/config/k3s-server-1.yaml
+      overwrite: true
+      contents:
+        local: k3s/k3s-server-1.yaml
+    - path: /var/usrlocal/etc/k3s/config/k3s-server-2.yaml
+      overwrite: true
+      contents:
+        local: k3s/k3s-server-2.yaml
+    - path: /var/usrlocal/etc/k3s/config/k3s-apiserverlb-nginx.conf
+      overwrite: true
+      contents:
+        local: k3s/k3s-apiserverlb-nginx.conf
+    - path: /var/usrlocal/etc/k3s/skip/traefik.yaml.skip
+      overwrite: true
+      contents:
+        inline: |
+
+    - path: /var/usrlocal/etc/k3s/skip/local-storage.yaml.skip
+      overwrite: true
+      contents:
+        inline: |
+
+    - path: /var/usrlocal/etc/k3s/manifests/traefik-custom.yaml
+      overwrite: true
+      contents:
+        local: manifests/traefik-custom.yaml
+    - path: /var/usrlocal/etc/k3s/manifests/pihole.yaml
+      overwrite: true
+      contents:
+        local: manifests/pihole.yaml
+    - path: /var/usrlocal/etc/k3s/manifests/local-storage-custom.yaml
+      overwrite: true
+      contents:
+        local: manifests/local-storage-custom.yaml
+    - path: /var/usrlocal/etc/k3s/manifests/jellyfin.yaml
+      overwrite: true
+      contents:
+        local: manifests/jellyfin.yaml
+    - path: /var/usrlocal/etc/k3s/manifests/coredns-custom.yaml
+      overwrite: true
+      contents:
+        local: manifests/coredns-custom.yaml
     # We use `zz-` as prefix to make sure this is processed last in order to
     # override any previously set defaults.
     - path: /etc/profile.d/zz-default-editor.sh
@@ -661,6 +724,7 @@ storage:
         inline: |
           export EDITOR=vim
     - path: /etc/zincati/config.d/55-updates-strategy.toml
+      overwrite: true
       contents:
         inline: |
           [updates]
@@ -671,29 +735,36 @@ storage:
           length_minutes = 60
     - path: /etc/systemd/zram-generator.conf
       mode: 0644
+      overwrite: true
       contents:
         inline: |
           # This config file enables a /dev/zram0 device with the default settings
           [zram0]
     - path: /etc/containers/storage.conf
+      overwrite: true
       mode: 0744
       contents:
         local: config/coreos-files/storage.conf
-      overwrite: true
   directories:
-    - path: /var/local/lib/k3s/agent/cctv
+    - path: /var/usrlocal/sysconfig
       mode: 0750
       user:
         name: root
       group:
         name: root
-    - path: /var/local/lib/k3s/agent/appdata
+    - path: /var/usrlocal/lib/k3s/agent/cctv
       mode: 0750
       user:
         name: root
       group:
         name: root
-    - path: /var/local/lib/k3s/agent/nvme
+    - path: /var/usrlocal/lib/k3s/agent/appdata
+      mode: 0750
+      user:
+        name: root
+      group:
+        name: root
+    - path: /var/usrlocal/lib/k3s/agent/nvme
       mode: 0750
       user:
         name: root
@@ -705,12 +776,3 @@ storage:
         name: root
       group:
         name: root
-  trees:
-    - local: k3s
-      path: /var/usrlocal/etc/k3s/config
-    - local: manifests
-      path: /var/usrlocal/etc/k3s/manifests
-    - local: skip
-      path: /var/usrlocal/etc/k3s/skip
-    - local: scripts
-      path: /var/usrlocal/bin

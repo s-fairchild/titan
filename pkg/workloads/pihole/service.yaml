@@ -6,37 +6,34 @@ metadata:
   namespace: pihole
   labels:
     app: pihole
-  annotations:
-    # TODO change this ingress class once it's created
-    kubernetes.io/ingress.class: traefik
-    # metallb.universe.tf/address-pool: server-pool
+  # annotations:
+    # kubernetes.io/ingress.class: traefik
 spec:
   selector:
     app: pihole
   ports:
   - name: 53-53-udp
     nodePort: 30053
-    port: 1053
+    port: 1054
     protocol: UDP
-    targetPort: dns-udp
+    targetPort: 1053
   type: NodePort
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: pihole-web
+  name: pihole
+  namespace: pihole
   labels:
     app: pihole
-  annotations:
-    # TODO change this ingress class once it's created
-    kubernetes.io/ingress.class: traefik
-    # metallb.universe.tf/address-pool: server-pool
+  # annotations:
+    # kubernetes.io/ingress.class: traefik
 spec:
   selector:
     app: pihole
-  ports:
-  - name: web-admin
-    port: 8090
-    targetPort: http-web-admin
-    protocol: TCP
   type: LoadBalancer
+  ports:
+  - name: www
+    port: 8091
+    targetPort: 8090
+    protocol: TCP

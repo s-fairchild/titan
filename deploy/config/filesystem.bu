@@ -1,0 +1,54 @@
+variant: fcos
+version: 1.5.0
+storage:
+  filesystems:
+    - device: /dev/disk/by-partlabel/root
+      wipe_filesystem: true
+      format: btrfs
+      # partition label
+      label: root
+      # filesystem label
+      options:
+        - -L
+        - root
+      mount_options:
+        - compress=zstd:1
+    - device: /dev/disk/by-partlabel/var
+      path: /var
+      wipe_filesystem: false
+      format: btrfs
+      with_mount_unit: true
+      # partition label
+      label: var
+      # filesystem label
+      options:
+        - -L
+        - var
+      mount_options:
+        - compress=zstd:1
+    - device: /dev/md/cctv
+      path: /var/local/lib/k3s/agent/cctv
+      wipe_filesystem: false
+      format: btrfs
+      with_mount_unit: true
+      # partition label
+      label: cctv
+      # filesystem label
+      options:
+        - -L
+        - cctv
+      mount_options:
+        - compress=zstd:1
+    - device: /dev/md/appdata
+      path: /var/local/lib/k3s/agent/appdata
+      wipe_filesystem: false
+      format: btrfs
+      with_mount_unit: true
+      # partition label
+      label: appdata
+      # filesystem label
+      options:
+        - -L
+        - appdata
+      mount_options:
+        - compress=zstd:1

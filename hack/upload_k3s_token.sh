@@ -61,7 +61,7 @@ create_secret() {
     local -n host="$2"
     local -n tok="$3"
 
-    if podman secret exists "$1"; then
+    if podman -r -c "$host" secret exists "$1"; then
         abort "secret $sec already exists, aborting"
     fi
 
