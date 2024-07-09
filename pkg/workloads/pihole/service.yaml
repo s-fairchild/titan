@@ -17,7 +17,7 @@ spec:
     port: 1054
     protocol: UDP
     targetPort: 1053
-  type: NodePort
+  type: LoadBalancer
 ---
 apiVersion: v1
 kind: Service
@@ -31,9 +31,9 @@ metadata:
 spec:
   selector:
     app: pihole
-  type: LoadBalancer
   ports:
   - name: www
     port: 8091
     targetPort: 8090
     protocol: TCP
+  type: LoadBalancer

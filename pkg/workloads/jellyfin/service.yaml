@@ -8,9 +8,9 @@ metadata:
 spec:
   selector:
     app: jellyfin
-  type: LoadBalancer
   ports:
     - name: jellyfin-web
       protocol: TCP
       port: 8080
       targetPort: 8096
+  type: LoadBalancer

@@ -493,6 +493,7 @@ systemd:
 
     - name: k3s-apiserverlb.service
       enabled: true
+      # TODO once external loadbalancer is configured, don't bind port 6443 to host
       contents: |
         [Unit]
         Description=Podman container k3s-apiserverlb.service for %I
@@ -541,6 +542,7 @@ systemd:
         WantedBy=default.target
     - name: k3s-applb.service
       enabled: true
+      # TODO setup port map for kubernetes service on 6443 to serve as the external apiserver loadbalancer
       contents: |
         [Unit]
         Description=Podman container k3s-applb.service for %I
@@ -565,11 +567,11 @@ systemd:
                                 --network=service \
                                 --dns-search=expresso.lan \
                                 --systemd=always \
-                                -p=80:80 \
-                                -p=443:443 \
+                                -p=${HOST_IP}:80:80 \
+                                -p=${HOST_IP}:443:443 \
                                 -p=${HOST_IP}:53:30053/udp \
-                                -p=8554:8554/tcp \
-                                -p=8554:8554/udp \
+                                -p=${HOST_IP}:8554:30555/udp \
+                                -p=${HOST_IP}:8555:30556/tcp \
                                 --tz=UTC \
                                 --cidfile=%t/%n.ctr-id \
                                 --cgroups=no-conmon \

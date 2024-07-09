@@ -2,5 +2,10 @@ resources:
 - deployment.yaml
 - service.yaml
 - namespace.yaml
-- secret.yaml
 - ingress.yaml
+
+secretGenerator:
+- name: rtsp0-password
+  namespace: v4l2rtspserver
+  files:
+  - rtsp0.password.txt

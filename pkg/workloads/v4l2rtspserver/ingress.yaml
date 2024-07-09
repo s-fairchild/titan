@@ -1,27 +1,3 @@
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: rtsp0-tcp
-  namespace: v4l2rtspserver
-  labels:
-    app: rtsp0
-  annotations:
-    ingress.kubernetes.io/ssl-redirect: "false"
-    traefik.frontend.rule.type: PathPrefix
-spec:
-  rules:
-  - host: rtsp0-tcp.rick.expresso.lan
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: rtsp0-tcp
-            port:
-              name: 8554-8554-tcp
----
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -34,36 +10,13 @@ metadata:
     traefik.frontend.rule.type: PathPrefix
 spec:
   rules:
-  - host: rtsp0-http.rick.expresso.lan
+  - host: rtsp0.app.rick.expresso.lan
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: rtsp0-http
+            name: rtsp0-hls
             port:
-              name: 8085-8085-http
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: rtsp0-udp
-  namespace: v4l2rtspserver
-  labels:
-    app: rtsp0
-  annotations:
-    ingress.kubernetes.io/ssl-redirect: "false"
-    traefik.frontend.rule.type: PathPrefix
-spec:
-  rules:
-  - host: rtsp0-udp.rick.expresso.lan
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: rtsp0-udp
-            port:
-              name: 8554-8554-udp
+              name: hls

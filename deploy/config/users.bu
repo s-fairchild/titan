@@ -13,6 +13,8 @@ passwd:
       system: true
       gecos: Jellyfin web user
       primary_group: jellyfinmedia
+      uid: 911
   groups:
     - name: jellyfinmedia
       system: true
+      gid: 911
