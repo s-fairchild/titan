@@ -6,7 +6,7 @@ interface-name=enp5s0
 [ipv4]
 address1=10.50.0.2/32,10.50.0.1
 dhcp-hostname=rick
-dns=10.50.0.1;
+dns=8.8.8.8,8.8.4.4;
 dns-search=expresso.lan
 may-fail=false
 method=manual

@@ -41,7 +41,6 @@ spec:
                   values:
                     - compute
       hostname: pihole
-      # automountServiceAccountToken: false
       dnsPolicy: None
       enableServiceLinks: false
       dnsConfig:
@@ -52,21 +51,15 @@ spec:
       containers:
       - name: pihole
         image: docker.io/pihole/pihole:latest
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         # See this for all env variables available https://github.com/pi-hole/docker-pi-hole#environment-variables
         env:
-        # - name: PROXY_LOCATION
-        #   value: "pihole.rick.expresso.lan"
         - name: VIRTUAL_HOST
           value: "pihole.app.rick.expresso.lan"
-        # - name: FTLCONF_LOCAL_IPV4
-        #   value: "10.50.0.2"
         - name: TZ
           value: "America/New_York"
         - name: DNSMASQ_LISTENING
           value: "all"
-        # - name: FTLCONF_LOCAL_IPV4
-        #   value: "10.50.0.2"
         # - name: PIHOLE_DNS_
         #   value: "127.0.0.1#5335"
         - name: PIHOLE_DNS_

@@ -37,7 +37,6 @@ systemd:
                                 --network=node:ip=10.98.0.1 \
                                 --network=service \
                                 --dns-search=expresso.lan \
-                                --dns=10.50.0.1 \
                                 --systemd=always \
                                 --cgroups=no-conmon \
                                 --userns=host \
@@ -114,7 +113,6 @@ systemd:
           --network=node:ip=10.98.0.2 \
           --network=service \
           --dns-search=expresso.lan \
-          --dns=10.50.0.1 \
           --systemd=always \
           --cgroups=no-conmon \
           --userns=host \
@@ -190,7 +188,6 @@ systemd:
           --network=node:ip=10.98.0.3 \
           --network=service \
           --dns-search=expresso.lan \
-          --dns=10.50.0.1 \
           --systemd=always \
           --cgroups=no-conmon \
           --userns=host \
@@ -278,7 +275,6 @@ systemd:
                                 --network=node:ip=10.98.0.100 \
                                 --network=service \
                                 --dns-search=expresso.lan \
-                                --dns=10.50.0.1 \
                                 --systemd=always \
                                 --tz=UTC \
                                 --cidfile=%t/%n.ctr-id \
@@ -365,7 +361,6 @@ systemd:
                                 --network=node:ip=10.98.0.101 \
                                 --network=service \
                                 --dns-search=expresso.lan \
-                                --dns=10.50.0.1 \
                                 --systemd=always \
                                 -h=k3s-agent-1 \
                                 --tz=UTC \
@@ -451,7 +446,6 @@ systemd:
                                 --network=node:ip=10.98.0.102 \
                                 --network=service \
                                 --dns-search=expresso.lan \
-                                --dns=10.50.0.1 \
                                 --systemd=always \
                                 -h k3s-agent-2 \
                                 --tz=UTC \
@@ -520,7 +514,6 @@ systemd:
                                 --network=service:ip=10.43.0.253 \
                                 --network-alias=loadbalancer \
                                 --dns-search=expresso.lan \
-                                --dns=10.43.0.10 \
                                 -p=6443:6443 \
                                 --tz=UTC \
                                 --cidfile=%t/%n.ctr-id \
@@ -571,7 +564,6 @@ systemd:
                                 --network=node:ip=10.98.0.253 \
                                 --network=service \
                                 --dns-search=expresso.lan \
-                                --dns=10.50.0.1 \
                                 --systemd=always \
                                 -p=80:80 \
                                 -p=443:443 \

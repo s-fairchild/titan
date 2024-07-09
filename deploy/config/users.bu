@@ -8,3 +8,11 @@ passwd:
     - name: root
       ssh_authorized_keys_local:
         - config/keys/id_ed25519.pub
+    - name: abc
+      no_user_group: true
+      system: true
+      gecos: Jellyfin web user
+      primary_group: jellyfinmedia
+  groups:
+    - name: jellyfinmedia
+      system: true
