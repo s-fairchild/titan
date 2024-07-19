@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gollum
+  namespace: gollum
+  labels:
+    app: gollum
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gollum
+  template:
+    metadata:
+      name: gollum
+      namespace: gollum
+      labels:
+        app: gollum
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - compute
+      containers:
+      - name: gollum
+        image: gollumwiki/gollum:6.0.0
+        args:
+        - --allow-uploads
+        - page
+        - --page-file-dir
+        - pages
+        - --user-icons
+        - gravatar
+        - --emoji
+        - --bare
+        env:
+        - name: APP_ENV
+          value: production
+        ports:
+        - name: api
+          containerPort: 4567
+        - name: uploads
+          containerPort: 22
+        resources:
+          requests:
+            memory: "200Mi"
+            cpu: "100m"
+          limits:
+            memory: "500Mi"
+            cpu: "2000m"
+        volumeMounts:
+        - name: uploads
+          mountPath: /uploads
+        - name: repo
+          mountPath: /wiki
+      volumes:
+      - name: uploads
+        persistentVolumeClaim:
+          claimName: uploads-pvc
+      - name: repo
+        persistentVolumeClaim:
+          claimName: repo-pvc

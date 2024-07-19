@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gollum
+  namespace: gollum
+  labels:
+    app: gollum
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gollum
+  template:
+    metadata:
+      name: gollum
+      namespace: gollum
+      labels:
+        app: gollum
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - compute
+      containers:
+      - name: gollum
+        env:
+        - name: APP_ENV
+          value: development
+        resources:
+          requests:
+            memory: "200Mi"
+            cpu: "100m"
+          limits:
+            memory: "200Gi"
+            cpu: "2000m"

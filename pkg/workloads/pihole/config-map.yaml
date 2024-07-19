@@ -8,6 +8,7 @@ data:
     cname=pihole.app.rick.expresso.lan,app.rick.expresso.lan
     cname=jellyfin.app.rick.expresso.lan,app.rick.expresso.lan
     cname=rtsp0.app.rick.expresso.lan,app.rick.expresso.lan
+    cname=gollum.app.rick.expresso.lan,app.rick.expresso.lan
     cname=app.rick.expresso.lan,rick.expresso.lan
     cname=rick.lan,rick.expresso.lan
     cname=rick,rick.expresso.lan
