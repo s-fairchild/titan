@@ -8,7 +8,7 @@ metadata:
 spec:
   volumeMode: Filesystem
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   storageClassName: local-path-appdata
   resources:
     requests:
@@ -17,15 +17,15 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: repo-pvc
+  name: wiki-pvc
   namespace: gollum
   annotations:
     volumeType: hostPath
 spec:
   volumeMode: Filesystem
   accessModes:
-    - ReadWriteMany
-  storageClassName: local-path-appdata
+    - ReadWriteOnce
+  storageClassName: local-path-nvme
   resources:
     requests:
       storage: 20Gi

@@ -17,6 +17,11 @@ spec:
       labels:
         app: gollum
     spec:
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -37,10 +42,11 @@ spec:
         - --user-icons
         - gravatar
         - --emoji
-        - --bare
         env:
         - name: APP_ENV
           value: production
+        - name: GOLLUM_AUTHOR_USERNAME
+          value: s-fairchild
         ports:
         - name: api
           containerPort: 4567
@@ -56,12 +62,12 @@ spec:
         volumeMounts:
         - name: uploads
           mountPath: /uploads
-        - name: repo
+        - name: wiki
           mountPath: /wiki
       volumes:
       - name: uploads
         persistentVolumeClaim:
           claimName: uploads-pvc
-      - name: repo
+      - name: wiki
         persistentVolumeClaim:
-          claimName: repo-pvc
+          claimName: wiki-pvc
