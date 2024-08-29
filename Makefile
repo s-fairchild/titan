@@ -1,6 +1,9 @@
 ONESHELL:
 SHELL = /bin/bash
 
+deploy-manifests-prod:
+	hack/deploy_manifests.sh deploy/manifests
+
 kube-manifests-gen:
 	hack/gen_kube_manifests.sh pkg deploy/manifests
 
