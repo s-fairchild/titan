@@ -4,4 +4,3 @@ resources:
 - ingress.yaml
 - namespace.yaml
 - pvc.yaml
-- secret.yaml

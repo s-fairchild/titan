@@ -1,3 +1,4 @@
+---
 apiVersion: helm.cattle.io/v1
 kind: HelmChart
 metadata:
@@ -7,6 +8,7 @@ spec:
   chart: https://%{KUBERNETES_API}%/static/charts/traefik-25.0.3+up25.0.0.tgz
   set:
     global.systemDefaultRegistry: ""
+  targetNamespace: kube-system-traefik
   valuesContent: |-
     deployment:
       podAnnotations:
@@ -55,6 +57,25 @@ spec:
       type: LoadBalancer
       ipFamilyPolicy: "SingleStack"
       spec: {}
+      ipFamilies:
+        - IPv4
+      externalIPs:
+        - 192.168.122.2
+      ## -- An additionnal and optional internal Service.
+      ## Same parameters as external Service
+      internal:
+        type: ClusterIP
+        # labels: {}
+        # annotations: {}
+        # spec: {}
+        # loadBalancerSourceRanges: []
+        # TODO add podman networks here, review k3s networking for this setup
+        # externalIPs: []
+        enabled: true
+        single: false
+        ipFamilyPolicy: "SingleStack"
+        ipFamilies:
+          - IPv4
     logs:
       general:
         # format: json

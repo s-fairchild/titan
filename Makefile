@@ -4,14 +4,17 @@ SHELL = /bin/bash
 deploy-manifests-prod:
 	hack/deploy_manifests.sh deploy/manifests
 
-kube-manifests-gen:
-	hack/gen_kube_manifests.sh pkg deploy/manifests
+kube-manifests-gen-dev:
+	hack/gen_kube_manifests.sh pkg deploy/manifests dev
 
-ignition-gen-dev: kube-manifests-gen
+kube-manifests-gen-prod:
+	hack/gen_kube_manifests.sh pkg deploy/manifests prod
+
+ignition-gen-dev: kube-manifests-gen-dev
 	hack/manage_ignition.sh generate dev
 	hack/manage_ignition.sh validate dev
 
-ignition-gen-prod: kube-manifests-gen
+ignition-gen-prod: kube-manifests-gen-prod
 	hack/manage_ignition.sh generate prod
 	hack/manage_ignition.sh validate prod
 

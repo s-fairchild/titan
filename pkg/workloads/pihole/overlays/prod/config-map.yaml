@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pihole-cname-records
+  namespace: pihole
+data:
+  05-pihole-custom-cname.conf: |
+    cname=pihole.app.rick.expresso.lan,app.rick.expresso.lan
+    cname=jellyfin.app.rick.expresso.lan,app.rick.expresso.lan
+    cname=rtsp0.app.rick.expresso.lan,app.rick.expresso.lan
+    cname=app.rick.expresso.lan,rick.expresso.lan
+    cname=rick.lan,rick.expresso.lan
+    cname=rick,rick.expresso.lan

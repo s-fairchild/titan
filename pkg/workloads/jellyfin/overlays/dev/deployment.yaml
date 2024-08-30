@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jellyfin
+  namespace: jellyfin
+  labels:
+    app: jellyfin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jellyfin
+  template:
+    metadata:
+      name: jellyfin
+      namespace: jellyfin
+      labels:
+        app: jellyfin
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - compute
+      containers:
+      - name: jellyfin
+        livenessProbe:
+          tcpSocket:
+            port: 8096
+          initialDelaySeconds: 120
+        env:
+        # See for more information: https://jellyfin.org/docs/general/administration/configuration/
+        - name: JELLYFIN_PublishedServerUrl
+          value: https://jellyfin.app.rick-dev.expresso.lan

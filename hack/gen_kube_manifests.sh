@@ -6,38 +6,51 @@ set -o nounset \
 main() {
     local -r base_dir="$1"
     local -r manifests="$2"
+    local -r overlay="$3"
     if [ ! -d "$base_dir" ]; then
         abort "$base_dir not found, aborting"
     elif [ ! -d "$manifests" ]; then
         abort "$manifests not found, aborting"
     fi
-    generate_kube_manifests base_dir manifests
+
+    generate_kube_manifests "$base_dir" \
+                            "$manifests" \
+                            "$overlay"
 }
 
 generate_kube_manifests() {
-    local -n base="$1"
-    local -n dest="$2"
+    local -r base="$1"
+    local -r dest="$2"
+    local -r overlay="$3"
     log "starting"
 
-    kustomize="$(find "$base" -name kustomization.yaml)"
+    # kustomize="$(find "$base" -name kustomization.yaml)"
+    kustomize=($(find "$base" -type d -name "$overlay"))
 
     # shellcheck disable=SC2068
     for k in ${kustomize[@]}; do
-        kustomize_source="$(dirname "$k")"
-        manifest_name="${kustomize_source##*/}"
-        if is_disabled manifest_name \
-                       disabled_pkgs; then
-            manifest_name+=".yaml"
-            log "Generating $manifest_name from $kustomize_source"
-            kubectl kustomize "$kustomize_source" > "$dest/$manifest_name"
+        app_name="$(get_app_name "$k")"
+        app_manifest="$app_name.yaml"
+        if is_disabled "$app_name" \
+                       "$disabled_pkgs"; then
+            log "Generating $app_manifest from $k"
+            kubectl kustomize "$k" > "$dest/$app_manifest"
         fi
     done
 }
 
+get_app_name() {
+    app="$(dirname "$1")"
+    app="$(dirname "$app")"
+    app="$(basename "$app")"
+
+    echo "$app"
+}
+
 is_disabled() {
-    local -n pkg="$1"
-    local -n disabled="$2"
-    if [[ $pkg =~ ${disabled[*]} ]]; then
+    local -r app="$1"
+    local -r disabled="$2"
+    if [[ $app =~ ${disabled[*]} ]]; then
         return 1
     fi
 

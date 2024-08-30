@@ -32,10 +32,11 @@ storage:
           id=enp1s0
           type=ethernet
           interface-name=enp1s0
+
           [ipv4]
           address1=192.168.122.2/32,192.168.122.1
           dhcp-hostname=rick-dev
-          dns=10.50.0.2,8.8.8.8;
+          dns=10.50.0.2;8.8.8.8;
           dns-search=expresso.lan
           may-fail=false
           method=manual

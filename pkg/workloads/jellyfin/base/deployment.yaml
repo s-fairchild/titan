@@ -35,7 +35,7 @@ spec:
         env:
         # See for more information: https://jellyfin.org/docs/general/administration/configuration/
         - name: JELLYFIN_PublishedServerUrl
-          value: https://jellyfin.app.rick.expresso.lan
+          value: ""
         # Places data dir under /config
         # /config/data
         - name: JELLYFIN_DATA_DIR
@@ -43,8 +43,8 @@ spec:
         - name: PASSWORD
           valueFrom:
             secretKeyRef:
-              name: webpassword
-              key: password
+              name: web-password
+              key: web.password.txt
               optional: false
         image: docker.io/linuxserver/jellyfin:10.9.10
         ports:

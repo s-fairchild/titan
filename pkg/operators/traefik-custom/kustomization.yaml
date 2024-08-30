@@ -1,4 +1,0 @@
-resources:
-- deployment.yaml
-- crd.yaml
-- namespace.yaml

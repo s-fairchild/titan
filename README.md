@@ -9,9 +9,7 @@
 ### To Do Items
 
 1. Setup k3d registry node to serve as cluster registry
-3. Test on a [libvirt vm](https://docs.fedoraproject.org/en-US/fedora-coreos/provisioning-libvirt/)
-   4. [Create Users and Groups](https://docs.fedoraproject.org/en-US/fedora-coreos/authentication/) for applications pods
-   5. Setup make target to start a temporary [PXE http server](https://docs.fedoraproject.org/en-US/fedora-coreos/remote-ign/) running in podman
+1. 
 
 1. References
    1. [Getting Started with Fedora CoreOS](https://docs.fedoraproject.org/en-US/fedora-coreos/getting-started/)
