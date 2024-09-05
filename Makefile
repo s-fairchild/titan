@@ -55,9 +55,10 @@ installer-create-custom-iso: ignition-gen-prod
 
 
 images := "$(HOME)/.local/share/libvirt/images"
-download-libvirt-installer: $(images)
-	podman run \
+download-libvirt-installer:
+	podman \
            --remote=false \
+		   run \
 		   --pull=always \
 		   --rm \
 		   -v ${images}:/data \

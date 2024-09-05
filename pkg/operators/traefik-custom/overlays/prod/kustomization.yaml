@@ -5,4 +5,4 @@ resources:
 - ../../base
 
 patches:
-- path: traefik-helmchart.yaml
+- path: deployment.yaml

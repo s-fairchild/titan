@@ -11,5 +11,8 @@ secretGenerator:
   - web.password.txt
 
 patches:
-- path: ingress.yaml
 - path: deployment.yaml
+
+patchesStrategicMerge:
+- ingressroute.yaml
+- middleware.yaml

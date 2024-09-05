@@ -1,6 +1,7 @@
 resources:
 - deployment.yaml
 - service.yaml
-- ingress.yaml
 - namespace.yaml
 - pvc.yaml
+- middleware.yaml
+- ingressroute.yaml

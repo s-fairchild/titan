@@ -9,6 +9,7 @@ spec:
   set:
     global.systemDefaultRegistry: ""
   targetNamespace: kube-system-traefik
+  # Reference: https://github.com/traefik/traefik-helm-chart/blob/e03b1287af6a9dfafb2d4203068f40c801e0f9b4/traefik/VALUES.md
   valuesContent: |-
     deployment:
       podAnnotations:
@@ -17,18 +18,12 @@ spec:
     providers:
       kubernetesCRD:
         enabled: true
-        allowCrossNamespace: true
+        allowCrossNamespace: false
         allowExternalNameServices: true
         # -- Allows to return 503 when there is no endpoints available
         allowEmptyServices: true
       kubernetesIngress:
-        enabled: true
-        allowExternalNameServices: true
-        # -- Allows to return 503 when there is no endpoints available
-        allowEmptyServices: true
-        # Required for external IP address to be assigned
-        publishedService:
-          enabled: true
+        enabled: false
     hostNetwork: false
     priorityClassName: "system-cluster-critical"
     nodeSelector:
@@ -60,17 +55,10 @@ spec:
       ipFamilies:
         - IPv4
       externalIPs:
-        - 10.50.0.2
       ## -- An additionnal and optional internal Service.
       ## Same parameters as external Service
       internal:
         type: ClusterIP
-        # labels: {}
-        # annotations: {}
-        # spec: {}
-        # loadBalancerSourceRanges: []
-        # TODO add podman networks here, review k3s networking for this setup
-        # externalIPs: []
         enabled: true
         single: false
         ipFamilyPolicy: "SingleStack"
