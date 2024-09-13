@@ -19,52 +19,50 @@ ignition-gen-prod: kube-manifests-gen-prod
 	hack/manage_ignition.sh validate prod
 
 stream := "stable"
-download-live-installer:
-	podman run --security-opt \
-           --remote=false \
-		   label=disable \
-		   --pull=always \
-		   --rm \
-		   -v ./deploy/isos:/data \
-		   -w /data \
-		   quay.io/coreos/coreos-installer:release \
-		   		download \
+coreos-installer-image := "quay.io/coreos/coreos-installer:release"
+download-installer-baremetal-live:
+	podman --remote=false run \
+			--security-opt label=disable \
+			--pull=always \
+			--rm \
+			-v ./deploy/isos:/data \
+			-w /data \
+			${coreos-installer-image} \
+			download \
 				-s ${stream} \
 				-p metal \
 				-f iso
 
 # TODO get the latest iso file from deploy/isos to use here
-# TODO fix production deployment storage.bu
 installer-create-custom-iso: ignition-gen-prod
-	podman run --security-opt \
-		   label=disable \
-		   --pull=always \
-		   --rm \
-		   -v ./deploy:/data \
-		   -w /data \
-		   quay.io/coreos/coreos-installer:release \
-		   		iso \
+	podman --remote=false run \
+			--security-opt label=disable \
+			--pull=always \
+			--rm \
+			-v ./deploy:/data \
+			-w /data \
+			${coreos-installer-image} \
+				iso \
 				customize \
-				    --dest-device /dev/disk/by-id/nvme-WD_Blue_SN570_2TB_22423T802136 \
-    				--dest-ignition ignition/cluster.ign \
-    				--dest-console ttyS0,115200n8 \
-    				--dest-console tty0 \
-    				--network-keyfile config/coreos-files/static-ip.nmconnection \
-    				-o isos/cluster_custom_installer.iso \
-					isos/fedora-coreos-40.20240602.3.0-live.x86_64.iso
+					--dest-device /dev/disk/by-id/nvme-WD_Blue_SN570_2TB_22423T802136 \
+					--dest-ignition ignition/cluster.ign \
+					--dest-console ttyS0,115200n8 \
+					--dest-console tty0 \
+					--network-keyfile config/coreos-files/static-ip.nmconnection \
+					-o isos/cluster_custom_installer.iso \
+					isos/fedora-coreos-40.20240825.3.0-live.x86_64.iso
 
 
 images := "$(HOME)/.local/share/libvirt/images"
-download-libvirt-installer:
-	podman \
-           --remote=false \
-		   run \
-		   --pull=always \
-		   --rm \
-		   -v ${images}:/data \
-		   -w /data \
-		   quay.io/coreos/coreos-installer:release \
-		   		download \
+download-installer-libvirt:
+	podman --remote=false run \
+			--pull=always \
+			--security-opt label=disable \
+			--rm \
+			-v ${images}:/data \
+			-w /data \
+			${coreos-installer-image} \
+				download \
 				-s ${stream} \
 				-p qemu \
 				-f qcow2.xz \
