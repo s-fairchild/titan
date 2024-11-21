@@ -374,7 +374,10 @@ systemd:
                                 --device=/dev/v4l/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-video-index0:/dev/video0 \
                                 --device=/dev/v4l/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-video-index1:/dev/video1 \
                                 --device=/dev/snd:/dev/snd \
-                                --device=/dev/dri:/dev/dri \
+                                --device=/dev/dri/renderD128:/dev/dri/renderD128:rwm \
+                                --device=/dev/dri/card1:/dev/dri/card1:rwm \
+                                --group-add=render \
+                                --group-add=video \
                                 -v=/etc/machine-id:/etc/machine-id:ro \
                                 -v=k3s-agent-1-kubelet:/var/lib/kubelet:Z \
                                 -v=k3s-agent-1-pod-logs:/var/log/pods:Z \

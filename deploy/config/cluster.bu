@@ -27,3 +27,13 @@ storage:
         inline: |
           HOST_IP="10.50.0.2"
       overwrite: true
+    # Needed for the large amount of files kubernetes workloads tend to open
+    # Reference: https://discussion.fedoraproject.org/t/setting-ulimit/83508/9
+    - path: /etc/security/limits.conf
+      mode: 0644
+      append:
+        - inline: |
+            * soft nofile 4096
+            * hard nofile 8192
+            root soft nofile 4096
+            root hard nofile 8192

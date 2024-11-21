@@ -50,7 +50,7 @@ installer-create-custom-iso: ignition-gen-prod
 					--dest-console tty0 \
 					--network-keyfile config/coreos-files/static-ip.nmconnection \
 					-o isos/cluster_custom_installer.iso \
-					isos/fedora-coreos-40.20240825.3.0-live.x86_64.iso
+					isos/fedora-coreos-41.20241027.3.0-live.x86_64.iso
 
 
 images := "$(HOME)/.local/share/libvirt/images"

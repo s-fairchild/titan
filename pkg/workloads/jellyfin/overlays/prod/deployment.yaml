@@ -36,3 +36,9 @@ spec:
         # See for more information: https://jellyfin.org/docs/general/administration/configuration/
         - name: JELLYFIN_PublishedServerUrl
           value: https://jellyfin.app.rick.expresso.lan
+        # References
+        #   https://github.com/linuxserver/docker-jellyfin?tab=readme-ov-file#intel
+        #   https://jellyfin.org/docs/general/administration/hardware-acceleration/intel
+        #   https://github.com/linuxserver/docker-mods/tree/jellyfin-opencl-intel
+        - name: DOCKER_MODS
+          value: linuxserver/mods:jellyfin-opencl-intel
