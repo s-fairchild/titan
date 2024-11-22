@@ -30,7 +30,7 @@ storage:
       path: /var/local/lib/k3s/agent/cctv
       wipe_filesystem: false
       format: btrfs
-      with_mount_unit: true
+      with_mount_unit: false
       # partition label
       label: cctv
       # filesystem label
@@ -43,7 +43,7 @@ storage:
       path: /var/local/lib/k3s/agent/appdata
       wipe_filesystem: false
       format: btrfs
-      with_mount_unit: true
+      with_mount_unit: false
       # partition label
       label: appdata
       # filesystem label
