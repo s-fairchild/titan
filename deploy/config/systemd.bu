@@ -288,8 +288,6 @@ systemd:
                                 --device=/dev/v4l/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-video-index1:/dev/video1 \
                                 --device=/dev/snd:/dev/snd \
                                 --device=/dev/dri:/dev/dri \
-                                --group-add=render \
-                                --group-add=video \
                                 -v=/etc/machine-id:/etc/machine-id:ro \
                                 -v=k3s-agent-0-kubelet:/var/lib/kubelet:Z \
                                 -v=k3s-agent-0-pod-logs:/var/log/pods:Z \
@@ -377,8 +375,6 @@ systemd:
                                 --device=/dev/snd:/dev/snd \
                                 --device=/dev/dri/renderD128:/dev/dri/renderD128:rwm \
                                 --device=/dev/dri/card1:/dev/dri/card1:rwm \
-                                --group-add=render \
-                                --group-add=video \
                                 -v=/etc/machine-id:/etc/machine-id:ro \
                                 -v=k3s-agent-1-kubelet:/var/lib/kubelet:Z \
                                 -v=k3s-agent-1-pod-logs:/var/log/pods:Z \
@@ -463,8 +459,6 @@ systemd:
                                 --device=/dev/v4l/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-video-index1:/dev/video1 \
                                 --device=/dev/snd:/dev/snd \
                                 --device=/dev/dri:/dev/dri \
-                                --group-add=render \
-                                --group-add=video \
                                 -v=/etc/machine-id:/etc/machine-id:ro \
                                 -v=k3s-agent-2-kubelet:/var/lib/kubelet \
                                 -v=k3s-agent-2-pod_logs:/var/log/pods \
@@ -591,7 +585,6 @@ systemd:
                                 --shm-size=5g \
                                 --privileged \
                                 --userns=host \
-                                --group-add=keep-groups \
                                 --secret=k3s-token,type=env,target=K3S_TOKEN \
                                 docker.io/rancher/k3s:v1.30.4-k3s1 \
                                 agent
