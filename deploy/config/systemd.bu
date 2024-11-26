@@ -33,7 +33,7 @@ systemd:
         ExecStartPre=modprobe iptable_nat
         ExecStart=/usr/bin/podman run \
                                 --name=k3s-server-0 \
-                                -h=k3s-server-0 \
+                                --hostname=k3s-server-0 \
                                 --network=node:ip=10.98.0.1 \
                                 --network=service \
                                 --dns-search=expresso.lan \
@@ -109,7 +109,7 @@ systemd:
         ExecStartPre=modprobe iptable_nat
         ExecStart=/usr/bin/podman run \
           --name=k3s-server-1 \
-          -h=k3s-server-1 \
+          --hostname=k3s-server-1 \
           --network=node:ip=10.98.0.2 \
           --network=service \
           --dns-search=expresso.lan \
@@ -184,7 +184,7 @@ systemd:
         ExecStartPre=modprobe iptable_nat
         ExecStart=/usr/bin/podman run \
           --name=k3s-server-2 \
-          -h=k3s-server-2 \
+          --hostname=k3s-server-2 \
           --network=node:ip=10.98.0.3 \
           --network=service \
           --dns-search=expresso.lan \
@@ -271,7 +271,7 @@ systemd:
                                 --name=k3s-agent-0 \
                                 --annotation=app=agent \
                                 --annotation=cluster=rick \
-                                -h=k3s-agent-0 \
+                                --hostname=k3s-agent-0 \
                                 --network=node:ip=10.98.0.100 \
                                 --network=service \
                                 --dns-search=expresso.lan \
@@ -361,7 +361,7 @@ systemd:
                                 --network=service \
                                 --dns-search=expresso.lan \
                                 --systemd=always \
-                                -h=k3s-agent-1 \
+                                --hostname=k3s-agent-1 \
                                 --tz=UTC \
                                 --cidfile=%t/%n.ctr-id \
                                 --cgroups=no-conmon \
@@ -508,7 +508,7 @@ systemd:
         ExecStart=/usr/bin/podman run \
                                 --name=k3s-apiserverlb \
                                 --annotation=app=k3s-apiserverlb \
-                                -h=k3s-apiserverlb \
+                                --hostname=k3s-apiserverlb \
                                 --network=node:ip=10.98.0.5 \
                                 --network=service:ip=10.43.0.253 \
                                 --network-alias=loadbalancer \
@@ -560,7 +560,7 @@ systemd:
         ExecStart=/usr/bin/podman run \
                                 --name=k3s-applb \
                                 --annotation=app=k3s-applb \
-                                -h=k3s-applb \
+                                --hostname=k3s-applb \
                                 --network=node:ip=10.98.0.253 \
                                 --network=service \
                                 --dns-search=expresso.lan \
@@ -589,6 +589,57 @@ systemd:
                                 docker.io/rancher/k3s:v1.30.4-k3s1 \
                                 agent
 
+        ExecStop=/usr/bin/podman stop \
+                                --ignore -t 10 \
+                                --cidfile=%t/%n.ctr-id
+        ExecStopPost=/usr/bin/podman rm \
+                                    -f \
+                                    --ignore -t 10 \
+                                    --cidfile=%t/%n.ctr-id
+        Type=notify
+        NotifyAccess=all
+
+        [Install]
+        WantedBy=default.target
+    # TODO convert this to systemd quadlet file
+    # TODO setup podman healthcheck
+    # TODO impose storage limits on this container
+    # TODO script podman secret creation for registry-docker-user and registry-docker-pass
+    # TODO redirect all requests to docker.io to this container registry via coredns
+    - name: container-registry.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Podman container-registry.service
+        Documentation=man:podman-generate-systemd(1)
+        Wants=network-online.target
+        After=network-online.target
+        RequiresMountsFor=%t/containers
+
+        [Service]
+        Environment=PODMAN_SYSTEMD_UNIT=%n
+        Restart=on-failure
+        TimeoutStopSec=70
+        ExecStart=/usr/bin/podman run \
+                                --cidfile=%t/%n.ctr-id \
+                                --cgroups=no-conmon \
+                                --rm \
+                                --sdnotify=conmon \
+                                --replace \
+                                -d \
+                                --name=registry \
+                                --annotation=app=registry \
+                                -v=registry:/var/lib/registry \
+                                -v=/var/usrlocal/etc/registry/registry.yaml:/etc/distribution/config.yml:Z,ro
+                                -p 5000:5000 \
+                                --network=node:ip=10.98.0.252 \
+                                --pull=missing \
+                                --secret=registry-auth,type=mount,target=/etc/registry \
+                                --secret=registry-docker-user,type=env,target=REGISTRY_PROXY_USERNAME \
+                                --secret=registry-docker-pass,type=env,target=REGISTRY_PROXY_PASSWORD \
+                                --dns-search=expresso.lan \
+                                --tz=UTC \
+                                docker.io/registry:2.8.3
         ExecStop=/usr/bin/podman stop \
                                 --ignore -t 10 \
                                 --cidfile=%t/%n.ctr-id
@@ -702,6 +753,11 @@ storage:
       overwrite: true
       contents:
         inline: |
+      
+    - path: /var/usrlocal/etc/registry/regsitry.yaml
+      overwrite: true
+      contents:
+        local: registry/registry.yaml
 
     - path: /var/usrlocal/etc/k3s/manifests/traefik-custom.yaml
       overwrite: true
