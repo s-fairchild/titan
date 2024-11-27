@@ -7,619 +7,6 @@ systemd:
     - name: rpm-ostree-countme.timer
       enabled: false
       mask: true
-    - name: k3s-server-0.service
-      enabled: true
-      contents: |
-        [Unit]
-        Description=Podman k3s-server-0.service for %I
-        Wants=network-online.target
-        After=network-online.target
-        RequiresMountsFor=%t/containers
-        Before=k3s-server-1.service
-        Before=k3s-agent-0.service
-        Before=k3s-agent-1.service
-        Before=k3s-agent-2.service
-        Upholds=k3s-apiserverlb.service
-
-        [Service]
-        Environment=PODMAN_SYSTEMD_UNIT=%n-%i
-        # TODO add restart and stop commands for running k3skillall script
-        Restart=always
-        RestartSec=30
-        TimeoutStartSec=600
-        TimeoutStopSec=70
-        ExecStartPre=/usr/bin/podman secret exists k3s-token
-        ExecStartPre=modprobe iptable_filter
-        ExecStartPre=modprobe iptable_nat
-        ExecStart=/usr/bin/podman run \
-                                --name=k3s-server-0 \
-                                -h=k3s-server-0 \
-                                --network=node:ip=10.98.0.1 \
-                                --network=service \
-                                --dns-search=expresso.lan \
-                                --systemd=always \
-                                --cgroups=no-conmon \
-                                --userns=host \
-                                --sdnotify=conmon \
-                                --tz=UTC \
-                                --cidfile=%t/%n.ctr-id \
-                                --events-backend=journald \
-                                --rm \
-                                -d \
-                                --replace \
-                                --pull=missing \
-                                --device=/dev/fuse:/dev/fuse \
-                                -v=/etc/machine-id:/etc/machine-id:ro \
-                                -v=k3s-server-0-kubelet:/var/lib/kubelet:Z \
-                                -v=k3s-server-0-data:/var/lib/rancher/k3s:Z \
-                                -v=k3s-server-0-rancher:/etc/rancher:Z \
-                                -v=k3s-server-0-storage:/var/lib/rancher/k3s/storage:Z \
-                                -v=k3s-server-0-pod-log:/var/log/pod:Z \
-                                -v=k3s-server-0-containers:/var/lib/containers:Z \
-                                -v=/var/usrlocal/etc/k3s/config/k3s-server-0.yaml:/etc/rancher/k3s/config.yaml:Z,ro \
-                                -v=/var/usrlocal/etc/k3s/manifests:/var/lib/rancher/k3s/server/manifests/compute:z \
-                                -v=/var/usrlocal/etc/k3s/skip:/var/lib/rancher/k3s/server/manifests/skip:z,ro \
-                                --shm-size=5g \
-                                --privileged \
-                                --cap-add=ALL \
-                                --security-opt label=disable \
-                                --security-opt seccomp=unconfined \
-                                --oom-score-adj=1000 \
-                                --secret=k3s-token,type=env,target=K3S_TOKEN \
-                                --annotation=app=k3s \
-                                --annotation=cluster=rick \
-                                docker.io/rancher/k3s:v1.30.4-k3s1 \
-                                server
-
-        ExecStop=/usr/bin/podman stop \
-                                  --ignore -t 10 \
-                                  --cidfile=%t/%n.ctr-id
-        ExecStopPost=/usr/bin/podman rm \
-                                    -f \
-                                    --ignore -t 10 \
-                                    --cidfile=%t/%n.ctr-id
-        Type=notify
-        NotifyAccess=all
-
-        [Install]
-        WantedBy=default.target
-    - name: k3s-server-1.service
-      enabled: true
-      contents: |
-        [Unit]
-        Description=Podman k3s-server-1.service for %I
-        Wants=network-online.target
-        After=network-online.target
-        RequiresMountsFor=%t/containers
-        Upholds=k3s-apiserverlb.service
-        After=k3s-server-0.service
-        Before=k3s-agent-0.service
-        Before=k3s-agent-1.service
-        Before=k3s-agent-2.service
-
-        [Service]
-        KillSignal=SIGKILL
-        Environment=PODMAN_SYSTEMD_UNIT=%n-%i
-        Restart=always
-        RestartSec=30
-        TimeoutStartSec=600
-        TimeoutStopSec=70
-        ExecStartPre=podman secret exists k3s-token
-        ExecStartPre=modprobe iptable_filter
-        ExecStartPre=modprobe iptable_nat
-        ExecStart=/usr/bin/podman run \
-          --name=k3s-server-1 \
-          -h=k3s-server-1 \
-          --network=node:ip=10.98.0.2 \
-          --network=service \
-          --dns-search=expresso.lan \
-          --systemd=always \
-          --cgroups=no-conmon \
-          --userns=host \
-          --sdnotify=conmon \
-          --tz=UTC \
-          --cidfile=%t/%n.ctr-id \
-          --events-backend=journald \
-          --rm \
-          -d \
-          --replace \
-          --pull=missing \
-          --device=/dev/fuse:/dev/fuse \
-          -v=/etc/machine-id:/etc/machine-id:ro \
-          -v=k3s-server-1-kubelet:/var/lib/kubelet:Z \
-          -v=k3s-server-1-data:/var/lib/rancher/k3s:Z \
-          -v=k3s-server-1-rancher:/etc/rancher:Z \
-          -v=k3s-server-1-storage:/var/lib/rancher/k3s/storage:Z \
-          -v=k3s-server-1-pod-log:/var/log/pod:Z \
-          -v=k3s-server-1-containers:/var/lib/containers:Z \
-          -v=/var/usrlocal/etc/k3s/config/k3s-server-1.yaml:/etc/rancher/k3s/config.yaml:Z,ro \
-          -v=/var/usrlocal/etc/k3s/manifests:/var/lib/rancher/k3s/server/manifests/compute:z \
-          -v=/var/usrlocal/etc/k3s/skip:/var/lib/rancher/k3s/server/manifests/skip:z,ro \
-          --shm-size 5g \
-          --privileged \
-          --cap-add=ALL \
-          --security-opt label=disable \
-          --security-opt seccomp=unconfined \
-          --oom-score-adj=1000 \
-          --secret k3s-token,type=env,target=K3S_TOKEN \
-          --annotation=app=k3s \
-          docker.io/rancher/k3s:v1.30.4-k3s1 \
-          server
-
-        ExecStop=/usr/bin/podman stop \
-                                --ignore -t 10 \
-                                --cidfile=%t/%n.ctr-id
-        ExecStopPost=/usr/bin/podman rm \
-                                    -f \
-                                    --ignore -t 10 \
-                                    --cidfile=%t/%n.ctr-id
-        Type=notify
-        NotifyAccess=all
-
-        [Install]
-        WantedBy=default.target
-
-    - name: k3s-server-2.service
-      enabled: true
-      contents: |
-        [Unit]
-        Description=Podman k3s-server-2.service for %I
-        Wants=network-online.target
-        After=network-online.target
-        RequiresMountsFor=%t/containers
-        After=k3s-server-0.service
-        Before=k3s-agent-0.service
-        Before=k3s-agent-1.service
-        Before=k3s-agent-2.service
-        Upholds=k3s-apiserverlb.service
-
-        [Service]
-        Environment=PODMAN_SYSTEMD_UNIT=%n-%i
-        Restart=always
-        RestartSec=30
-        TimeoutStartSec=600
-        TimeoutStopSec=70
-        ExecStartPre=podman secret exists k3s-token
-        ExecStartPre=modprobe iptable_filter
-        ExecStartPre=modprobe iptable_nat
-        ExecStart=/usr/bin/podman run \
-          --name=k3s-server-2 \
-          -h=k3s-server-2 \
-          --network=node:ip=10.98.0.3 \
-          --network=service \
-          --dns-search=expresso.lan \
-          --systemd=always \
-          --cgroups=no-conmon \
-          --userns=host \
-          --sdnotify=conmon \
-          --tz=UTC \
-          --cidfile=%t/%n.ctr-id \
-          --events-backend=journald \
-          --rm \
-          -d \
-          --replace \
-          --pull=missing \
-          --device=/dev/fuse:/dev/fuse \
-          -v=/etc/machine-id:/etc/machine-id:ro \
-          -v=k3s-server-2-kubelet:/var/lib/kubelet:Z \
-          -v=k3s-server-2-data:/var/lib/rancher/k3s:Z \
-          -v=k3s-server-2-rancher:/etc/rancher:Z \
-          -v=k3s-server-2-pod-log:/var/log/pod:Z \
-          -v=k3s-server-2-storage:/var/lib/rancher/k3s/storage:Z \
-          -v=k3s-server-2-containers:/var/lib/containers:Z \
-          -v=/var/usrlocal/etc/k3s/config/k3s-server-2.yaml:/etc/rancher/k3s/config.yaml:Z,ro \
-          -v=/var/usrlocal/etc/k3s/manifests:/var/lib/rancher/k3s/server/manifests/compute:z \
-          -v=/var/usrlocal/etc/k3s/skip:/var/lib/rancher/k3s/server/manifests/skip:z,ro \
-          --shm-size 5g \
-          --privileged \
-          --cap-add=ALL \
-          --security-opt label=disable \
-          --security-opt seccomp=unconfined \
-          --oom-score-adj=1000 \
-          --secret k3s-token,type=env,target=K3S_TOKEN \
-          --annotation=app=k3s \
-          docker.io/rancher/k3s:v1.30.4-k3s1 \
-          server
-
-        ExecStop=/usr/bin/podman stop \
-                                --ignore -t 10 \
-                                --cidfile=%t/%n.ctr-id
-        ExecStopPost=/usr/bin/podman rm \
-                                    -f \
-                                    --ignore -t 10 \
-                                    --cidfile=%t/%n.ctr-id
-        Type=notify
-        NotifyAccess=all
-
-        [Install]
-        WantedBy=default.target
-
-    - name: k3s-agent-0.service
-      enabled: true
-      contents: |
-        [Unit]
-        Description=Podman k3s-agent-0.service for %I
-        Wants=network-online.target
-        After=network-online.target
-        RequiresMountsFor=%t/containers
-        After=k3s-server-0.service
-
-        [Service]
-        Environment=PODMAN_SYSTEMD_UNIT=%n-%i
-        Restart=always
-        RestartSec=30
-        TimeoutStartSec=600
-        TimeoutStopSec=70
-        ExecStartPre=podman secret exists k3s-token
-        ExecStartPre=-btrfs subvolume create -p /var/local/lib/k3s/agent/appdata/local-path-appdata
-        ExecStartPre=-btrfs subvolume create -p /var/local/lib/k3s/agent/cctv/local-path-cctv
-        ExecStartPre=/usr/bin/podman volume \
-                                     create \
-                                     --ignore \
-                                     --opt type=btrfs \
-                                     --opt device=/dev/disk/by-label/appdata \
-                                     --opt o=compress=zstd:1,subvol=local-path-appdata \
-                                     local-path-appdata
-        ExecStartPre=/usr/bin/podman volume \
-                                     create \
-                                     --ignore \
-                                     --opt type=btrfs \
-                                     --opt device=/dev/disk/by-label/cctv \
-                                     --opt o=compress=zstd:1,subvol=local-path-cctv \
-                                     local-path-cctv
-        ExecStart=/usr/bin/podman run \
-                                --name=k3s-agent-0 \
-                                --annotation=app=agent \
-                                --annotation=cluster=rick \
-                                -h=k3s-agent-0 \
-                                --network=node:ip=10.98.0.100 \
-                                --network=service \
-                                --dns-search=expresso.lan \
-                                --systemd=always \
-                                --tz=UTC \
-                                --cidfile=%t/%n.ctr-id \
-                                --cgroups=no-conmon \
-                                --rm \
-                                --sdnotify=conmon \
-                                -d \
-                                --replace \
-                                --pull=missing \
-                                --device=/dev/v4l/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-video-index0:/dev/video0 \
-                                --device=/dev/v4l/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-video-index1:/dev/video1 \
-                                --device=/dev/snd:/dev/snd \
-                                --device=/dev/dri:/dev/dri \
-                                -v=/etc/machine-id:/etc/machine-id:ro \
-                                -v=k3s-agent-0-kubelet:/var/lib/kubelet:Z \
-                                -v=k3s-agent-0-pod-logs:/var/log/pods:Z \
-                                -v=k3s-agent-0-data:/var/lib/rancher/k3s:Z \
-                                -v=k3s-agent-0-etc-rancher:/etc/rancher:Z \
-                                -v=/var/usrlocal/etc/k3s/config/k3s-agent-0.yaml:/etc/rancher/k3s/config.yaml:Z,ro \
-                                -v=local-path-default:/mnt/local-path-default:z \
-                                -v=local-path-nvme:/mnt/local-path-nvme:z \
-                                -v=local-path-appdata:/mnt/local-path-appdata:z \
-                                -v=local-path-cctv:/mnt/local-path-cctv:z \
-                                --shm-size=5g \
-                                --privileged \
-                                --userns=host \
-                                --secret=k3s-token,type=env,target=K3S_TOKEN \
-                                docker.io/rancher/k3s:v1.30.4-k3s1 \
-                                agent
-
-        ExecStop=/usr/bin/podman stop \
-                                --ignore -t 10 \
-                                --cidfile=%t/%n.ctr-id
-        ExecStopPost=/usr/bin/podman rm \
-                                    -f \
-                                    --ignore -t 10 \
-                                    --cidfile=%t/%n.ctr-id
-        Type=notify
-        NotifyAccess=all
-
-        [Install]
-        WantedBy=default.target
-
-    - name: k3s-agent-1.service
-      enabled: true
-      contents: |
-        [Unit]
-        Description=Podman k3s-agent-1.service for %I
-        Wants=network-online.target
-        After=network-online.target
-        RequiresMountsFor=%t/containers
-        After=k3s-server-0.service
-
-        [Service]
-        Environment=PODMAN_SYSTEMD_UNIT=%n-%i
-        Restart=always
-        RestartSec=30
-        TimeoutStartSec=600
-        TimeoutStopSec=70
-        KillSignal=SIGTERM
-        KillMode=mixed
-        ExecStartPre=/usr/bin/podman secret exists k3s-token
-        ExecStartPre=-btrfs subvolume create -p /var/local/lib/k3s/agent/appdata/local-path-appdata
-        ExecStartPre=-btrfs subvolume create -p /var/local/lib/k3s/agent/cctv/local-path-cctv
-        ExecStartPre=/usr/bin/podman volume \
-                                     create \
-                                     --ignore \
-                                     --opt type=btrfs \
-                                     --opt device=/dev/disk/by-label/appdata \
-                                     --opt o=compress=zstd:1,subvol=local-path-appdata \
-                                     local-path-appdata
-        ExecStartPre=/usr/bin/podman volume \
-                                     create \
-                                     --ignore \
-                                     --opt type=btrfs \
-                                     --opt device=/dev/disk/by-label/cctv \
-                                     --opt o=compress=zstd:1,subvol=local-path-cctv \
-                                     local-path-cctv
-        ExecStart=/usr/bin/podman run \
-                                --name=k3s-agent-1 \
-                                --annotation=app=agent \
-                                --annotation=cluster=rick \
-                                --network=node:ip=10.98.0.101 \
-                                --network=service \
-                                --dns-search=expresso.lan \
-                                --systemd=always \
-                                -h=k3s-agent-1 \
-                                --tz=UTC \
-                                --cidfile=%t/%n.ctr-id \
-                                --cgroups=no-conmon \
-                                --rm \
-                                --sdnotify=conmon \
-                                -d \
-                                --replace \
-                                --pull=missing \
-                                --device=/dev/v4l/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-video-index0:/dev/video0 \
-                                --device=/dev/v4l/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-video-index1:/dev/video1 \
-                                --device=/dev/snd:/dev/snd \
-                                --device=/dev/dri/renderD128:/dev/dri/renderD128:rwm \
-                                --device=/dev/dri/card1:/dev/dri/card1:rwm \
-                                -v=/etc/machine-id:/etc/machine-id:ro \
-                                -v=k3s-agent-1-kubelet:/var/lib/kubelet:Z \
-                                -v=k3s-agent-1-pod-logs:/var/log/pods:Z \
-                                -v=k3s-agent-1-data:/var/lib/rancher/k3s:Z \
-                                -v=k3s-agent-1-rancher:/etc/rancher:Z \
-                                -v=/var/usrlocal/etc/k3s/config/k3s-agent-1.yaml:/etc/rancher/k3s/config.yaml:Z,ro \
-                                -v=local-path-default:/mnt/local-path-default:z \
-                                -v=local-path-nvme:/mnt/local-path-nvme:z \
-                                -v=local-path-appdata:/mnt/local-path-appdata:z \
-                                -v=local-path-cctv:/mnt/local-path-cctv:z \
-                                --shm-size=5g \
-                                --privileged \
-                                --userns=host \
-                                --secret=k3s-token,type=env,target=K3S_TOKEN \
-                                docker.io/rancher/k3s:v1.30.4-k3s1 \
-                                agent
-
-        ExecStop=/usr/bin/podman stop \
-                                --ignore -t 10 \
-                                --cidfile=%t/%n.ctr-id
-        ExecStopPost=/usr/bin/podman rm \
-                                    -f \
-                                    --ignore -t 10 \
-                                    --cidfile=%t/%n.ctr-id
-        Type=notify
-        NotifyAccess=all
-
-        [Install]
-        WantedBy=default.target
-
-    - name: k3s-agent-2.service
-      enabled: true
-      contents: |
-        [Unit]
-        Description=Podman container-k3s-agent-2.service for %I
-        Wants=network-online.target
-        After=network-online.target
-        RequiresMountsFor=%t/containers
-        After=k3s-server-0.service
-
-        [Service]
-        Environment=PODMAN_SYSTEMD_UNIT=%n-%i
-        Restart=always
-        RestartSec=30
-        TimeoutStartSec=600
-        TimeoutStopSec=70
-        ExecStartPre=podman secret exists k3s-token
-        ExecStartPre=-btrfs subvolume create -p /var/local/lib/k3s/agent/appdata/local-path-appdata
-        ExecStartPre=-btrfs subvolume create -p /var/local/lib/k3s/agent/cctv/local-path-cctv
-        ExecStartPre=/usr/bin/podman volume \
-                                     create \
-                                     --ignore \
-                                     --opt type=btrfs \
-                                     --opt device=/dev/disk/by-label/appdata \
-                                     --opt o=compress=zstd:1,subvol=local-path-appdata \
-                                     local-path-appdata
-        ExecStartPre=/usr/bin/podman volume \
-                                     create \
-                                     --ignore \
-                                     --opt type=btrfs \
-                                     --opt device=/dev/disk/by-label/cctv \
-                                     --opt o=compress=zstd:1,subvol=local-path-cctv \
-                                     local-path-cctv
-        ExecStart=/usr/bin/podman run \
-                                --name k3s-agent-2 \
-                                --annotation=app=agent \
-                                --annotation=cluster=rick \
-                                --network=node:ip=10.98.0.102 \
-                                --network=service \
-                                --dns-search=expresso.lan \
-                                --systemd=always \
-                                -h k3s-agent-2 \
-                                --tz=UTC \
-                                --cidfile=%t/%n.ctr-id \
-                                --cgroups=no-conmon \
-                                --rm \
-                                --sdnotify=conmon \
-                                -d \
-                                --replace \
-                                --pull=missing \
-                                --device=/dev/v4l/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-video-index0:/dev/video0 \
-                                --device=/dev/v4l/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-video-index1:/dev/video1 \
-                                --device=/dev/snd:/dev/snd \
-                                --device=/dev/dri:/dev/dri \
-                                -v=/etc/machine-id:/etc/machine-id:ro \
-                                -v=k3s-agent-2-kubelet:/var/lib/kubelet \
-                                -v=k3s-agent-2-pod_logs:/var/log/pods \
-                                -v=k3s-agent-2-data:/var/lib/rancher/k3s \
-                                -v=k3s-agent-2-etc-rancher:/etc/rancher \
-                                -v=/var/usrlocal/etc/k3s/config/k3s-agent-2.yaml:/etc/rancher/k3s/config.yaml:Z,ro \
-                                -v=local-path-default:/mnt/local-path-default:z \
-                                -v=local-path-nvme:/mnt/local-path-nvme:z \
-                                -v=local-path-appdata:/mnt/local-path-appdata:z \
-                                -v=local-path-cctv:/mnt/local-path-cctv:z \
-                                --shm-size 5g \
-                                --privileged \
-                                --userns=host \
-                                --secret k3s-token,type=env,target=K3S_TOKEN \
-                                docker.io/rancher/k3s:v1.30.4-k3s1 \
-                                agent
-        
-        ExecStop=/usr/bin/podman stop \
-                                --ignore -t 10 \
-                                --cidfile=%t/%n.ctr-id
-        ExecStopPost=/usr/bin/podman rm \
-                                    -f \
-                                    --ignore -t 10 \
-                                    --cidfile=%t/%n.ctr-id
-        Type=notify
-        NotifyAccess=all
-
-        [Install]
-        WantedBy=default.target
-
-    - name: k3s-apiserverlb.service
-      enabled: true
-      # TODO once external loadbalancer is configured, don't bind port 6443 to host
-      contents: |
-        [Unit]
-        Description=Podman container k3s-apiserverlb.service for %I
-        Wants=network-online.target
-        After=network-online.target
-        RequiresMountsFor=%t/containers
-
-        [Service]
-        Environment=PODMAN_SYSTEMD_UNIT=%n-%i
-        Restart=always
-        RestartSec=30
-        TimeoutStartSec=600
-        TimeoutStopSec=70
-        ExecStart=/usr/bin/podman run \
-                                --name=k3s-apiserverlb \
-                                --annotation=app=k3s-apiserverlb \
-                                -h=k3s-apiserverlb \
-                                --network=node:ip=10.98.0.5 \
-                                --network=service:ip=10.43.0.253 \
-                                --network-alias=loadbalancer \
-                                --dns-search=expresso.lan \
-                                -p=6443:6443 \
-                                --tz=UTC \
-                                --cidfile=%t/%n.ctr-id \
-                                --cgroups=no-conmon \
-                                --rm \
-                                --sdnotify=conmon \
-                                -d \
-                                --replace \
-                                --pull=missing \
-                                --privileged \
-                                -v=/var/usrlocal/etc/k3s/config/k3s-apiserverlb-nginx.conf:/etc/nginx/nginx.conf:Z,ro \
-                                docker.io/nginx:stable
-
-        ExecStop=/usr/bin/podman stop \
-                                --ignore -t 10 \
-                                --cidfile=%t/%n.ctr-id
-        ExecStopPost=/usr/bin/podman rm \
-                                    -f \
-                                    --ignore -t 10 \
-                                    --cidfile=%t/%n.ctr-id
-        Type=notify
-        NotifyAccess=all
-
-        [Install]
-        WantedBy=default.target
-    - name: k3s-applb.service
-      enabled: true
-      # TODO setup port map for kubernetes service on 6443 to serve as the external apiserver loadbalancer
-      contents: |
-        [Unit]
-        Description=Podman container k3s-applb.service for %I
-        Wants=network-online.target
-        After=network-online.target
-        RequiresMountsFor=%t/containers
-        After=k3s-server-0.service
-
-        [Service]
-        Environment=PODMAN_SYSTEMD_UNIT=%n-%i
-        EnvironmentFile=/var/usrlocal/etc/sysconfig/%N
-        Restart=always
-        RestartSec=30
-        TimeoutStartSec=600
-        TimeoutStopSec=70
-        ExecStartPre=podman secret exists k3s-token
-        ExecStart=/usr/bin/podman run \
-                                --name=k3s-applb \
-                                --annotation=app=k3s-applb \
-                                -h=k3s-applb \
-                                --network=node:ip=10.98.0.253 \
-                                --network=service \
-                                --dns-search=expresso.lan \
-                                --systemd=always \
-                                -p=${HOST_IP}:80:80 \
-                                -p=${HOST_IP}:443:443 \
-                                -p=${HOST_IP}:53:30053/udp \
-                                -p=${HOST_IP}:8554:30555/udp \
-                                -p=${HOST_IP}:8555:30556/tcp \
-                                --tz=UTC \
-                                --cidfile=%t/%n.ctr-id \
-                                --cgroups=no-conmon \
-                                --rm \
-                                --sdnotify=conmon \
-                                -d \
-                                --replace \
-                                --pull=missing \
-                                -v=/etc/machine-id:/etc/machine-id:ro \
-                                -v=k3s-applb-data:/var/lib/rancher/k3s \
-                                -v=k3s-applb-rancher:/etc/rancher \
-                                -v=/var/usrlocal/etc/k3s/config/k3s-applb.yaml:/etc/rancher/k3s/config.yaml:z,ro \
-                                --shm-size=5g \
-                                --privileged \
-                                --userns=host \
-                                --secret=k3s-token,type=env,target=K3S_TOKEN \
-                                docker.io/rancher/k3s:v1.30.4-k3s1 \
-                                agent
-
-        ExecStop=/usr/bin/podman stop \
-                                --ignore -t 10 \
-                                --cidfile=%t/%n.ctr-id
-        ExecStopPost=/usr/bin/podman rm \
-                                    -f \
-                                    --ignore -t 10 \
-                                    --cidfile=%t/%n.ctr-id
-        Type=notify
-        NotifyAccess=all
-
-        [Install]
-        WantedBy=default.target
-    # TODO setup podman containers using systemd drop-in files
-    - name: init-podman-networks.service
-      enabled: true
-      contents: |
-        [Unit]
-        Description=Create podman networks needed for k3s
-        ConditionFirstBoot=true
-        Wants=first-boot-complete.target
-        Wants=network-online.target
-        After=network-online.target
-        ConditionPathExists=!/var/usrlocal/lib/%N.stamp
-
-        [Service]
-        Type=oneshot
-        RemainAfterExit=yes
-        ExecStart=/var/usrlocal/bin/init_podman_networks.sh %N
-
-        [Install]
-        WantedBy=multi-user.target
     - name: var-local-lib-k3s-agent-appdata.mount
       enabled: true
       contents: |
@@ -654,13 +41,387 @@ systemd:
 
         [Install]
         RequiredBy=local-fs.target
+    - name: kube-node.service
+      enabled: true
 storage:
-  files:
-    - path: /var/usrlocal/bin/init_podman_networks.sh
+  links:
+    # TODO create dropin directories to hold Unit conditions for unit dependencies
+    - path: /etc/containers/systemd/k3s-server@1.container
       overwrite: true
-      mode: 0754
+      target: /etc/containers/systemd/k3s-server@.container
+    - path: /etc/containers/systemd/k3s-server@2.container
+      overwrite: true
+      target: /etc/containers/systemd/k3s-server@.container
+  files:
+    # systemd quadlet files for podman
+    # Containers
+    - path: /etc/containers/systemd/k3s-server@.container
+      overwrite: true
       contents:
-        local: scripts/init_podman_networks.sh
+        # TODO set nf_conntrack_max via podman
+        # "Set sysctl 'net/netfilter/nf_conntrack_max' to 131072"
+        inline: |
+          [Unit]
+          Description=K3S Server Node %i Podman Container
+          Upholds=k3s-apiserverlb@0.service
+
+          [Service]
+          Restart=always
+          RestartSec=30
+          ExecStartPre=modprobe iptable_filter
+          ExecStartPre=modprobe iptable_nat
+          ExecStartPre=/usr/bin/podman secret exists k3s-token
+          EnvironmentFile=/var/usrlocal/etc/sysconfig/k3s-server
+          EnvironmentFile=/var/usrlocal/etc/sysconfig/k3s-server-%i
+          Environment="NAME=k3s-server-%i"
+
+          [Container]
+          ContainerName=${NAME}
+          AddCapability=ALL
+          HostName=${NAME}
+          Label=app=k3s
+          Label=cluster=${CLUSTER}
+          Image=k3s.image
+          Exec=server
+          Network=kube-node.network:ip=${NODE_IP}
+          Network=kube-service.network
+          DNSSearch=${DNS_SEARCH}
+          Pull=never
+          SeccompProfile=unconfined
+          SecurityLabelDisable=true
+          ShmSize=5g
+          Secret=k3s-token,type=env,target=K3S_TOKEN
+          Timezone=UTC
+          Volume=/etc/machine-id:/etc/machine-id:ro
+          Volume=${NAME}-kubelet:/var/lib/kubelet:Z
+          Volume=${NAME}-data:/var/lib/rancher/k3s:Z
+          Volume=${NAME}-rancher:/etc/rancher:Z
+          Volume=${NAME}-storage:/var/lib/rancher/k3s/storage:Z
+          Volume=${NAME}-log:/var/log/pod:Z
+          Volume=${NAME}-containers:/var/lib/containers:Z
+          Volume=/var/usrlocal/etc/k3s/config/${NAME}.yaml:/etc/rancher/k3s/config.yaml:Z,ro
+          Volume=/var/usrlocal/etc/k3s/manifests:/var/lib/rancher/k3s/server/manifests/compute:z
+          Volume=/var/usrlocal/etc/k3s/skip:/var/lib/rancher/k3s/server/manifests/skip:z,ro
+          AddDevice=/dev/fuse:/dev/fuse
+          PodmanArgs=--oom-score-adj=1000 --privileged
+
+          [Install]
+          WantedBy=default.target
+          DefaultInstance=0
+    - path: /etc/containers/systemd/k3s-agent@.container
+      overwrite: true
+      contents:
+        inline: |
+          [Unit]
+          Description=K3S Agent Node %i Podman Container
+
+          [Service]
+          Restart=always
+          RestartSec=30
+          ExecStartPre=modprobe iptable_filter
+          ExecStartPre=modprobe iptable_nat
+          ExecStartPre=/usr/bin/podman secret exists k3s-token
+          EnvironmentFile=/var/usrlocal/etc/sysconfig/k3s-agent
+          EnvironmentFile=/var/usrlocal/etc/sysconfig/k3s-agent-%i
+          Environment="NAME=k3s-agent-%i"
+
+          [Container]
+          ContainerName=${NAME}
+          HostName=${NAME}
+          Label=app=k3s
+          Label=cluster=${CLUSTER}
+          Label=role=agent
+          Image=k3s.image
+          Exec=agent
+          Network=kube-node.network:ip=${NODE_IP}
+          Network=kube-service.network
+          DNSSearch=${DNS_SEARCH}
+          Pull=never
+          ShmSize=5g
+          Secret=k3s-token,type=env,target=K3S_TOKEN
+          Timezone=UTC
+          Volume=/etc/machine-id:/etc/machine-id:ro
+          Volume=${NAME}-kubelet:/var/lib/kubelet:Z
+          Volume=${NAME}-pod-logs:/var/log/pods:Z
+          Volume=${NAME}-data:/var/lib/rancher/k3s:Z
+          Volume=${NAME}-etc-rancher:/etc/rancher:Z
+          Volume=/var/usrlocal/etc/k3s/config/${NAME}.yaml:/etc/rancher/k3s/config.yaml:Z,ro
+          Volume=local-path-default:/mnt/local-path-default:z
+          Volume=local-path-nvme:/mnt/local-path-nvme:z
+          Volume=local-path-appdata.volume:/mnt/local-path-appdata:z
+          Volume=local-path-cctv.volume:/mnt/local-path-cctv:z
+          # TODO set host device via env file
+          # TODO Add this as a dropin file to allow setting up libvirt vm without cameras
+          # AddDevice=/dev/v4l/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-video-index0:/dev/video0
+          # AddDevice=/dev/v4l/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-video-index1:/dev/video1
+          AddDevice=/dev/snd:/dev/snd
+          # TODO Add this as a dropin file to allow setting up libvirt vm without cameras
+          # AddDevice=${DRI_RENDER}:/dev/dri/renderD128:rwm
+          # TODO Add this as a dropin file to allow setting up libvirt vm without cameras
+          # AddDevice=${DRI_CARD}:/dev/dri/card0
+          PodmanArgs=--oom-score-adj=1000 --privileged
+
+          [Install]
+          WantedBy=default.target
+          DefaultInstance=0
+    - path: /etc/containers/systemd/k3s-applb@.container
+      overwrite: true
+      contents:
+        inline: |
+          [Unit]
+          Description=K3S Application Loadbalancer Node %i Podman Container
+
+          [Service]
+          Restart=always
+          RestartSec=30
+          ExecStartPre=modprobe iptable_filter
+          ExecStartPre=modprobe iptable_nat
+          ExecStartPre=/usr/bin/podman secret exists k3s-token
+          # TODO update suffix with env variable if possible
+          EnvironmentFile=/var/usrlocal/etc/sysconfig/k3s-loadbalancer
+          EnvironmentFile=/var/usrlocal/etc/sysconfig/k3s-applb-%i
+          Environment="NAME=k3s-applb-%i"
+
+          [Container]
+          ContainerName=${NAME}
+          HostName=${NAME}
+          Label=app=k3s
+          Label=role=loadbalancer
+          Label=cluster=${CLUSTER}
+          Image=k3s.image
+          Exec=agent
+          Network=kube-node.network:ip=${NODE_IP}
+          Network=kube-service.network
+          DNSSearch=${DNS_SEARCH}
+          PublishPort=${HOST_IP}:80:80
+          PublishPort=${HOST_IP}:443:443
+          PublishPort=${HOST_IP}:53:30053/udp
+          PublishPort=${HOST_IP}:8554:30555/udp
+          PublishPort=${HOST_IP}:8555:30556/tcp
+          Pull=never
+          ShmSize=5g
+          Secret=k3s-token,type=env,target=K3S_TOKEN
+          Timezone=UTC
+          Volume=/etc/machine-id:/etc/machine-id:ro
+          Volume=${NAME}-data:/var/lib/rancher/k3s
+          Volume=${NAME}-rancher:/etc/rancher
+          Volume=/var/usrlocal/etc/k3s/config/${NAME}.yaml:/etc/rancher/k3s/config.yaml:z,ro
+          PodmanArgs=--oom-score-adj=1000 --privileged
+
+          [Install]
+          WantedBy=default.target
+          DefaultInstance=0
+    - path: /etc/containers/systemd/k3s-apiserver@.container
+      overwrite: true
+      contents:
+        inline: |
+          [Unit]
+          Description=K3S ApiServer Loadbalancer Node %i Podman Container
+
+          [Service]
+          Restart=always
+          RestartSec=30
+          # TODO update suffix with env variable if possible
+          EnvironmentFile=/var/usrlocal/etc/sysconfig/k3s-loadbalancer
+          EnvironmentFile=/var/usrlocal/etc/sysconfig/k3s-apiserverlb
+          EnvironmentFile=/var/usrlocal/etc/sysconfig/k3s-apiserverlb-%i
+          Environment="NAME=k3s-apiserverlb-%i"
+
+          [Container]
+          ContainerName=${NAME}
+          HostName=${NAME}
+          Label=app=k3s
+          Label=role=apiserver-loadbalancer
+          Label=cluster=${CLUSTER}
+          Image=nginx.image
+          Network=kube-node.network:ip=${NODE_IP}
+          Network=kube-service.network:ip=${SERVICE_IP}
+          DNSSearch=${DNS_SEARCH}
+          PublishPort=${HOST_IP}:6443:6443
+          Timezone=UTC
+          Pull=never
+          Volume=/var/usrlocal/etc/k3s/config/k3s-apiserverlb-0-nginx.conf:/etc/nginx/nginx.conf:Z,ro
+          PodmanArgs=--oom-score-adj=1000 --privileged
+
+          [Install]
+          WantedBy=default.target
+          DefaultInstance=0
+    - path: /var/usrlocal/etc/sysconfig/k3s-apiserverlb
+      overwrite: true
+      contents:
+        inline: |
+          CLUSTER="rick"
+          DNS_SEARCH="expresso.lan"
+    - path: /var/usrlocal/etc/sysconfig/k3s-apiserverlb-0
+      overwrite: true
+      contents:
+        inline: |
+          NODE_IP="10.98.0.5"
+          SERVICE_IP="10.43.0.253"
+    # Images
+    - path: /etc/containers/systemd/k3s.image
+      overwrite: true
+      contents:
+        inline: |
+          [Unit]
+          Description=Pull image docker.io/rancher/k3s:v1.30.4-k3s1
+
+          [Image]
+          Image=docker.io/rancher/k3s:v1.30.4-k3s1
+
+          [Install]
+          WantedBy=default.target
+    - path: /etc/containers/systemd/nginx.image
+      overwrite: true
+      contents:
+        inline: |
+          [Unit]
+          Description=Pull image docker.io/nginx:stable
+
+          [Image]
+          Image=docker.io/nginx:stable
+
+          [Install]
+          WantedBy=default.target
+    # Networks
+    - path: /etc/containers/systemd/kube-node.network
+      overwrite: true
+      contents:
+        inline: |
+          [Unit]
+          Description=Podman service kube-node
+
+          [Network]
+          NetworkName=kube-node
+          Gateway=10.98.254.254
+          Subnet=10.98.0.0/16
+          IPRange=10.98.100.1-10.98.100.100
+          # TODO set cluster name via environment
+          Label=cluster=rick
+          Label=app=k3s
+
+          [Install]
+          WantedBy=default.target
+    - path: /etc/containers/systemd/kube-pod.network
+      overwrite: true
+      contents:
+        inline: |
+          [Unit]
+          Description=Podman service kube-node
+
+          [Network]
+          NetworkName=kube-pod
+          Gateway=10.42.254.254
+          Subnet=10.42.0.0/16
+          IPRange=10.42.100.1-10.42.100.100
+          # TODO set cluster name via environment
+          Label=cluster=rick
+          Label=app=k3s
+
+          [Install]
+          WantedBy=default.target
+    - path: /etc/containers/systemd/kube-service.network
+      overwrite: true
+      contents:
+        inline: |
+          [Unit]
+          Description=Podman service kube-node
+
+          [Network]
+          NetworkName=kube-service
+          Gateway=10.43.254.254
+          Subnet=10.43.0.0/16
+          IPRange=10.43.100.1-10.43.100.100
+          # TODO set cluster name via environment
+          Label=cluster=rick
+          Label=app=k3s
+
+          [Install]
+          WantedBy=default.target
+    # volume quadlets
+    - path: /etc/containers/systemd/local-path-appdata.volume
+      overwrite: true
+      contents:
+        inline: |
+          [Unit]
+          Description=Podman volume local-path-appdata with btrfs subvolume as backing drive
+
+          [Service]
+          ExecStartPre=btrfs subvolume create -p /var/local/lib/k3s/agent/cctv/local-path-cctv
+
+          [Volume]
+          ContainersConfModule=/usr/local/etc/storage/storage-btrfs.conf
+          Options=compress=zstd:1,subvol=local-path-appdata
+          Type=btrfs
+          Device=/dev/disk/by-label/appdata 
+
+          [Install]
+          WantedBy=default.target
+
+    - path: /etc/containers/systemd/local-path-cctv.volume
+      overwrite: true
+      contents:
+        inline: |
+          [Unit]
+          Description=Podman volume %N with btrfs subvolume as backing drive
+
+          [Service]
+          ExecStartPre=btrfs subvolume create -p /var/local/lib/k3s/agent/appdata/local-path-appdata
+
+          [Volume]
+          ContainersConfModule=/usr/local/etc/storage/storage-btrfs.conf
+          Options=compress=zstd:1,subvol=local-path-cctv
+          Type=btrfs
+          Device=/dev/disk/by-label/cctv
+
+          [Install]
+          WantedBy=default.target
+    # Container systemd environment files
+    # Common agent environment
+    - path: /var/usrlocal/etc/sysconfig/k3s-agent
+      overwrite: true
+      contents:
+        inline: |
+          CLUSTER="rick"
+          DNS_SEARCH="expresso.lan"
+          DRI_CARD="/dev/dri/by-path/pci-0000:00:02.0-card"
+          DRI_RENDER="/dev/dri/by-path/pci-0000:00:02.0-render"
+
+    - path: /var/usrlocal/etc/sysconfig/k3s-agent-0
+      overwrite: true
+      contents:
+        inline: |
+          NODE_IP="10.98.0.100"
+    # Common server environment
+    - path: /var/usrlocal/etc/sysconfig/k3s-server
+      overwrite: true
+      contents:
+        inline: |
+          CLUSTER="rick"
+          DNS_SEARCH="expresso.lan"
+
+    - path: /var/usrlocal/etc/sysconfig/k3s-applb-0
+      overwrite: true
+      contents:
+        inline: |
+          NODE_IP="10.98.0.253"
+    - path: /var/usrlocal/etc/sysconfig/k3s-server-0
+      overwrite: true
+      contents:
+        inline: |
+          NODE_IP="10.98.0.1"
+    - path: /var/usrlocal/etc/sysconfig/k3s-server-1
+      overwrite: true
+      contents:
+        inline: |
+          NODE_IP="10.98.0.2"
+    - path: /var/usrlocal/etc/sysconfig/k3s-server-2
+      overwrite: true
+      contents:
+        inline: |
+          NODE_IP="10.98.0.3"
+
+    # K3S config files
     - path: /var/usrlocal/etc/k3s/config/k3s-agent-0.yaml
       overwrite: true
       contents:
@@ -685,14 +446,14 @@ storage:
       overwrite: true
       contents:
         local: k3s/k3s-server-2.yaml
-    - path: /var/usrlocal/etc/k3s/config/k3s-applb.yaml
+    - path: /var/usrlocal/etc/k3s/config/k3s-applb-0.yaml
       overwrite: true
       contents:
-        local: k3s/k3s-applb.yaml
-    - path: /var/usrlocal/etc/k3s/config/k3s-apiserverlb-nginx.conf
+        local: k3s/k3s-applb-0.yaml
+    - path: /var/usrlocal/etc/k3s/config/k3s-apiserverlb-0-nginx.conf
       overwrite: true
       contents:
-        local: k3s/k3s-apiserverlb-nginx.conf
+        local: k3s/k3s-apiserverlb-0-nginx.conf
     - path: /var/usrlocal/etc/k3s/skip/traefik.yaml.skip
       overwrite: true
       contents:
@@ -740,11 +501,11 @@ storage:
         inline: |
           # This config file enables a /dev/zram0 device with the default settings
           [zram0]
-    - path: /etc/containers/storage.conf
+    - path: /var/usrlocal/etc/storage/storage-btrfs.conf
       overwrite: true
       mode: 0744
       contents:
-        local: config/coreos-files/storage.conf
+        local: config/coreos-files/storage-btrfs.conf
   directories:
     - path: /var/usrlocal/sysconfig
       mode: 0750

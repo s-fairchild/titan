@@ -22,7 +22,7 @@ main() {
             local -rA vm_settings=(
                 ["name"]="$vm_name"
                 # TODO get the latest iso file from deploy/isos to use here
-                ["image"]="${images}/fedora-coreos-39.20240407.3.0-qemu.x86_64.qcow2"
+                ["image"]="${images}/fedora-coreos-41.20241109.3.0-qemu.x86_64.qcow2"
                 ["ignition"]="${PWD}/$ignition_cluster_dev"
                 ["vcpus"]="$VCPUS"
                 ["os_disk_gb"]="$OS_DISK_GB"

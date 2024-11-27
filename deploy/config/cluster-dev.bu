@@ -40,7 +40,7 @@ storage:
           dns-search=expresso.lan
           may-fail=false
           method=manual
-    - path: /var/usrlocal/etc/sysconfig/k3s-applb
+    - path: /var/usrlocal/etc/sysconfig/k3s-loadbalancer
       mode: 0640
       contents:
         inline: |

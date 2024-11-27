@@ -21,7 +21,7 @@ storage:
       contents:
         local: config/coreos-files/static-ip.nmconnection
       overwrite: true
-    - path: /var/usrlocal/etc/sysconfig/k3s-applb
+    - path: /var/usrlocal/etc/sysconfig/k3s-loadbalancer
       mode: 0640
       contents:
         inline: |
