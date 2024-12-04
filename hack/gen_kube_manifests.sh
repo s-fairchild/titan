@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 set -o nounset \
     -o errexit
@@ -24,8 +24,7 @@ generate_kube_manifests() {
     local -r overlay="$3"
     log "starting"
 
-    # kustomize="$(find "$base" -name kustomization.yaml)"
-    kustomize=($(find "$base" -type d -name "$overlay"))
+    mapfile kustomize <<< "$(find "$base" -type d -name "$overlay")"
 
     # shellcheck disable=SC2068
     for k in ${kustomize[@]}; do
@@ -57,9 +56,9 @@ is_disabled() {
     return 0
 }
 
-declare -r utils="hack/utils.sh"
+declare -r utils="hack/lib/util.sh"
 if [ -f "$utils" ]; then
-    # shellcheck source=utils.sh
+    # shellcheck source=lib/util.sh
     source "$utils"
 fi
 

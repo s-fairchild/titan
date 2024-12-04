@@ -1,0 +1,59 @@
+variant: fcos
+version: 1.5.0
+storage:
+  files:
+    # Networks
+    - path: /etc/containers/systemd/kube-node.network
+      overwrite: true
+      contents:
+        inline: |
+          [Unit]
+          Description=Podman service kube-node
+
+          [Network]
+          NetworkName=kube-node
+          Gateway=10.98.254.254
+          Subnet=10.98.0.0/16
+          IPRange=10.98.100.1-10.98.100.100
+          # TODO set cluster name via environment
+          Label=cluster=rick
+          Label=app=k3s
+
+          [Install]
+          WantedBy=default.target
+    - path: /etc/containers/systemd/kube-pod.network
+      overwrite: true
+      contents:
+        inline: |
+          [Unit]
+          Description=Podman service kube-node
+
+          [Network]
+          NetworkName=kube-pod
+          Gateway=10.42.254.254
+          Subnet=10.42.0.0/16
+          IPRange=10.42.100.1-10.42.100.100
+          # TODO set cluster name via environment
+          Label=cluster=rick
+          Label=app=k3s
+
+          [Install]
+          WantedBy=default.target
+    - path: /etc/containers/systemd/kube-service.network
+      overwrite: true
+      contents:
+        inline: |
+          [Unit]
+          Description=Podman service kube-node
+
+          [Network]
+          NetworkName=kube-service
+          Gateway=10.43.254.254
+          Subnet=10.43.0.0/16
+          IPRange=10.43.100.1-10.43.100.100
+          # TODO set cluster name via environment
+          Label=cluster=rick
+          Label=app=k3s
+
+          [Install]
+          WantedBy=default.target

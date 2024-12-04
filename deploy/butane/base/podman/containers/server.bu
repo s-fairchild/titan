@@ -1,0 +1,102 @@
+variant: fcos
+version: 1.5.0
+storage:
+  links:
+    # TODO create dropin directories to hold Unit conditions for unit dependencies
+    - path: /etc/containers/systemd/k3s-server@1.container
+      overwrite: true
+      target: /etc/containers/systemd/k3s-server@.container
+    - path: /etc/containers/systemd/k3s-server@2.container
+      overwrite: true
+      target: /etc/containers/systemd/k3s-server@.container
+  files:
+    # systemd quadlet files for podman
+    # Containers
+    - path: /etc/containers/systemd/k3s-server@.container
+      overwrite: true
+      contents:
+        # TODO set nf_conntrack_max via podman
+        # "Set sysctl 'net/netfilter/nf_conntrack_max' to 131072"
+        inline: |
+          [Unit]
+          Description=K3S Server Node %i Podman Container
+          Upholds=k3s-apiserverlb@0.service
+
+          [Service]
+          Restart=always
+          RestartSec=30
+          ExecStartPre=modprobe iptable_filter
+          ExecStartPre=modprobe iptable_nat
+          ExecStartPre=/usr/bin/podman secret exists k3s-token
+          EnvironmentFile=/var/usrlocal/etc/sysconfig/k3s-server
+          EnvironmentFile=/var/usrlocal/etc/sysconfig/k3s-server-%i
+          Environment="NAME=k3s-server-%i"
+
+          [Container]
+          ContainerName=${NAME}
+          AddCapability=ALL
+          HostName=${NAME}
+          Label=app=k3s
+          Label=cluster=${CLUSTER}
+          Image=k3s.image
+          Exec=server
+          Network=kube-node.network:ip=${NODE_IP}
+          Network=kube-service.network
+          DNSSearch=${DNS_SEARCH}
+          Pull=never
+          SeccompProfile=unconfined
+          SecurityLabelDisable=true
+          ShmSize=5g
+          Secret=k3s-token,type=env,target=K3S_TOKEN
+          Timezone=UTC
+          Volume=/etc/machine-id:/etc/machine-id:ro
+          Volume=${NAME}-kubelet:/var/lib/kubelet:Z
+          Volume=${NAME}-data:/var/lib/rancher/k3s:Z
+          Volume=${NAME}-rancher:/etc/rancher:Z
+          Volume=${NAME}-storage:/var/lib/rancher/k3s/storage:Z
+          Volume=${NAME}-log:/var/log/pod:Z
+          Volume=${NAME}-containers:/var/lib/containers:Z
+          Volume=/var/usrlocal/etc/k3s/config/${NAME}.yaml:/etc/rancher/k3s/config.yaml:Z,ro
+          Volume=/var/usrlocal/etc/k3s/manifests:/var/lib/rancher/k3s/server/manifests/compute:z
+          Volume=/var/usrlocal/etc/k3s/skip:/var/lib/rancher/k3s/server/manifests/skip:z,ro
+          AddDevice=/dev/fuse:/dev/fuse
+          PodmanArgs=--oom-score-adj=1000 --privileged
+
+          [Install]
+          WantedBy=default.target
+          DefaultInstance=0
+    # Server environment
+    - path: /var/usrlocal/etc/sysconfig/k3s-server
+      overwrite: true
+      contents:
+        inline: |
+          CLUSTER="rick"
+          DNS_SEARCH="expresso.lan"
+    - path: /var/usrlocal/etc/sysconfig/k3s-server-0
+      overwrite: true
+      contents:
+        inline: |
+          NODE_IP="10.98.0.1"
+    - path: /var/usrlocal/etc/sysconfig/k3s-server-1
+      overwrite: true
+      contents:
+        inline: |
+          NODE_IP="10.98.0.2"
+    - path: /var/usrlocal/etc/sysconfig/k3s-server-2
+      overwrite: true
+      contents:
+        inline: |
+          NODE_IP="10.98.0.3"
+    # K3S config
+    - path: /var/usrlocal/etc/k3s/config/k3s-server-0.yaml
+      overwrite: true
+      contents:
+        local: k3s/k3s-server-0.yaml
+    - path: /var/usrlocal/etc/k3s/config/k3s-server-1.yaml
+      overwrite: true
+      contents:
+        local: k3s/k3s-server-1.yaml
+    - path: /var/usrlocal/etc/k3s/config/k3s-server-2.yaml
+      overwrite: true
+      contents:
+        local: k3s/k3s-server-2.yaml
