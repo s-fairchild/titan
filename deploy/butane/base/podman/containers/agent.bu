@@ -1,0 +1,88 @@
+variant: fcos
+version: 1.5.0
+storage:
+  files:
+    - path: /etc/containers/systemd/k3s-agent@.container
+      overwrite: true
+      contents:
+        inline: |
+          [Unit]
+          Description=K3S Agent Node %i Podman Container
+
+          [Service]
+          Restart=always
+          RestartSec=30
+          ExecStartPre=modprobe iptable_filter
+          ExecStartPre=modprobe iptable_nat
+          ExecStartPre=/usr/bin/podman secret exists k3s-token
+          EnvironmentFile=/var/usrlocal/etc/sysconfig/k3s-agent
+          EnvironmentFile=/var/usrlocal/etc/sysconfig/k3s-agent-%i
+          Environment="NAME=k3s-agent-%i"
+
+          [Container]
+          ContainerName=${NAME}
+          HostName=${NAME}
+          Label=app=k3s
+          Label=cluster=${CLUSTER}
+          Label=role=agent
+          Image=k3s.image
+          Exec=agent
+          Network=kube-node.network:ip=${NODE_IP}
+          Network=kube-service.network
+          DNSSearch=${DNS_SEARCH}
+          Pull=never
+          ShmSize=5g
+          Secret=k3s-token,type=env,target=K3S_TOKEN
+          Timezone=UTC
+          Volume=/etc/machine-id:/etc/machine-id:ro
+          Volume=${NAME}-kubelet:/var/lib/kubelet:Z
+          Volume=${NAME}-pod-logs:/var/log/pods:Z
+          Volume=${NAME}-data:/var/lib/rancher/k3s:Z
+          Volume=${NAME}-etc-rancher:/etc/rancher:Z
+          Volume=/var/usrlocal/etc/k3s/config/${NAME}.yaml:/etc/rancher/k3s/config.yaml:Z,ro
+          Volume=local-path-default:/mnt/local-path-default:z
+          Volume=local-path-nvme:/mnt/local-path-nvme:z
+          Volume=local-path-appdata.volume:/mnt/local-path-appdata:z
+          Volume=local-path-cctv.volume:/mnt/local-path-cctv:z
+          # TODO set host device via env file
+          # TODO Add this as a dropin file to allow setting up libvirt vm without cameras
+          # AddDevice=/dev/v4l/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-video-index0:/dev/video0
+          # AddDevice=/dev/v4l/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-video-index1:/dev/video1
+          AddDevice=/dev/snd:/dev/snd
+          # TODO Add this as a dropin file to allow setting up libvirt vm without cameras
+          # AddDevice=${DRI_RENDER}:/dev/dri/renderD128:rwm
+          # TODO Add this as a dropin file to allow setting up libvirt vm without cameras
+          # AddDevice=${DRI_CARD}:/dev/dri/card0
+          PodmanArgs=--oom-score-adj=1000 --privileged
+
+          [Install]
+          WantedBy=default.target
+          DefaultInstance=0
+    # Container systemd environment files
+    # Common agent environment
+    - path: /var/usrlocal/etc/sysconfig/k3s-agent
+      overwrite: true
+      contents:
+        inline: |
+          CLUSTER="rick"
+          DNS_SEARCH="expresso.lan"
+          DRI_CARD="/dev/dri/by-path/pci-0000:00:02.0-card"
+          DRI_RENDER="/dev/dri/by-path/pci-0000:00:02.0-render"
+    - path: /var/usrlocal/etc/sysconfig/k3s-agent-0
+      overwrite: true
+      contents:
+        inline: |
+          NODE_IP="10.98.0.100"
+    # K3S config
+    - path: /var/usrlocal/etc/k3s/config/k3s-agent-0.yaml
+      overwrite: true
+      contents:
+        local: k3s/k3s-agent-0.yaml
+    - path: /var/usrlocal/etc/k3s/config/k3s-agent-1.yaml
+      overwrite: true
+      contents:
+        local: k3s/k3s-agent-1.yaml
+    - path: /var/usrlocal/etc/k3s/config/k3s-agent-2.yaml
+      overwrite: true
+      contents:
+        local: k3s/k3s-agent-2.yaml

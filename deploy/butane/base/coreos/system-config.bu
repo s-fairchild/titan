@@ -1,0 +1,21 @@
+variant: fcos
+version: 1.5.0
+storage:
+  files:
+    - path: /etc/zincati/config.d/55-updates-strategy.toml
+      overwrite: true
+      contents:
+        inline: |
+          [updates]
+          strategy = "periodic"
+          [[updates.periodic.window]]
+          days = [ "Sat" ]
+          start_time = "03:00"
+          length_minutes = 60
+    - path: /etc/systemd/zram-generator.conf
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          # This config file enables a /dev/zram0 device with the default settings
+          [zram0]

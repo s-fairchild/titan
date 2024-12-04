@@ -1,0 +1,48 @@
+variant: fcos
+version: 1.5.0
+storage:
+  files:
+    # volume quadlets
+    - path: /etc/containers/systemd/local-path-appdata.volume
+      overwrite: true
+      contents:
+        inline: |
+          [Unit]
+          Description=Podman volume local-path-appdata with btrfs subvolume as backing drive
+
+          [Service]
+          ExecStartPre=btrfs subvolume create -p /var/local/lib/k3s/agent/cctv/local-path-cctv
+
+          [Volume]
+          ContainersConfModule=/usr/local/etc/storage/storage-btrfs.conf
+          Options=compress=zstd:1,subvol=local-path-appdata
+          Type=btrfs
+          Device=/dev/disk/by-label/appdata 
+
+          [Install]
+          WantedBy=default.target
+
+    - path: /etc/containers/systemd/local-path-cctv.volume
+      overwrite: true
+      contents:
+        inline: |
+          [Unit]
+          Description=Podman volume %N with btrfs subvolume as backing drive
+
+          [Service]
+          ExecStartPre=btrfs subvolume create -p /var/local/lib/k3s/agent/appdata/local-path-appdata
+
+          [Volume]
+          ContainersConfModule=/usr/local/etc/storage/storage-btrfs.conf
+          Options=compress=zstd:1,subvol=local-path-cctv
+          Type=btrfs
+          Device=/dev/disk/by-label/cctv
+
+          [Install]
+          WantedBy=default.target
+    # Podman storage modules config
+    - path: /var/usrlocal/etc/storage/storage-btrfs.conf
+      overwrite: true
+      mode: 0744
+      contents:
+        local: config/coreos-files/storage-btrfs.conf

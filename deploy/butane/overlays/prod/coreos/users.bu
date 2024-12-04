@@ -1,0 +1,27 @@
+variant: fcos
+version: 1.5.0
+passwd:
+  users:
+    - name: core
+      ssh_authorized_keys_local:
+        - keys/id_ed25519.pub
+    - name: root
+      ssh_authorized_keys_local:
+        - keys/id_ed25519.pub
+    - name: abc
+      no_user_group: true
+      system: true
+      gecos: Jellyfin web user
+      primary_group: jellyfinmedia
+      uid: 911
+    - name: steven
+      gecos: Backup User
+      ssh_authorized_keys_local:
+        - keys/id_ed25519_rick_steven.pub
+      groups:
+        - backups
+  groups:
+    - name: jellyfinmedia
+      system: true
+      gid: 911
+    - name: backups

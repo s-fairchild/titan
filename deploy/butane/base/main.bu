@@ -3,27 +3,26 @@ version: 1.5.0
 ignition:
   config:
     merge:
-      - local: ignition/systemd.ign
-      - local: ignition/users.ign
-      - local: ignition/disk.ign
-      - local: ignition/raid.ign
-      - local: ignition/filesystem.ign
+      - inline: deploy/butane/base/coreos/system-config.bu
+      - inline: deploy/butane/base/coreos/services.bu
+      - inline: deploy/butane/base/coreos/users.bu
+      - inline: deploy/butane/base/coreos/storage/filesystem/filesystem.bu
+      - inline: deploy/butane/base/coreos/storage/filesystem/mounts.bu
+      - inline: deploy/butane/base/coreos/storage/disk.bu
+      - inline: deploy/butane/base/coreos/storage/raid.bu
 storage:
   files:
     - path: /etc/hostname
       mode: 0644
       contents:
+        # TODO populate this with environment variable
         inline: |
           rick.expresso.lan
-      overwrite: true
-    - path: /etc/NetworkManager/system-connections/enp1s0.nmconnection
-      mode: 0600
-      contents:
-        local: config/coreos-files/static-ip.nmconnection
       overwrite: true
     - path: /var/usrlocal/etc/sysconfig/k3s-loadbalancer
       mode: 0640
       contents:
+        # TODO HOST_IP value with a local environment variable
         inline: |
           HOST_IP="10.50.0.2"
       overwrite: true

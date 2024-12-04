@@ -4,6 +4,8 @@
 !manage_igntion.env
 *.pub
 *.ign
+deploy/ignition/*
+deploy/butane/.*.tmp
 *.iso
 *.iso.sig
 deploy/manifests/*

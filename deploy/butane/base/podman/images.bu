@@ -1,0 +1,28 @@
+variant: fcos
+version: 1.5.0
+storage:
+  files:
+    - path: /etc/containers/systemd/k3s.image
+      overwrite: true
+      contents:
+        inline: |
+          [Unit]
+          Description=Pull image docker.io/rancher/k3s:v1.30.4-k3s1
+
+          [Image]
+          Image=docker.io/rancher/k3s:v1.30.4-k3s1
+
+          [Install]
+          WantedBy=default.target
+    - path: /etc/containers/systemd/nginx.image
+      overwrite: true
+      contents:
+        inline: |
+          [Unit]
+          Description=Pull image docker.io/nginx:stable
+
+          [Image]
+          Image=docker.io/nginx:stable
+
+          [Install]
+          WantedBy=default.target

@@ -2,13 +2,13 @@ ONESHELL:
 SHELL = /bin/bash
 
 deploy-manifests-prod:
-	hack/deploy_manifests.sh deploy/manifests
+	hack/deploy_manifests.sh deploy/butane/base/coreos/files/k3s/manifests
 
 kube-manifests-gen-dev:
-	hack/gen_kube_manifests.sh pkg deploy/manifests dev
+	hack/gen_kube_manifests.sh pkg deploy/butane/overlays/staging/coreos/files/k3s/manifests dev
 
 kube-manifests-gen-prod:
-	hack/gen_kube_manifests.sh pkg deploy/manifests prod
+	hack/gen_kube_manifests.sh pkg deploy/butane/base/coreos/files/k3s/manifests prod
 
 ignition-gen-dev: kube-manifests-gen-dev
 	hack/manage_ignition.sh generate dev
@@ -20,6 +20,7 @@ ignition-gen-prod: kube-manifests-gen-prod
 
 stream := "stable"
 coreos-installer-image := "quay.io/coreos/coreos-installer:release"
+# TODO add --post-install to setup btrfs subvolumes
 download-installer-baremetal-live:
 	podman --remote=false run \
 			--security-opt label=disable \
@@ -34,6 +35,7 @@ download-installer-baremetal-live:
 				-f iso
 
 # TODO get the latest iso file from deploy/isos to use here
+# TODO remove static-ip.nmconnection file reference
 installer-create-custom-iso: ignition-gen-prod
 	podman --remote=false run \
 			--security-opt label=disable \
