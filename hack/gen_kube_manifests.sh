@@ -1,7 +1,11 @@
-#!/bin/bash -x
+#!/bin/bash
 
 set -o nounset \
     -o errexit
+
+if [ -n "${DEBUG:-}" ]; then
+    set -x
+fi
 
 main() {
     local -r base_dir="$1"

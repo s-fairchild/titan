@@ -3,6 +3,10 @@
 set -o nounset \
     -o errexit
 
+if [ -n "${DEBUG:-}" ]; then
+    set -x
+fi
+
 main() {
     # shellcheck disable=SC2034
     local -r vm_name="rick-dev"

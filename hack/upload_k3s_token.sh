@@ -3,6 +3,10 @@
 set -o nounset \
     -o errexit
 
+if [ -n "${DEBUG:-}" ]; then
+    set -x
+fi
+
 main() {
     local -r remote_alias="$1"
     local -r ssh_id="$2"

@@ -1,9 +1,13 @@
-#!/bin/bash -x
+#!/bin/bash
 # Generate a TLS keypair and self signed certificate for the container registry server
 #
 
 set -o nounset \
     -o errexit
+
+if [ -n "${DEBUG:-}" ]; then
+    set -x
+fi
 
 main() {
     registry_root="/var/local/lib/registry"

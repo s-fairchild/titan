@@ -1,5 +1,9 @@
 #!/bin/bash
 
+if [ -n "${DEBUG:-}" ]; then
+    set -x
+fi
+
 main() {
     local -r manifests_dir="$1"
 

@@ -4,19 +4,33 @@ SHELL = /bin/bash
 deploy-manifests-prod:
 	hack/deploy_manifests.sh deploy/butane/base/coreos/files/k3s/manifests
 
-kube-manifests-gen-dev:
+# TODO update manifest gen for new overlays layout
+kube-manifests-gen-staging:
 	hack/gen_kube_manifests.sh pkg deploy/butane/overlays/staging/coreos/files/k3s/manifests dev
 
+ignition_dest := "deploy/.ignition/"
 kube-manifests-gen-prod:
 	hack/gen_kube_manifests.sh pkg deploy/butane/base/coreos/files/k3s/manifests prod
 
-ignition-gen-dev: kube-manifests-gen-dev
-	hack/manage_ignition.sh generate dev
-	hack/manage_ignition.sh validate dev
+# TODO make base setup with no kubernetes manifests
+ignition-gen-base: kube-manifests-gen-staging
+	hack/ignition/gen_ignition.sh deploy/butane/base/main.bu ${ignition_dest}/base_main.ign
+
+ignition-gen-staging: kube-manifests-gen-staging
+	hack/ignition/gen_ignition.sh deploy/butane/overlays/staging/main.bu ${ignition_dest}/staging_main.ign
 
 ignition-gen-prod: kube-manifests-gen-prod
-	hack/manage_ignition.sh generate prod
-	hack/manage_ignition.sh validate prod
+	hack/ignition/gen_ignition.sh deploy/butane/overlays/staging/main.bu ${ignition_dest}/prod_main.ign
+
+ignition-serve-http-base: ignition-gen-base
+	hack/ignition/deploy/serve_ignition.sh base
+
+# TODO make a build and push target for the custom container image
+ignition-serve-http-staging: ignition-gen-staging
+	hack/ignition/deploy/serve_ignition.sh staging
+
+ignition-serve-http-prod: ignition-gen-prod
+	hack/ignition/deploy/serve_ignition.sh prod
 
 stream := "stable"
 coreos-installer-image := "quay.io/coreos/coreos-installer:release"
