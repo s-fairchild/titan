@@ -97,11 +97,14 @@ abort() {
 yq() {
     image="docker.io/mikefarah/yq:latest"
 
+           # -v yq_out:/workdir/out:z \
     podman run \
-           --rm \
            --name yq \
+           --security-opt label=disable \
            -i \
-           -v "${PWD}":/workdir:z \
+           --rm \
+           --env-host \
+           -v "${PWD}":/workdir \
            "$image" \
            "$@"
 }

@@ -12,12 +12,23 @@ main() {
     local -r main_butane="$1"
 
     # shellcheck disable=SC2034
-    local -a butane_files
-    gather_butane_files "$main_butane" \
-                         butane_files \
+    local -a ign_merge_files
+    gen_merge_ignitions "$main_butane" ign_merge_files
 
-    environment="$(basename "$(dirname "$main_butane")")"
-    gen_all_ignitions butane_files "$environment"
+    gen_main_butane "$main_butane" ign_merge_files 
+    # TODO gen_main_butane
+    # cleanup merge ignitions and main butane afterwards
+    # TODO use a temp directory
+}
+
+# gen_merge_configs()
+gen_merge_ignitions() {
+    log "starting"
+
+    # shellcheck disable=SC2034
+    gather_butane_files "$1" "$2"
+
+    gen_all_ignitions "$2"
 }
 
 declare lib

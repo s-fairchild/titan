@@ -36,6 +36,33 @@ check_empty_str() {
     fi
 }
 
+# gen_main_ignition()
+gen_main_butane() {
+    local -r main="$1"
+    local -n merge_configs="$2"
+    log "starting"
+
+    
+    local -i main_merge_len
+    main_merge_len="$(yq '(.ignition.config.merge | length)' "$main")"
+    if [ "${#merge_configs[@]}" -ne "$main_merge_len" ]; then
+        abort "$main configs $main_merge_len != ${#merge_configs[@]}"
+    fi
+
+    working_butane="$(yq "$main")"
+    prefix="$(get_merge_file_prefix "$main")"
+    final_main_butane="deploy/ignition/${prefix}main.bu"
+
+    # shellcheck disable=SC2068
+    for i in ${!merge_configs[@]}; do
+        merge_file="local: ${prefix}$(gen_merge_filename "${merge_configs[$i]}")"
+        export pathEnv=".ignition.config.merge[$i]" valueEnv="$merge_file"
+        working_butane="$(yq -e=1 'eval(strenv(pathEnv)) = env(valueEnv)' <<< "$working_butane")"
+    done
+
+    echo "$working_butane" > "$final_main_butane"
+}
+
 # butane()
 butane() {
     image="quay.io/coreos/butane:release"
