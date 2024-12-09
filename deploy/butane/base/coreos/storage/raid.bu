@@ -2,14 +2,6 @@ variant: fcos
 version: 1.5.0
 storage:
   raid:
-    - name: cctv
-      level: raid10
-      devices:
-        - /dev/disk/by-partlabel/raid10.1
-        - /dev/disk/by-partlabel/raid10.2
-        - /dev/disk/by-partlabel/raid10.3
-        - /dev/disk/by-partlabel/raid10.4
-      spares: 0
     - name: appdata
       level: raid5
       devices:

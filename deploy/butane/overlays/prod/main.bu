@@ -5,11 +5,21 @@ ignition:
     merge:
       - inline: deploy/butane/base/coreos/system-config.bu
       - inline: deploy/butane/base/coreos/services.bu
-      - inline: deploy/butane/overlays/prod/coreos/users.bu
-      - inline: deploy/butane/base/coreos/storage/disk.bu
       - inline: deploy/butane/base/coreos/storage/raid.bu
-      - inline: deploy/butane/base/coreos/storage/filesystem/filesystem.bu
       - inline: deploy/butane/base/coreos/storage/filesystem/mounts.bu
+      - inline: deploy/butane/overlays/prod/coreos/users.bu
+      - inline: deploy/butane/overlays/prod/coreos/storage/disk.bu
+      - inline: deploy/butane/overlays/prod/coreos/storage/luks.bu
+      - inline: deploy/butane/overlays/prod/coreos/storage/filesystem.bu
+      - inline: deploy/butane/base/podman/images.bu
+      - inline: deploy/butane/base/podman/networks.bu
+      - inline: deploy/butane/base/podman/volumes.bu
+      - inline: deploy/butane/base/podman/containers/agent.bu
+      - inline: deploy/butane/base/podman/containers/server.bu
+      - inline: deploy/butane/overlays/prod/podman/containers/server.bu
+      - inline: deploy/butane/base/podman/containers/api-serverlb.bu
+      - inline: deploy/butane/base/podman/containers/applb.bu
+      - inline: deploy/butane/overlays/prod/podman/containers/applb.bu
 storage:
   files:
     - path: /etc/hostname
@@ -19,10 +29,10 @@ storage:
         inline: |
           rick.expresso.lan
       overwrite: true
+        # TODO populate this with environment variable
     - path: /etc/NetworkManager/system-connections/enp1s0.nmconnection
       mode: 0600
       contents:
-        # TODO convert this to inline
         inline: |
           [connection]
           id=eno1

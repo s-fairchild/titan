@@ -1,0 +1,6 @@
+variant: fcos
+version: 1.5.0
+ignition:
+  config:
+    replace:
+      source: http://10.50.0.202:8080

@@ -3,7 +3,9 @@
 set -o nounset \
     -o errexit
 
-if [ -n "${DEBUG:-}" ]; then
+DEBUG="${DEBUG:-}"
+
+if [ -n "$DEBUG" ]; then
     set -x
 fi
 
@@ -17,14 +19,21 @@ main() {
     wait "$!"
 }
 
+# serve()
+# TODO launch nc via xinetd
+# refs:
+# https://www.linuxjournal.com/article/4490?page=0,0%20xinetd%20turtorial
+# https://stackoverflow.com/questions/16640054/minimal-web-server-using-netcat
 serve() {
-    local -r nc_exec_cmd="\"echo -e 'HTTP/1.1 200 OK\r\n' && cat ${1}_main.ign\""
+    # nc_handle.sh is executed by nc upon receiving requests within the container
+    local -r nc_handle_sh="nc_handle.sh"
 
     local -r nc_args=(
         -v
-        -p 80
-        -c
-        "$nc_exec_cmd"
+        -p
+        80
+        -e
+        "/${nc_handle_sh}"
         -k
         -l
     )
@@ -32,7 +41,7 @@ serve() {
     nc-ctr bash -c "nc ${nc_args[*]}"
 }
 
-# fedora-nc()
+# nc-ctr()
 nc-ctr() {
     image="docker.io/steve51516/nc:fedora41"
 
@@ -41,7 +50,10 @@ nc-ctr() {
         --security-opt label=disable \
         -i \
         --rm \
+        --env=SERVE_ENV="$deploy_env" \
+        --env=DEBUG="$DEBUG" \
         -v "${PWD}/deploy/.ignition":/data:O \
+        -v "${PWD}/hack/ignition/deploy/${nc_handle_sh}":/nc_handle.sh \
         -w /data \
         -p 8080:80/tcp \
         --network=slirp4netns:allow_host_loopback=true \
@@ -49,6 +61,7 @@ nc-ctr() {
         "$@"
 }
 
+# kill_ctr()
 kill_ctr() {
     local -n c="$1"
     podman container exists "$c" && podman container kill "$c"

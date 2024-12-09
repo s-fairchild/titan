@@ -1,7 +1,6 @@
 ---
 selinux: true
 node-ip: 10.98.0.253
-node-external-ip: 10.50.0.2
 node-label:
   - svccontroller.k3s.cattle.io/enablelb=true
 server: https://10.98.0.5:6443

@@ -3,7 +3,8 @@ version: 1.5.0
 systemd:
   units:
     - name: var-local-lib-k3s-agent-appdata.mount
-      enabled: true
+      # TODO create custom script that mounts this volume, for the purpose of creating subvolumes
+      enabled: false
       contents: |
         [Unit]
         Description=Mount appdata btrfs volume
@@ -20,19 +21,19 @@ systemd:
         [Install]
         RequiredBy=local-fs.target
     - name: var-local-lib-k3s-agent-cctv.mount
-      enabled: true
+      enabled: false
       contents: |
         [Unit]
-        Description=Mount cctv btrfs volume
-        After=dev-md127.device
-        BindsTo=dev-md127.device
+        Description=Mount cctv btrfs raid10 volume
+        # TODO populate these with .device names
+        After=
+        BindsTo=
 
         [Mount]
         TimeoutSec=10min
-        # /dev/md/cctv
-        What=/dev/md127
+        What=/dev/mapper/raid10.1
         Type=btrfs
-        Options=compress=zstd:1
+        Options=compress=zstd:1,autodefrag,degraded
 
         [Install]
         RequiredBy=local-fs.target

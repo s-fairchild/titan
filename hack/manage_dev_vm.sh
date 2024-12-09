@@ -8,26 +8,26 @@ if [ -n "${DEBUG:-}" ]; then
 fi
 
 main() {
-    # shellcheck disable=SC2034
-    local -r vm_name="rick-dev"
-    local -r images="${HOME}/.local/share/libvirt/images"
+    local -r vm_name="$2"
+    local -r ign_config="${3:-"deploy/.ignition/staging_main.ign"}"
 
     case "$1" in
         "create")
-            local -r vm_env="hack/env/manage_dev_vm.env"
-            if [ -f "$vm_env" ]; then
-                # shellcheck source=env/manage_dev_vm.env
-                source "$vm_env"
+            declare -r env_file="hack/env/manage_staging_vm.env"
+            if [ -f "$env_file" ]; then
+                # shellcheck source=env/manage_staging_vm.env
+                source "$env_file"
             else
-                abort "VM Environment file $vm_env not found"
+                abort "Missing $env_file, aborting"
             fi
 
+            local -r images="${HOME}/.local/share/libvirt/images"
             # shellcheck disable=SC2034
             local -rA vm_settings=(
                 ["name"]="$vm_name"
                 # TODO get the latest iso file from deploy/isos to use here
                 ["image"]="${images}/fedora-coreos-41.20241109.3.0-qemu.x86_64.qcow2"
-                ["ignition"]="${PWD}/$ignition_cluster_dev"
+                ["ignition"]="${PWD}/$ign_config"
                 ["vcpus"]="$VCPUS"
                 ["os_disk_gb"]="$OS_DISK_GB"
                 ["raid_disk_gb"]="$RAID_DISK_GB"
@@ -62,14 +62,14 @@ create_vm() {
     local -n settings="$1"
     log "starting"
 
-    disk_serial1="raid10.1"
-    disk_serial2="raid10.2"
-    disk_serial3="raid10.3"
-    disk_serial4="raid10.4"
-    disk_serial5="raid5.1"
-    disk_serial6="raid5.2"
-    disk_serial7="raid5.3"
-    disk_serial8="backups"
+    disk_serial1="${DISK_PREFIX_APPDATA}.raid10.1"
+    disk_serial2="${DISK_PREFIX_APPDATA}.raid10.2"
+    disk_serial3="${DISK_PREFIX_APPDATA}.raid10.3"
+    disk_serial4="${DISK_PREFIX_APPDATA}.raid10.4"
+    disk_serial5="${DISK_PREFIX_CCTV}.raid10.1"
+    disk_serial6="${DISK_PREFIX_CCTV}.raid10.2"
+    disk_serial7="${DISK_PREFIX_CCTV}.raid10.3"
+    disk_serial8="${DISK_PREFIX_CCTV}.raid10.4"
 
     virt-install --connect="qemu:///system" \
                  --name="${settings["name"]}" \
@@ -92,18 +92,10 @@ create_vm() {
                  --qemu-commandline="-fw_cfg name=opt/com.coreos/config,file=${settings["ignition"]}"
 }
 
-declare -r utils="hack/utils.sh"
+declare -r utils="hack/lib/util.sh"
 if [ -f "$utils" ]; then
-    # shellcheck source=utils.sh
+    # shellcheck source=lib/util.sh
     source "$utils"
-fi
-
-declare -r env_file="hack/env/manage_ignition.env"
-if [ -f "$env_file" ]; then
-    # shellcheck source=env/manage_ignition.env
-    source "$env_file"
-else
-    abort "Missing $env_file, aborting"
 fi
 
 main "$@"

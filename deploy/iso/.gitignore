@@ -1,0 +1,6 @@
+# Except this file
+!.gitignore
+# CoreOS live configurations
+!config/*.bu
+# Ignore everything in this directory
+# *

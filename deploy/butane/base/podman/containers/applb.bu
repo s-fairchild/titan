@@ -59,4 +59,4 @@ storage:
     - path: /var/usrlocal/etc/k3s/config/k3s-applb-0.yaml
       overwrite: true
       contents:
-        local: k3s/k3s-applb-0.yaml
+        local: butane/base/coreos/files/k3s/k3s-applb-0.yaml

@@ -11,13 +11,13 @@ storage:
           Description=Podman volume local-path-appdata with btrfs subvolume as backing drive
 
           [Service]
-          ExecStartPre=btrfs subvolume create -p /var/local/lib/k3s/agent/cctv/local-path-cctv
+          ExecStartPre=-btrfs subvolume create -p /var/local/lib/k3s/agent/local-path-appdata/local-path/appdata
 
           [Volume]
-          ContainersConfModule=/usr/local/etc/storage/storage-btrfs.conf
-          Options=compress=zstd:1,subvol=local-path-appdata
+          VolumeName=local-path-appdata
+          Options=compress=zstd:1,subvol=local-path/appdata
           Type=btrfs
-          Device=/dev/disk/by-label/appdata 
+          Device=LABEL=appdata
 
           [Install]
           WantedBy=default.target
@@ -30,19 +30,13 @@ storage:
           Description=Podman volume %N with btrfs subvolume as backing drive
 
           [Service]
-          ExecStartPre=btrfs subvolume create -p /var/local/lib/k3s/agent/appdata/local-path-appdata
+          ExecStartPre=-btrfs subvolume create -p /var/local/lib/k3s/agent/local-path-cctv/local-path/cctv
 
           [Volume]
-          ContainersConfModule=/usr/local/etc/storage/storage-btrfs.conf
-          Options=compress=zstd:1,subvol=local-path-cctv
+          VolumeName=local-path-cctv
+          Options=compress=zstd:1,subvol=local-path/cctv
           Type=btrfs
-          Device=/dev/disk/by-label/cctv
+          Device=LABEL=cctv
 
           [Install]
           WantedBy=default.target
-    # Podman storage modules config
-    - path: /var/usrlocal/etc/storage/storage-btrfs.conf
-      overwrite: true
-      mode: 0744
-      contents:
-        local: config/coreos-files/storage-btrfs.conf

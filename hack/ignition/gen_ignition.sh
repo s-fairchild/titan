@@ -6,6 +6,9 @@ set -o nounset \
 
 if [ -n "${DEBUG:-}" ]; then
     set -x
+else
+    # Leave temporary butane file for review
+    trap "cleanup TEMP_DATA" 1 2 3 6 EXIT
 fi
 
 main() {
@@ -59,7 +62,5 @@ fi
 
 # shellcheck disable=SC2034
 declare -a TEMP_DATA
-
-trap "cleanup TEMP_DATA" 1 2 3 6 EXIT
 
 main "$@"

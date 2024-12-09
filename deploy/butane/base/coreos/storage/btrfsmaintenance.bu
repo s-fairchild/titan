@@ -1,0 +1,52 @@
+variant: fcos
+version: 1.5.0
+systemd:
+  units:
+    - name: btrfs-scrub.timer
+      enabled: true
+      contents_local: butane/base/coreos/storage/btrfsmaintenance/btrfs-scrub.timer
+    - name: btrfs-scrub.service
+      enabled: true
+      contents_local: butane/base/coreos/storage/btrfsmaintenance/btrfs-scrub.service
+    - name: btrfs-defrag.timer
+      enabled: true
+      contents_local: butane/base/coreos/storage/btrfsmaintenance/btrfs-defrag.timer
+    - name: btrfs-defrag.service
+      enabled: true
+      contents_local: butane/base/coreos/storage/btrfsmaintenance/btrfs-defrag.service
+    - name: btrfs-balance.timer
+      enabled: true
+      contents_local: butane/base/coreos/storage/btrfsmaintenance/btrfs-balance.timer
+    - name: btrfs-balance.service
+      enabled: true
+      contents_local: butane/base/coreos/storage/btrfsmaintenance/btrfs-balance.service
+    - name: btrfs-trim.timer
+      enabled: true
+      contents_local: butane/base/coreos/storage/btrfsmaintenance/btrfs-trim.timer
+    - name: btrfs-trim.service
+      enabled: true
+      contents_local: butane/base/coreos/storage/btrfsmaintenance/btrfs-trim.service
+storage:
+  files:
+    - path: /etc/default/btrfsmaintenance
+      overwrite: true
+      contents:
+        local: butane/base/coreos/storage/btrfsmaintenance/sysconfig.btrfsmaintenance
+    - path: /usr/share/btrfsmaintenance/btrfs-balance.sh
+      overwrite: true
+      contents:
+        local: butane/base/coreos/storage/btrfsmaintenance/btrfs-balance.sh
+    - path: /usr/share/btrfsmaintenance/btrfs-defrag.sh
+      overwrite: true
+      contents:
+        local: butane/base/coreos/storage/btrfsmaintenance/btrfs-defrag.sh
+    - path: /usr/share/btrfsmaintenance/btrfs-scrub.sh
+      overwrite: true
+      contents:
+        local: butane/base/coreos/storage/btrfsmaintenance/btrfs-scrub.sh
+    - path: /usr/share/btrfsmaintenance/btrfs-trim.sh
+      overwrite: true
+      contents:
+        local: butane/base/coreos/storage/btrfsmaintenance/btrfs-trim.sh
+
+

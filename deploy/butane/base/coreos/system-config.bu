@@ -19,3 +19,7 @@ storage:
         inline: |
           # This config file enables a /dev/zram0 device with the default settings
           [zram0]
+    - path: /etc/containers/storage.conf
+      overwrite: true
+      contents:
+        local: butane/base/podman/storage.conf

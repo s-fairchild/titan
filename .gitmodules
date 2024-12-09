@@ -1,0 +1,3 @@
+[submodule "deploy/butane/base/coreos/storage/btrfsmaintenance"]
+	path = deploy/butane/base/coreos/storage/btrfsmaintenance
+	url = git@github.com:kdave/btrfsmaintenance.git

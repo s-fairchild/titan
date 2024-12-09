@@ -1,0 +1,9 @@
+variant: fcos
+version: 1.5.0
+storage:
+  files:
+    # K3S config
+    - path: /var/usrlocal/etc/k3s/config/k3s-applb-0.yaml
+      overwrite: true
+      contents:
+        local: butane/overlays/prod/coreos/files/k3s/k3s-applb-0.yaml

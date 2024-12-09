@@ -8,7 +8,6 @@ ignition:
       - inline: deploy/butane/base/coreos/users.bu
       - inline: deploy/butane/base/coreos/storage/filesystem/filesystem.bu
       - inline: deploy/butane/base/coreos/storage/filesystem/mounts.bu
-      - inline: deploy/butane/base/coreos/storage/disk.bu
       - inline: deploy/butane/base/coreos/storage/raid.bu
 storage:
   files:

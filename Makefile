@@ -4,15 +4,14 @@ SHELL = /bin/bash
 deploy-manifests-prod:
 	hack/deploy_manifests.sh deploy/butane/base/coreos/files/k3s/manifests
 
-# TODO update manifest gen for new overlays layout
+kustomize_base_dir := "pkg"
 kube-manifests-gen-staging:
-	hack/gen_kube_manifests.sh pkg deploy/butane/overlays/staging/coreos/files/k3s/manifests dev
+	hack/gen_kube_manifests.sh ${kustomize_base_dir} deploy/butane/overlays/staging/coreos/files/k3s/manifests staging
 
-ignition_dest := "deploy/.ignition/"
 kube-manifests-gen-prod:
-	hack/gen_kube_manifests.sh pkg deploy/butane/base/coreos/files/k3s/manifests prod
+	hack/gen_kube_manifests.sh ${kustomize_base_dir} deploy/butane/overlays/prod/coreos/files/k3s/manifests prod
 
-# TODO make base setup with no kubernetes manifests
+ignition_dest := "deploy/.ignition"
 ignition-gen-base: kube-manifests-gen-staging
 	hack/ignition/gen_ignition.sh deploy/butane/base/main.bu ${ignition_dest}/base_main.ign
 
@@ -20,7 +19,7 @@ ignition-gen-staging: kube-manifests-gen-staging
 	hack/ignition/gen_ignition.sh deploy/butane/overlays/staging/main.bu ${ignition_dest}/staging_main.ign
 
 ignition-gen-prod: kube-manifests-gen-prod
-	hack/ignition/gen_ignition.sh deploy/butane/overlays/staging/main.bu ${ignition_dest}/prod_main.ign
+	hack/ignition/gen_ignition.sh deploy/butane/overlays/prod/main.bu ${ignition_dest}/prod_main.ign
 
 ignition-serve-http-base: ignition-gen-base
 	hack/ignition/deploy/serve_ignition.sh base
@@ -40,7 +39,7 @@ download-installer-baremetal-live:
 			--security-opt label=disable \
 			--pull=always \
 			--rm \
-			-v ./deploy/isos:/data \
+			-v ./deploy/iso:/data \
 			-w /data \
 			${coreos-installer-image} \
 			download \
@@ -49,25 +48,22 @@ download-installer-baremetal-live:
 				-f iso
 
 # TODO get the latest iso file from deploy/isos to use here
-# TODO remove static-ip.nmconnection file reference
-installer-create-custom-iso: ignition-gen-prod
+installer-create-custom-iso:
 	podman --remote=false run \
 			--security-opt label=disable \
 			--pull=always \
 			--rm \
-			-v ./deploy:/data \
+			-v ./deploy/iso:/data \
 			-w /data \
 			${coreos-installer-image} \
 				iso \
 				customize \
 					--dest-device /dev/disk/by-id/nvme-WD_Blue_SN570_2TB_22423T802136 \
-					--dest-ignition ignition/cluster.ign \
+					--dest-ignition config/live.ign \
 					--dest-console ttyS0,115200n8 \
 					--dest-console tty0 \
-					--network-keyfile config/coreos-files/static-ip.nmconnection \
-					-o isos/cluster_custom_installer.iso \
-					isos/fedora-coreos-41.20241027.3.0-live.x86_64.iso
-
+					-o custom/cluster_custom_installer.iso \
+					./fedora-coreos-41.20241109.3.0-live.x86_64.iso
 
 images := "$(HOME)/.local/share/libvirt/images"
 download-installer-libvirt:
@@ -84,11 +80,13 @@ download-installer-libvirt:
 				-f qcow2.xz \
 				--decompress
 
-vm-dev-create: ignition-gen-dev
-	hack/manage_dev_vm.sh create
+staging_vm_name := "rick-dev"
+vm-staging-create: ignition-gen-staging
+	chcon -t svirt_home_t ${ignition_dest}/staging_main.ign
+	hack/manage_dev_vm.sh create ${staging_vm_name} ${ignition_dest}/staging_main.ign
 
-vm-dev-delete:
-	hack/manage_dev_vm.sh delete
+vm-staging-delete:
+	hack/manage_dev_vm.sh delete ${staging_vm_name}
 
 vm_ip_address := "192.168.122.2"
 ssh_id := ~/.ssh/id_ed25519

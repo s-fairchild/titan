@@ -77,12 +77,12 @@ storage:
     - path: /var/usrlocal/etc/k3s/config/k3s-agent-0.yaml
       overwrite: true
       contents:
-        local: k3s/k3s-agent-0.yaml
+        local: butane/base/coreos/files/k3s/k3s-agent-0.yaml
     - path: /var/usrlocal/etc/k3s/config/k3s-agent-1.yaml
       overwrite: true
       contents:
-        local: k3s/k3s-agent-1.yaml
+        local: butane/base/coreos/files/k3s/k3s-agent-1.yaml
     - path: /var/usrlocal/etc/k3s/config/k3s-agent-2.yaml
       overwrite: true
       contents:
-        local: k3s/k3s-agent-2.yaml
+        local: butane/base/coreos/files/k3s/k3s-agent-2.yaml

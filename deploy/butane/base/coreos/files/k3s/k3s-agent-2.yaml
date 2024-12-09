@@ -1,7 +1,7 @@
 selinux: true
 node-label:
   - app=compute
-  - camera=0
+  - camera=2
 server: https://10.98.0.5:6443
 node-name: k3s-agent-2
 node-ip: 10.98.0.102

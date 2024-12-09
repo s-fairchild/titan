@@ -73,9 +73,9 @@ create_secret() {
     printf '%s' "$tok" | podman -r -c "$host" secret create "$sec" -
 }
 
-declare -r utils="hack/utils.sh"
+declare -r utils="hack/lib/util.sh"
 if [ -f "$utils" ]; then
-    # shellcheck source=utils.sh
+    # shellcheck source=lib/util.sh
     source "$utils"
 fi
 

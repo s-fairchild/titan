@@ -1,0 +1,6 @@
+tls-san:
+  - 10.50.0.2
+  - loadbalancer
+  - rick.expresso.lan
+  - app.rick.expresso.lan
+node-external-ip: 10.50.0.2

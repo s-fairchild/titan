@@ -1,0 +1,19 @@
+variant: fcos
+version: 1.5.0
+storage:
+  files:
+    - path: /usr/local/etc/k3s/manifests/coredns-custom.yaml
+      overwrite: true
+    - path: /usr/local/etc/k3s/manifests/jellyfin.yaml
+      overwrite: true
+    - path: /usr/local/etc/k3s/manifests/local-storage-custom.yaml
+      overwrite: true
+    - path: /usr/local/etc/k3s/manifests/pihole.yaml
+      overwrite: true
+    - path: /usr/local/etc/k3s/manifests/traefik-custom.yaml
+      overwrite: true
+    - path: /usr/local/etc/k3s/manifests/.gitignore
+      overwrite: true
+  trees:
+    - path: /usr/local/etc/k3s/manifests
+      local: butane/overlays/staging/coreos/files/k3s/manifests

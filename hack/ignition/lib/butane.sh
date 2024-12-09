@@ -46,7 +46,6 @@ gen_main_butane() {
     for i in ${!ignitions_merge[@]}; do
         merge_ignition="${ignitions_merge[$i]}"
         export pathEnv=".ignition.config.merge[$i].inline" valueEnv="$merge_ignition"
-        # It maybe a good idea to encode these as a data url in base64
         working_butane="$(yq -e=1 'eval(strenv(pathEnv)) = strenv(valueEnv)' <<< "$working_butane")"
     done
 
@@ -68,10 +67,7 @@ write_tmp_butane() {
     echo "$butane_contents" > "$tmp_file_path"
 
     TEMP_DATA+=("$tmp_file_path" "$(dirname "$tmp_file_path")")
-    # fix up for butane container working directory
-    tmp_file_path="${tmp_file_path}"
 }
-
 
 # verify_config_dest_length()
 # Compares an array to an integer, aborts if they aren't equal
@@ -102,6 +98,7 @@ butane() {
         --rm \
         -v "${PWD}/deploy/butane":/data/deploy/butane:O \
         -v "${HOME}/.ssh":/data/deploy/keys:O \
+        -v "${HOME}/Documents/.luks_keys":/data/deploy/luks_keys \
         -w /data \
         "$image" \
         "$@"

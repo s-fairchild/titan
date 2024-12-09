@@ -5,11 +5,19 @@ ignition:
     merge:
       - inline: deploy/butane/base/coreos/system-config.bu
       - inline: deploy/butane/base/coreos/services.bu
-      - inline: deploy/butane/base/coreos/storage/raid.bu
-      - inline: deploy/butane/base/coreos/storage/filesystem/filesystem.bu
-      - inline: deploy/butane/base/coreos/storage/filesystem/mounts.bu
-      - inline: deploy/butane/overlays/staging/coreos/users.bu
       - inline: deploy/butane/overlays/staging/coreos/storage/disk.bu
+      - inline: deploy/butane/overlays/staging/coreos/storage/luks.bu
+      - inline: deploy/butane/overlays/prod/coreos/storage/filesystem.bu
+      - inline: deploy/butane/base/podman/images.bu
+      - inline: deploy/butane/base/podman/networks.bu
+      - inline: deploy/butane/base/podman/volumes.bu
+      - inline: deploy/butane/base/podman/containers/agent.bu
+      - inline: deploy/butane/base/podman/containers/server.bu
+      - inline: deploy/butane/overlays/staging/podman/containers/server.bu
+      - inline: deploy/butane/base/podman/containers/api-serverlb.bu
+      - inline: deploy/butane/base/podman/containers/applb.bu
+      - inline: deploy/butane/overlays/staging/podman/containers/applb.bu
+      - inline: deploy/butane/overlays/staging/coreos/users.bu
 systemd:
   units:
     - name: serial-getty@ttyS0.service

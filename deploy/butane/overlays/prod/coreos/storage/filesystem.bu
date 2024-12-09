@@ -1,0 +1,56 @@
+variant: fcos
+version: 1.5.0
+storage:
+  filesystems:
+    - device: /dev/disk/by-partlabel/root
+      wipe_filesystem: true
+      format: btrfs
+      label: root
+      mount_options:
+        - compress=zstd:1
+    - device: /dev/disk/by-partlabel/var
+      path: /var
+      wipe_filesystem: false
+      format: btrfs
+      with_mount_unit: true
+      label: var
+      mount_options:
+        - compress=zstd:1
+    - device: /dev/mapper/raid10.1
+      path: /var/local/lib/k3s/agent/local-path-appdata
+      format: btrfs
+      with_mount_unit: true
+      label: appdata
+      options:
+        - -m
+        - raid10
+        - -d
+        - raid10
+        - --features
+        - block-group-tree,quota
+        - /dev/mapper/raid10.1
+        - /dev/mapper/raid10.2
+        - /dev/mapper/raid10.3
+        - /dev/mapper/raid10.4
+      mount_options:
+        - compress=zstd:1
+        - degraded
+    - device: /dev/mapper/cctv.raid10.1
+      path: /var/local/lib/k3s/agent/local-path-cctv
+      format: btrfs
+      with_mount_unit: true
+      label: cctv
+      options:
+        - -m
+        - raid10
+        - -d
+        - raid10
+        - --features
+        - block-group-tree,quota
+        - /dev/mapper/cctv.raid10.1
+        - /dev/mapper/cctv.raid10.2
+        - /dev/mapper/cctv.raid10.3
+        - /dev/mapper/cctv.raid10.4
+      mount_options:
+        - compress=zstd:1
+        - degraded

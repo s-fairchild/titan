@@ -35,6 +35,8 @@ gen_main_ignition() {
     local relative_tmp_butane_file
     gen_main_butane "$main" "$2" relative_tmp_butane_file
 
+    echo "$relative_tmp_butane_file"
+
     # shellcheck disable=SC2034
     if ! ign_out=$(gen_ignition "$relative_tmp_butane_file"); then
         abort "failed to generate ignition from deploy/${relative_tmp_butane_file}"

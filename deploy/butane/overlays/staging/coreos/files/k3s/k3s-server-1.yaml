@@ -1,0 +1,5 @@
+tls-san:
+  - 192.168.122.2
+  - rick-dev.expresso.lan
+  - app.rick-dev.expresso.lan
+node-external-ip: 192.168.122.2

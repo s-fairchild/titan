@@ -1,0 +1,30 @@
+variant: fcos
+version: 1.5.0
+storage:
+  luks:
+    # appdata
+    - name: raid10.1
+      label: appdata_luks_raid10.1
+      device: /dev/disk/by-id/virtio-appdata.raid10.1-part1
+    - name: raid10.2
+      label: appdata_luks_raid10.2
+      device: /dev/disk/by-id/virtio-appdata.raid10.2-part1
+    - name: raid10.3
+      label: appdata_luks_raid10.3
+      device: /dev/disk/by-id/virtio-appdata.raid10.3-part1
+    - name: raid10.4
+      label: appdata_luks_raid10.4
+      device: /dev/disk/by-id/virtio-appdata.raid10.4-part1
+    # cctv
+    - name: cctv.raid10.1
+      label: cctv_luks_raid10.1
+      device: /dev/disk/by-id/virtio-cctv.raid10.1-part1
+    - name: cctv.raid10.2
+      label: cctv_luks_raid10.2
+      device: /dev/disk/by-id/virtio-cctv.raid10.2-part1
+    - name: cctv.raid10.3
+      label: cctv_luks_raid10.3
+      device: /dev/disk/by-id/virtio-cctv.raid10.3-part1
+    - name: cctv.raid10.4
+      label: cctv_luks_raid10.4
+      device: /dev/disk/by-id/virtio-cctv.raid10.4-part1

@@ -66,37 +66,44 @@ storage:
           WantedBy=default.target
           DefaultInstance=0
     # Server environment
-    - path: /var/usrlocal/etc/sysconfig/k3s-server
+    - path: /usr/local/etc/sysconfig/k3s-server
       overwrite: true
       contents:
         inline: |
           CLUSTER="rick"
           DNS_SEARCH="expresso.lan"
-    - path: /var/usrlocal/etc/sysconfig/k3s-server-0
+    - path: /usr/local/etc/sysconfig/k3s-server-0
       overwrite: true
       contents:
         inline: |
           NODE_IP="10.98.0.1"
-    - path: /var/usrlocal/etc/sysconfig/k3s-server-1
+    - path: /usr/local/etc/sysconfig/k3s-server-1
       overwrite: true
       contents:
         inline: |
           NODE_IP="10.98.0.2"
-    - path: /var/usrlocal/etc/sysconfig/k3s-server-2
+    - path: /usr/local/etc/sysconfig/k3s-server-2
       overwrite: true
       contents:
         inline: |
           NODE_IP="10.98.0.3"
     # K3S config
-    - path: /var/usrlocal/etc/k3s/config/k3s-server-0.yaml
+    - path: /usr/local/etc/k3s/config/k3s-server-0.yaml
       overwrite: true
       contents:
-        local: k3s/k3s-server-0.yaml
-    - path: /var/usrlocal/etc/k3s/config/k3s-server-1.yaml
+        local: butane/base/coreos/files/k3s/k3s-server-0.yaml
+    - path: /usr/local/etc/k3s/config/k3s-server-1.yaml
       overwrite: true
       contents:
-        local: k3s/k3s-server-1.yaml
-    - path: /var/usrlocal/etc/k3s/config/k3s-server-2.yaml
+        local: butane/base/coreos/files/k3s/k3s-server-1.yaml
+    - path: /usr/local/etc/k3s/config/k3s-server-2.yaml
       overwrite: true
       contents:
-        local: k3s/k3s-server-2.yaml
+        local: butane/base/coreos/files/k3s/k3s-server-2.yaml
+    - path: /usr/local/etc/k3s/skip/local-storage.yaml.skip
+      overwrite: true
+    - path: /usr/local/etc/k3s/skip/traefik.yaml.skip
+      overwrite: true
+  trees:
+    - path: /usr/local/etc/k3s/skip
+      local: butane/base/coreos/files/k3s/skip
