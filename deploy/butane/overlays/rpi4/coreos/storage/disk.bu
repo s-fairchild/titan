@@ -1,0 +1,15 @@
+variant: fcos
+version: 1.5.0
+storage:
+  disks:
+  # system
+  - device: /dev/disk/by-id/coreos-boot-disk
+    wipe_table: false
+    partitions:
+    - label: root
+      number: 4
+      # 30GB
+      size_mib: 30720
+      resize: true
+    - label: var
+      size_mib: 0

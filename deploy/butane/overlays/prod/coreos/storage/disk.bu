@@ -11,40 +11,33 @@ storage:
       size_mib: 307200
       resize: true
     - label: var
+      number: 5
       size_mib: 0
   # appdata
   - device: /dev/disk/by-id/wwn-0x5000c500e62fb786
     wipe_table: false
     partitions:
-      - label: raid10.1
+      - label: appdata_raid10.1
         number: 1
         size_mib: 0
-        # https://wiki.archlinux.org/title/GPT_fdisk#Partition_type
-        type_guid: CA7D7CCB-63ED-4C53-861C-1742536059CC
   - device: /dev/disk/by-id/wwn-0x5000c500e643147a
     wipe_table: false
     partitions:
-      - label: raid10.2
+      - label: appdata_raid10.2
         number: 1
         size_mib: 0
-        # https://wiki.archlinux.org/title/GPT_fdisk#Partition_type
-        type_guid: CA7D7CCB-63ED-4C53-861C-1742536059CC
   - device: /dev/disk/by-id/wwn-0x5000c500e642d1f3
     wipe_table: false
     partitions:
-      - label: raid10.3
+      - label: appdata_raid10.3
         number: 1
         size_mib: 0
-        # https://wiki.archlinux.org/title/GPT_fdisk#Partition_type
-        type_guid: CA7D7CCB-63ED-4C53-861C-1742536059CC
   - device: /dev/disk/by-id/wwn-0x5000c500c8e4bd14
     wipe_table: false
     partitions:
-      - label: raid10.4
+      - label: appdata_raid10.4
         number: 1
         size_mib: 0
-        # https://wiki.archlinux.org/title/GPT_fdisk#Partition_type
-        type_guid: CA7D7CCB-63ED-4C53-861C-1742536059CC
   # cctv
   - device: /dev/disk/by-id/wwn-0x5000c500c8e196b3
     wipe_table: false
@@ -52,29 +45,21 @@ storage:
       - label: cctv_raid10.1
         number: 1
         size_mib: 0
-        # https://wiki.archlinux.org/title/GPT_fdisk#Partition_type
-        type_guid: A19D880F-05FC-4D3B-A006-743F0F84911E
   - device: /dev/disk/by-id/wwn-0x5000c500c8e37087
     wipe_table: false
     partitions:
       - label: cctv_raid10.2
         number: 1
         size_mib: 0
-        # https://wiki.archlinux.org/title/GPT_fdisk#Partition_type
-        type_guid: A19D880F-05FC-4D3B-A006-743F0F84911E
   - device: /dev/disk/by-id/wwn-0x5000c500c937816a
     wipe_table: false
     partitions:
       - label: cctv_raid10.3
         number: 1
         size_mib: 0
-        # https://wiki.archlinux.org/title/GPT_fdisk#Partition_type
-        type_guid: A19D880F-05FC-4D3B-A006-743F0F84911E
   - device: /dev/disk/by-id/wwn-0x5000c500c8a40802
     wipe_table: false
     partitions:
       - label: cctv_raid10.4
         number: 1
         size_mib: 0
-        # https://wiki.archlinux.org/title/GPT_fdisk#Partition_type
-        type_guid: A19D880F-05FC-4D3B-A006-743F0F84911E

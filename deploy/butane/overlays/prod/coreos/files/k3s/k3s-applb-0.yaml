@@ -1,1 +1,9 @@
+selinux: true
+node-ip: 10.98.0.253
+node-label:
+  - svccontroller.k3s.cattle.io/enablelb=true
+server: https://10.98.0.5:6443
+debug: false
+node-name: k3s-applb
+with-node-id: true
 node-external-ip: 10.50.0.2

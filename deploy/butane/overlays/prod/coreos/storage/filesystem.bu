@@ -7,18 +7,19 @@ storage:
       format: btrfs
       label: root
       mount_options:
-        - compress=zstd:1
-    - device: /dev/disk/by-partlabel/var
+        - compress=zstd:1,x-systemd.device-timeout=0
+    - device: /dev/mapper/var
       path: /var
       wipe_filesystem: false
       format: btrfs
       with_mount_unit: true
       label: var
       mount_options:
-        - compress=zstd:1
-    - device: /dev/mapper/raid10.1
+        - compress=zstd:1,x-systemd.device-timeout=0
+    - device: /dev/mapper/appdata.raid10.1
       path: /var/local/lib/k3s/agent/local-path-appdata
       format: btrfs
+      wipe_filesystem: false
       with_mount_unit: true
       label: appdata
       options:
@@ -28,16 +29,17 @@ storage:
         - raid10
         - --features
         - block-group-tree,quota
-        - /dev/mapper/raid10.1
-        - /dev/mapper/raid10.2
-        - /dev/mapper/raid10.3
-        - /dev/mapper/raid10.4
+        - /dev/mapper/appdata.raid10.1
+        - /dev/mapper/appdata.raid10.2
+        - /dev/mapper/appdata.raid10.3
+        - /dev/mapper/appdata.raid10.4
       mount_options:
-        - compress=zstd:1
+        - compress=zstd:1,x-systemd.device-timeout=0
         - degraded
     - device: /dev/mapper/cctv.raid10.1
       path: /var/local/lib/k3s/agent/local-path-cctv
       format: btrfs
+      wipe_filesystem: false
       with_mount_unit: true
       label: cctv
       options:
@@ -52,5 +54,5 @@ storage:
         - /dev/mapper/cctv.raid10.3
         - /dev/mapper/cctv.raid10.4
       mount_options:
-        - compress=zstd:1
+        - compress=zstd:1,x-systemd.device-timeout=0
         - degraded

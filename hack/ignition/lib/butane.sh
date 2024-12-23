@@ -88,6 +88,9 @@ verify_config_dest_length() {
 # runs ignition in a container with image quay.io/coreos/butane:release
 # args:
 # @) all arguements are passed to the container
+# TODO script creating ssh keys as podman secrets, mount them as secret files
+# TODO scrub debug logging output. This is getting logged to journald as well by podman log driver.
+# possibly stop using journald podman log driver here?
 butane() {
     image="quay.io/coreos/butane:release"
 
@@ -96,7 +99,7 @@ butane() {
         --security-opt label=disable \
         -i \
         --rm \
-        -v "${PWD}/deploy/butane":/data/deploy/butane:O \
+        -v "./deploy/butane":/data/deploy/butane:O \
         -v "${HOME}/.ssh":/data/deploy/keys:O \
         -v "${HOME}/Documents/.luks_keys":/data/deploy/luks_keys \
         -w /data \

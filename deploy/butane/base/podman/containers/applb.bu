@@ -27,7 +27,7 @@ storage:
           Label=role=loadbalancer
           Label=cluster=${CLUSTER}
           Image=k3s.image
-          Exec=agent
+          Exec=agent --node-external-ip ${HOST_IP}
           Network=kube-node.network:ip=${NODE_IP}
           Network=kube-service.network
           DNSSearch=${DNS_SEARCH}

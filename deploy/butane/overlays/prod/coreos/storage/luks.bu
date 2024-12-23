@@ -2,39 +2,37 @@ variant: fcos
 version: 1.5.0
 storage:
   luks:
+    - name: var
+      label: var_luks
+      device: /dev/disk/by-id/nvme-WD_Blue_SN570_2TB_22423T802136_1-part5
+      wipe_volume: false
+      key_file:
+        local: luks_keys/nvme/nvme-WD_Blue_SN570_2TB_22423T802136_1-part5-keyfile
     # appdata
-    - name: raid10.1
-      label: luks_raid10.1
-      device: /dev/disk/by-id/wwn-0x5000c500e62fb786
+    - name: appdata.raid10.1
+      label: appdata_luks_raid10.1
+      device: /dev/disk/by-id/wwn-0x5000c500e62fb786-part1
       wipe_volume: false
       key_file:
-        local: luks_keys/wwn-0x5000c500e62fb786-keyfile
-        verification:
-          hash: sha512-12690d0062303557a420acbf408301f8864f23d247459d1850d90a4e8c5437be356700da268d7796d5979fbedac5da7392086682c5397064a54899fc5d91e7a9
-    - name: raid10.2
-      label: luks_raid10.2
-      device: /dev/disk/by-id/wwn-0x5000c500e643147a
+        local: luks_keys/appdata.raid10/wwn-0x5000c500e62fb786-keyfile
+    - name: appdata.raid10.2
+      label: appdata_luks_raid10.2
+      device: /dev/disk/by-id/wwn-0x5000c500e643147a-part1
       wipe_volume: false
       key_file:
-        local: luks_keys/wwn-0x5000c500e643147a-keyfile
-        verification:
-          hash: sha512-4787a7e3b3ee284b8e5dbb76f286d93db36662dbd79d2fe322a19c9d33df1d1c294d8683c384a7df939bb100b232c6286edc2004b65c59dfeb8406846a71e465
-    - name: raid10.3
-      label: luks_raid10.3
-      device: /dev/disk/by-id/wwn-0x5000c500e642d1f3
+        local: luks_keys/appdata.raid10/wwn-0x5000c500e643147a-keyfile
+    - name: appdata.raid10.3
+      label: appdata_luks_raid10.3
+      device: /dev/disk/by-id/wwn-0x5000c500e642d1f3-part1
       wipe_volume: false
       key_file:
-        local: luks_keys/wwn-0x5000c500e642d1f3-keyfile
-        verification:
-          hash: sha512-c6b7360f671db556cb2ba8b02e1fda143b475c35ac3e895788e34129c344bdb7edfecdd3efe1a15cd2925013a08c5ffe0e72f64e45197ce190bc7f544b81a55f
-    - name: raid10.4
-      label: luks_raid10.4
-      device: /dev/disk/by-id/wwn-0x5000c500c8e4bd14
+        local: luks_keys/appdata.raid10/wwn-0x5000c500e642d1f3-keyfile
+    - name: appdata.raid10.4
+      label: appdata.luks_raid10.4
+      device: /dev/disk/by-id/wwn-0x5000c500c8e4bd14-part1
       wipe_volume: false
       key_file:
-        local: luks_keys/wwn-0x5000c500c8e4bd14-keyfile
-        verification:
-          hash: sha512-94defc42c0f88029842543e45ebfbe6182532a6be5a53cf6998d586f47c1dd3ee3e05318639194b1396a0688e76fbe7bad4e3af9e423ae7f82e0653991c4b713
+        local: luks_keys/appdata.raid10/wwn-0x5000c500c8e4bd14-keyfile
     # cctv
     - name: cctv.raid10.1
       label: cctv_luks_raid10.1
@@ -42,30 +40,21 @@ storage:
       wipe_volume: false
       key_file:
         local: luks_keys/cctv.raid10/wwn-0x5000c500c8e196b3-part1-keyfile
-        verification:
-          hash: sha512-90552ef39be8526aec77f2ecca9ca4735237e809a933986edbc636ddab13f472e89058414ff52c72303278d9ae08dbe86a663b02ac7ff24e04da6ff229449944
     - name: cctv.raid10.2
       label: cctv_luks_raid10.2
       device: /dev/disk/by-id/wwn-0x5000c500c8e37087-part1
       wipe_volume: false
       key_file:
         local: luks_keys/cctv.raid10/wwn-0x5000c500c8e37087-part1-keyfile
-        verification:
-          hash: sha512-b0a93ee80d60fda7b681507ca9d42191e6aa7350d3e6a9376f3063dd14e31e807c6ede3e0479fff6fa776aa943c000e55aab22fe6d78166988855dc5adf9053e
     - name: cctv.raid10.3
       label: cctv_luks_raid10.3
       device: /dev/disk/by-id/wwn-0x5000c500c937816a-part1
       wipe_volume: false
       key_file:
         local: luks_keys/cctv.raid10/wwn-0x5000c500c937816a-part1-keyfile
-        verification:
-          hash: sha512-ccf405b9bdc1f07baf5c5b2cc82b8f5a71c86d0000c6745b0f2330977c35f403540ca7e8e14958ca67be3d728273b919751e53edcb771018d7eae0b4e70b3d5d
     - name: cctv.raid10.4
       label: cctv_luks_raid10.4
       device: /dev/disk/by-id/wwn-0x5000c500c8a40802-part1
       wipe_volume: false
       key_file:
         local: luks_keys/cctv.raid10/wwn-0x5000c500c8a40802-part1-keyfile
-        verification:
-          hash: sha512-0f794e9eb50dba1f229d1cee228603d26464738327027511b972bfea1150ba8e4fb5e7c5d7eb2b3a2a37da48c9653517ca72f911b5756eb56f7f12ace0a361f7
-

@@ -5,8 +5,6 @@ ignition:
     merge:
       - inline: deploy/butane/base/coreos/system-config.bu
       - inline: deploy/butane/base/coreos/services.bu
-      - inline: deploy/butane/base/coreos/storage/raid.bu
-      - inline: deploy/butane/base/coreos/storage/filesystem/mounts.bu
       - inline: deploy/butane/overlays/prod/coreos/users.bu
       - inline: deploy/butane/overlays/prod/coreos/storage/disk.bu
       - inline: deploy/butane/overlays/prod/coreos/storage/luks.bu
@@ -19,7 +17,6 @@ ignition:
       - inline: deploy/butane/overlays/prod/podman/containers/server.bu
       - inline: deploy/butane/base/podman/containers/api-serverlb.bu
       - inline: deploy/butane/base/podman/containers/applb.bu
-      - inline: deploy/butane/overlays/prod/podman/containers/applb.bu
 storage:
   files:
     - path: /etc/hostname

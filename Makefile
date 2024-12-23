@@ -21,20 +21,19 @@ ignition-gen-staging: kube-manifests-gen-staging
 ignition-gen-prod: kube-manifests-gen-prod
 	hack/ignition/gen_ignition.sh deploy/butane/overlays/prod/main.bu ${ignition_dest}/prod_main.ign
 
-ignition-serve-http-base: ignition-gen-base
+ignition-serve-http-base:
 	hack/ignition/deploy/serve_ignition.sh base
 
-# TODO make a build and push target for the custom container image
-ignition-serve-http-staging: ignition-gen-staging
+ignition-serve-http-staging:
 	hack/ignition/deploy/serve_ignition.sh staging
 
-ignition-serve-http-prod: ignition-gen-prod
+ignition-serve-http-prod:
 	hack/ignition/deploy/serve_ignition.sh prod
 
 stream := "stable"
 coreos-installer-image := "quay.io/coreos/coreos-installer:release"
 # TODO add --post-install to setup btrfs subvolumes
-download-installer-baremetal-live:
+installer-download-live-baremetal:
 	podman --remote=false run \
 			--security-opt label=disable \
 			--pull=always \
@@ -48,7 +47,11 @@ download-installer-baremetal-live:
 				-f iso
 
 # TODO get the latest iso file from deploy/isos to use here
-installer-create-custom-iso:
+# Example of writing this image to a drive:
+# Replace this with the correct drive!
+# iso_dest_drive="/dev/sdc"
+# sudo dd if=deploy/iso/custom/cluster_custom_installer.iso of="$iso_dest_drive" status=progress && sudo sync
+installer-customize-embed-ign:
 	podman --remote=false run \
 			--security-opt label=disable \
 			--pull=always \
@@ -63,10 +66,10 @@ installer-create-custom-iso:
 					--dest-console ttyS0,115200n8 \
 					--dest-console tty0 \
 					-o custom/cluster_custom_installer.iso \
-					./fedora-coreos-41.20241109.3.0-live.x86_64.iso
+					./fedora-coreos-41.20250117.3.0-live.x86_64.iso
 
 images := "$(HOME)/.local/share/libvirt/images"
-download-installer-libvirt:
+installer-download-libvirt:
 	podman --remote=false run \
 			--pull=always \
 			--security-opt label=disable \

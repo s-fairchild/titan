@@ -11,6 +11,8 @@ storage:
           Description=Podman volume local-path-appdata with btrfs subvolume as backing drive
 
           [Service]
+          # root fs mount point /local-path-appdata
+          # subvolume local-path/appdata
           ExecStartPre=-btrfs subvolume create -p /var/local/lib/k3s/agent/local-path-appdata/local-path/appdata
 
           [Volume]
@@ -29,6 +31,9 @@ storage:
           [Unit]
           Description=Podman volume %N with btrfs subvolume as backing drive
 
+          # root fs mount point /local-path-cctv
+          # subvolume local-path/cctv
+          # TODO this step has to be moved into a post install script step
           [Service]
           ExecStartPre=-btrfs subvolume create -p /var/local/lib/k3s/agent/local-path-cctv/local-path/cctv
 

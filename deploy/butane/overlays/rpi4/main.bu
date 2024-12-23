@@ -1,0 +1,19 @@
+variant: fcos
+version: 1.5.0
+ignition:
+  config:
+    merge:
+      - inline: deploy/butane/overlays/prod/coreos/users.bu
+      - inline: deploy/butane/base/coreos/system-config.bu
+      - inline: deploy/butane/base/coreos/users.bu
+      - inline: deploy/butane/base/coreos/services.bu
+      - inline: deploy/butane/overlays/rpi4/coreos/storage/disk.bu
+      - inline: deploy/butane/overlays/rpi4/coreos/storage/filesystem.bu
+      - inline: deploy/butane/overlays/rpi4/podman/containers/tang.bu
+      - inline: deploy/butane/overlays/rpi4/podman/images.bu
+storage:
+  files:
+    - path: /etc/hostname
+      mode: 0644
+      contents:
+        inline: rpi4.expresso.lan

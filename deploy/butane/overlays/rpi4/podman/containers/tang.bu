@@ -1,0 +1,35 @@
+variant: fcos
+version: 1.5.0
+storage:
+  files:
+    - path: /etc/containers/systemd/tang.container
+      overwrite: true
+      contents:
+        inline: |
+          [Unit]
+          Description=Tang server in podman container
+
+          [Service]
+          Restart=always
+          RestartSec=30
+          EnvironmentFile=/var/usrlocal/etc/sysconfig/%N
+
+          [Container]
+          AddCapability=ALL
+          Image=tang.image
+          LogDriver=journald
+          PublishPort=7744:8080
+          DNSSearch=${DNS_SEARCH}
+          Volume=%N-db:/db:z
+          Pull=never
+          Timezone=UTC
+          PodmanArgs=--oom-score-adj=1000
+
+          [Install]
+          WantedBy=default.target
+
+    - path: /usr/local/etc/sysconfig/tang
+      overwrite: true
+      contents:
+        inline: |
+          DNS_SEARCH=expresso.lan
