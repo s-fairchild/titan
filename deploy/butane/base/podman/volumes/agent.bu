@@ -1,0 +1,19 @@
+variant: fcos
+version: 1.5.0
+storage:
+  files:
+    - path: /etc/containers/systemd/local-path-default.volume
+      overwrite: true
+      contents:
+        inline: |
+          [Unit]
+          Description=Podman volume %N with btrfs subvolume as backing drive
+
+          [Volume]
+          VolumeName=local-path-nvme
+          Label="local-path=default"
+          Label="app=k3s"
+          Label="role=agent"
+
+          [Install]
+          WantedBy=default.target

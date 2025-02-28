@@ -10,7 +10,9 @@ gen_all_ignitions() {
 
     # shellcheck disable=SC2068
     for i in ${!arr[@]}; do
-        arr[i]="$(gen_ignition "${arr[$i]}")"
+        conf="${arr[$i]}"
+        log "Generating ignition from $conf"
+        arr[i]="$(gen_ignition "$conf")"
     done
 }
 

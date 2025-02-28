@@ -5,18 +5,24 @@ ignition:
     merge:
       - inline: deploy/butane/base/coreos/system-config.bu
       - inline: deploy/butane/base/coreos/services.bu
+      - inline: deploy/butane/base/coreos/storage/filesystem/btrfsmaintenance.bu
+      - inline: deploy/butane/base/podman/images/k3s.bu
+      - inline: deploy/butane/base/podman/images/nginx.bu
+      - inline: deploy/butane/base/podman/networks.bu
+      - inline: deploy/butane/base/podman/volumes/agent.bu
+      - inline: deploy/butane/base/podman/containers/agent.bu
+      - inline: deploy/butane/base/podman/containers/server.bu
+      - inline: deploy/butane/base/podman/containers/api-serverlb.bu
+      - inline: deploy/butane/base/podman/containers/applb.bu
       - inline: deploy/butane/overlays/prod/coreos/users.bu
       - inline: deploy/butane/overlays/prod/coreos/storage/disk.bu
       - inline: deploy/butane/overlays/prod/coreos/storage/luks.bu
       - inline: deploy/butane/overlays/prod/coreos/storage/filesystem.bu
-      - inline: deploy/butane/base/podman/images.bu
-      - inline: deploy/butane/base/podman/networks.bu
-      - inline: deploy/butane/base/podman/volumes.bu
-      - inline: deploy/butane/base/podman/containers/agent.bu
-      - inline: deploy/butane/base/podman/containers/server.bu
+      - inline: deploy/butane/overlays/prod/podman/volumes.bu
+      - inline: deploy/butane/overlays/prod/podman/containers/agent.bu
       - inline: deploy/butane/overlays/prod/podman/containers/server.bu
-      - inline: deploy/butane/base/podman/containers/api-serverlb.bu
-      - inline: deploy/butane/base/podman/containers/applb.bu
+      - inline: deploy/butane/overlays/prod/podman/containers/api-serverlb.bu
+      - inline: deploy/butane/overlays/prod/podman/containers/applb.bu
 storage:
   files:
     - path: /etc/hostname
@@ -39,7 +45,7 @@ storage:
           [ipv4]
           address1=10.50.0.2/32,10.50.0.1
           dhcp-hostname=rick
-          dns=8.8.8.8,8.8.4.4;
+          dns=10.50.0.2,8.8.8.8;
           dns-search=expresso.lan
           may-fail=false
           method=manual

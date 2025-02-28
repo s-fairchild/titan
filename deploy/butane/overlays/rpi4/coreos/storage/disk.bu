@@ -8,8 +8,9 @@ storage:
     partitions:
     - label: root
       number: 4
-      # 30GB
-      size_mib: 30720
+      # 10GB
+      size_mib: 10240
       resize: true
     - label: var
+      number: 5
       size_mib: 0

@@ -1,0 +1,26 @@
+variant: fcos
+version: 1.5.0
+storage:
+  links:
+    - path: /etc/containers/systemd/k3s-apiserver@0.container
+      target: /etc/containers/systemd/k3s-apiserver@.container
+      overwrite: true
+  files:
+    # Systemd environment
+    - path: /var/usrlocal/etc/sysconfig/k3s-apiserverlb
+      overwrite: true
+      contents:
+        inline: |
+          CLUSTER="rick"
+          DNS_SEARCH="expresso.lan"
+    - path: /var/usrlocal/etc/sysconfig/k3s-apiserverlb-0
+      overwrite: true
+      contents:
+        inline: |
+          NODE_IP="10.98.0.5"
+          SERVICE_IP="10.43.0.253"
+    # Nginx config
+    - path: /var/usrlocal/etc/k3s/config/k3s-apiserverlb-0-nginx.conf
+      overwrite: true
+      contents:
+        local: butane/overlays/prod/coreos/files/k3s/k3s-apiserverlb-0-nginx.conf

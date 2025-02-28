@@ -1,0 +1,19 @@
+variant: fcos
+version: 1.5.0
+storage:
+  links:
+    - path: /etc/containers/systemd/k3s-applb@0.container
+      target: /etc/containers/systemd/k3s-applb@.container
+      overwrite: true
+  files:
+    # Systemd environment
+    - path: /var/usrlocal/etc/sysconfig/k3s-applb-0
+      overwrite: true
+      contents:
+        inline: |
+          NODE_IP="10.98.0.253"
+    # K3S config
+    - path: /var/usrlocal/etc/k3s/config/k3s-applb-0.yaml
+      overwrite: true
+      contents:
+        local: butane/overlays/prod/coreos/files/k3s/k3s-applb-0.yaml

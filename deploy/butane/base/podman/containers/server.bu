@@ -1,14 +1,6 @@
 variant: fcos
 version: 1.5.0
 storage:
-  links:
-    # TODO create dropin directories to hold Unit conditions for unit dependencies
-    - path: /etc/containers/systemd/k3s-server@1.container
-      overwrite: true
-      target: /etc/containers/systemd/k3s-server@.container
-    - path: /etc/containers/systemd/k3s-server@2.container
-      overwrite: true
-      target: /etc/containers/systemd/k3s-server@.container
   files:
     # systemd quadlet files for podman
     # Containers
@@ -34,8 +26,9 @@ storage:
 
           [Container]
           ContainerName=${NAME}
-          AddCapability=ALL
+          Environment=K3S_NODE_NAME=${NAME}
           HostName=${NAME}
+          AddCapability=ALL
           Label=app=k3s
           Label=cluster=${CLUSTER}
           Image=k3s.image
@@ -64,46 +57,3 @@ storage:
 
           [Install]
           WantedBy=default.target
-          DefaultInstance=0
-    # Server environment
-    - path: /usr/local/etc/sysconfig/k3s-server
-      overwrite: true
-      contents:
-        inline: |
-          CLUSTER="rick"
-          DNS_SEARCH="expresso.lan"
-    - path: /usr/local/etc/sysconfig/k3s-server-0
-      overwrite: true
-      contents:
-        inline: |
-          NODE_IP="10.98.0.1"
-    - path: /usr/local/etc/sysconfig/k3s-server-1
-      overwrite: true
-      contents:
-        inline: |
-          NODE_IP="10.98.0.2"
-    - path: /usr/local/etc/sysconfig/k3s-server-2
-      overwrite: true
-      contents:
-        inline: |
-          NODE_IP="10.98.0.3"
-    # K3S config
-    - path: /usr/local/etc/k3s/config/k3s-server-0.yaml
-      overwrite: true
-      contents:
-        local: butane/base/coreos/files/k3s/k3s-server-0.yaml
-    - path: /usr/local/etc/k3s/config/k3s-server-1.yaml
-      overwrite: true
-      contents:
-        local: butane/base/coreos/files/k3s/k3s-server-1.yaml
-    - path: /usr/local/etc/k3s/config/k3s-server-2.yaml
-      overwrite: true
-      contents:
-        local: butane/base/coreos/files/k3s/k3s-server-2.yaml
-    - path: /usr/local/etc/k3s/skip/local-storage.yaml.skip
-      overwrite: true
-    - path: /usr/local/etc/k3s/skip/traefik.yaml.skip
-      overwrite: true
-  trees:
-    - path: /usr/local/etc/k3s/skip
-      local: butane/base/coreos/files/k3s/skip

@@ -6,8 +6,6 @@ metadata:
   namespace: pihole
   labels:
     app: pihole
-  # annotations:
-    # kubernetes.io/ingress.class: traefik
 spec:
   selector:
     app: pihole
@@ -22,12 +20,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: pihole
+  name: pihole-www
   namespace: pihole
   labels:
     app: pihole
-  # annotations:
-    # kubernetes.io/ingress.class: traefik
 spec:
   selector:
     app: pihole

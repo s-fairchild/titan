@@ -3,7 +3,7 @@
 set -o nounset \
     -o errexit
 
-if [ -n "$DEBUG" ]; then
+if [ "$DEBUG" == "true" ]; then
     set -x
 fi
 

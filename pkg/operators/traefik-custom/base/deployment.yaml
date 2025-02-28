@@ -55,7 +55,7 @@ spec:
       ipFamilies:
         - IPv4
       externalIPs:
-      ## -- An additionnal and optional internal Service.
+      ## -- An additional and optional internal Service.
       ## Same parameters as external Service
       internal:
         type: ClusterIP

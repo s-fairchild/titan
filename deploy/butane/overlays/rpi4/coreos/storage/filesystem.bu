@@ -7,7 +7,7 @@ storage:
       format: btrfs
       label: root
       mount_options:
-        - compress=zstd:1
+        - compress=zstd:1,x-systemd.device-timeout=0
     - device: /dev/disk/by-partlabel/var
       path: /var
       wipe_filesystem: false
@@ -15,4 +15,4 @@ storage:
       with_mount_unit: true
       label: var
       mount_options:
-        - compress=zstd:1
+        - compress=zstd:1,x-systemd.device-timeout=0

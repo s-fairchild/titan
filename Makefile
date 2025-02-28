@@ -11,6 +11,10 @@ kube-manifests-gen-staging:
 kube-manifests-gen-prod:
 	hack/gen_kube_manifests.sh ${kustomize_base_dir} deploy/butane/overlays/prod/coreos/files/k3s/manifests prod
 
+# TODO setup overlays for v4l2rtspserver workload
+kube-manifests-gen-rpi4:
+	hack/gen_kube_manifests.sh ${kustomize_base_dir} deploy/butane/overlays/prod/coreos/files/k3s/manifests rpi4
+
 ignition_dest := "deploy/.ignition"
 ignition-gen-base: kube-manifests-gen-staging
 	hack/ignition/gen_ignition.sh deploy/butane/base/main.bu ${ignition_dest}/base_main.ign
@@ -21,6 +25,9 @@ ignition-gen-staging: kube-manifests-gen-staging
 ignition-gen-prod: kube-manifests-gen-prod
 	hack/ignition/gen_ignition.sh deploy/butane/overlays/prod/main.bu ${ignition_dest}/prod_main.ign
 
+ignition-gen-rpi4: kube-manifests-gen-rpi4
+	hack/ignition/gen_ignition.sh deploy/butane/overlays/rpi4/main.bu ${ignition_dest}/rpi4_main.ign
+
 ignition-serve-http-base:
 	hack/ignition/deploy/serve_ignition.sh base
 
@@ -29,6 +36,9 @@ ignition-serve-http-staging:
 
 ignition-serve-http-prod:
 	hack/ignition/deploy/serve_ignition.sh prod
+
+ignition-serve-http-rpi4:
+	hack/ignition/deploy/serve_ignition.sh rpi4
 
 stream := "stable"
 coreos-installer-image := "quay.io/coreos/coreos-installer:release"

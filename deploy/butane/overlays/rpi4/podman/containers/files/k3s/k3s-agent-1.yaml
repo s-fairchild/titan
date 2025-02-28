@@ -1,0 +1,7 @@
+---
+node-label:
+  - rtsp=0
+server: https://10.50.0.2:6443
+node-external-ip: 10.50.0.12
+node-ip: 10.98.0.101
+debug: false

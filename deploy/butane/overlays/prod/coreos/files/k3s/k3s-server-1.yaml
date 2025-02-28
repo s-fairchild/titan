@@ -15,7 +15,8 @@ default-local-storage-path: /mnt/nvme
 
 # Network
 # https://docs.k3s.io/installation/network-options#flannel-options
-flannel-backend: vxlan
+flannel-backend: wireguard-native
+flannel-external-ip: true
 node-ip: 10.98.0.2
 cluster-cidr: 10.42.0.0/16
 service-cidr: 10.43.0.0/16

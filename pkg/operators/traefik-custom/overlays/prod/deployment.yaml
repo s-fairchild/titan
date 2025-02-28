@@ -56,7 +56,7 @@ spec:
         - IPv4
       externalIPs:
         - 10.50.0.2
-      ## -- An additionnal and optional internal Service.
+      ## -- An additional and optional internal Service.
       ## Same parameters as external Service
       internal:
         type: ClusterIP

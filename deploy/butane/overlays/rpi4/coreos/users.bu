@@ -1,0 +1,17 @@
+variant: fcos
+version: 1.5.0
+passwd:
+  users:
+    - name: core
+      ssh_authorized_keys_local:
+        - keys/id_ed25519_rpi4.pub
+    - name: root
+      ssh_authorized_keys_local:
+        - keys/id_ed25519_rpi4.pub
+    - name: v4l2rtspserver
+      gecos: v4l2rtspserver k3s app service account
+      # Users doesn't exist during bootstrapping, but does exist after ignition is completed.
+      # So the ignition process fails if these are included.
+      # groups:
+      #   - video
+      #   - render

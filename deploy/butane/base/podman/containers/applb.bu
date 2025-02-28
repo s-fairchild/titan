@@ -22,6 +22,7 @@ storage:
 
           [Container]
           ContainerName=${NAME}
+          Environment=K3S_NODE_NAME=${NAME}
           HostName=${NAME}
           Label=app=k3s
           Label=role=loadbalancer
@@ -48,15 +49,3 @@ storage:
 
           [Install]
           WantedBy=default.target
-          DefaultInstance=0
-    # Systemd environment
-    - path: /var/usrlocal/etc/sysconfig/k3s-applb-0
-      overwrite: true
-      contents:
-        inline: |
-          NODE_IP="10.98.0.253"
-    # K3S config
-    - path: /var/usrlocal/etc/k3s/config/k3s-applb-0.yaml
-      overwrite: true
-      contents:
-        local: butane/base/coreos/files/k3s/k3s-applb-0.yaml

@@ -20,10 +20,12 @@ storage:
           Options=compress=zstd:1,subvol=local-path/appdata
           Type=btrfs
           Device=LABEL=appdata
+          Label="local-path=appdata"
+          Label="app=k3s"
+          Label="role=agent"
 
           [Install]
           WantedBy=default.target
-
     - path: /etc/containers/systemd/local-path-cctv.volume
       overwrite: true
       contents:
@@ -33,7 +35,6 @@ storage:
 
           # root fs mount point /local-path-cctv
           # subvolume local-path/cctv
-          # TODO this step has to be moved into a post install script step
           [Service]
           ExecStartPre=-btrfs subvolume create -p /var/local/lib/k3s/agent/local-path-cctv/local-path/cctv
 
@@ -42,6 +43,24 @@ storage:
           Options=compress=zstd:1,subvol=local-path/cctv
           Type=btrfs
           Device=LABEL=cctv
+          Labe="local-path=cctv"
+          Label="app=k3s"
+          Label="role=agent"
+
+          [Install]
+          WantedBy=default.target
+    - path: /etc/containers/systemd/local-path-nvme.volume
+      overwrite: true
+      contents:
+        inline: |
+          [Unit]
+          Description=Podman volume %N with btrfs subvolume as backing drive
+
+          [Volume]
+          VolumeName=local-path-nvme
+          Label="local-path=nvme"
+          Label="app=k3s"
+          Label="role=agent"
 
           [Install]
           WantedBy=default.target
