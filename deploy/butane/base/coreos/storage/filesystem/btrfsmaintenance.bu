@@ -11,6 +11,11 @@ systemd:
       contents_local: butane/base/coreos/storage/btrfsmaintenance/btrfs-balance.service
     - name: btrfs-trim.service
       contents_local: butane/base/coreos/storage/btrfsmaintenance/btrfs-trim.service
+    # btrfsmaintenance-refresh updates timers to values specified in sysconfig.btrfsmaintenance
+    - name: btrfsmaintenance-refresh.service
+      contents_local: butane/base/coreos/storage/btrfsmaintenance/btrfsmaintenance-refresh.service
+    - name: btrfsmaintenance-refresh.path
+      contents_local: butane/base/coreos/storage/btrfsmaintenance/btrfsmaintenance-refresh.path
       # Timers
     - name: btrfs-scrub.timer
       enabled: true
@@ -26,25 +31,46 @@ systemd:
       contents_local: butane/base/coreos/storage/btrfsmaintenance/btrfs-trim.timer
 storage:
   files:
-    - path: /etc/default/btrfsmaintenance
+    - path: /usr/local/etc/sysconfig/btrfsmaintenance
       overwrite: true
       contents:
         local: butane/base/coreos/storage/btrfsmaintenance/sysconfig.btrfsmaintenance
-    - path: /usr/share/btrfsmaintenance/btrfs-balance.sh
+    - path: /usr/local/sbin/btrfsmaintenance/btrfsmaintenance-functions
       overwrite: true
+      mode: 0440
+      contents:
+        local: butane/base/coreos/storage/btrfsmaintenance/btrfsmaintenance-functions
+    - path: /usr/local/sbin/btrfsmaintenance/btrfsmaintenance-fresh-cron.sh
+      overwrite: true
+      mode: 0544
+      contents:
+        local: butane/base/coreos/storage/btrfsmaintenance/btrfsmaintenance-refresh-cron.sh
+    - path: /usr/local/sbin/btrfsmaintenance/btrfs-balance.sh
+      overwrite: true
+      mode: 0544
       contents:
         local: butane/base/coreos/storage/btrfsmaintenance/btrfs-balance.sh
-    - path: /usr/share/btrfsmaintenance/btrfs-defrag.sh
+    - path: /usr/local/sbin/btrfsmaintenance/btrfs-defrag.sh
       overwrite: true
+      mode: 0544
       contents:
         local: butane/base/coreos/storage/btrfsmaintenance/btrfs-defrag.sh
-    - path: /usr/share/btrfsmaintenance/btrfs-scrub.sh
+    - path: /usr/local/sbin/btrfsmaintenance/btrfs-scrub.sh
       overwrite: true
+      mode: 0544
       contents:
         local: butane/base/coreos/storage/btrfsmaintenance/btrfs-scrub.sh
-    - path: /usr/share/btrfsmaintenance/btrfs-trim.sh
+    - path: /usr/local/sbin/btrfsmaintenance/btrfs-trim.sh
       overwrite: true
+      mode: 0544
       contents:
         local: butane/base/coreos/storage/btrfsmaintenance/btrfs-trim.sh
-
-
+    # btrfsmaintenance documentation
+    - path: /usr/local/share/doc/btrfsmaintenance/README.man
+      overwrite: true
+      contents:
+        local: butane/base/coreos/storage/btrfsmaintenance/README.man
+  links:
+    - path: /usr/local/share/doc/packages/btrfsmaintenance/README.man
+      overwrite: true
+      target: /usr/local/share/doc/btrfsmaintenance/README.man

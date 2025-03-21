@@ -2,7 +2,7 @@ variant: fcos
 version: 1.5.0
 storage:
   files:
-    - path: /etc/containers/systemd/k3s-apiserver@.container
+    - path: /etc/containers/systemd/k3s-apiserverlb@.container
       overwrite: true
       contents:
         inline: |
@@ -12,27 +12,32 @@ storage:
           [Service]
           Restart=always
           RestartSec=30
-          # TODO update suffix with env variable if possible
-          EnvironmentFile=/var/usrlocal/etc/sysconfig/k3s-loadbalancer
-          EnvironmentFile=/var/usrlocal/etc/sysconfig/k3s-apiserverlb
-          EnvironmentFile=/var/usrlocal/etc/sysconfig/k3s-apiserverlb-%i
           Environment="NAME=k3s-apiserverlb-%i"
 
           [Container]
           ContainerName=${NAME}
           HostName=${NAME}
           Label=app=k3s
-          Label=role=apiserver-loadbalancer
+          Label=loadbalancer=apiserverlb
           Label=cluster=${CLUSTER}
           Image=nginx.image
-          Network=kube-node.network:ip=${NODE_IP}
-          Network=kube-service.network:ip=${SERVICE_IP}
           DNSSearch=${DNS_SEARCH}
-          PublishPort=${HOST_IP}:6443:6443
+          PublishPort=${NODE_EXTERNAL_IP}:6443:6443
           Timezone=UTC
           Pull=never
-          Volume=/var/usrlocal/etc/k3s/config/k3s-apiserverlb-0-nginx.conf:/etc/nginx/nginx.conf:Z,ro
+          Volume=/usr/local/etc/k3s/config/${NAME}.conf:/etc/nginx/nginx.conf:Z,ro
           PodmanArgs=--oom-score-adj=1000 --privileged
 
           [Install]
           WantedBy=default.target
+    - path: /etc/containers/systemd/k3s-apiserverlb@0.container.d/networks.conf
+      contents:
+        inline: |
+          [Container]
+          Network=kube-server.network:ip=${NODE_IP}
+    - path: /etc/containers/systemd/k3s-apiserverlb@.container.d/env-cluster.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Service]
+          EnvironmentFile=/usr/local/etc/sysconfig/k3s-cluster

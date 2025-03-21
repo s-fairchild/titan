@@ -39,27 +39,71 @@ storage:
       contents:
         local: butane/overlays/prod/coreos/files/k3s/k3s-server-2.yaml
     # Server environment
-    - path: /usr/local/etc/sysconfig/k3s-server
+    - path: /etc/containers/systemd/k3s-server@0.container.d/env.conf
       overwrite: true
       contents:
         inline: |
-          CLUSTER="rick"
-          DNS_SEARCH="expresso.lan"
-    - path: /usr/local/etc/sysconfig/k3s-server-0
+          [Service]
+          Environment=NODE_IP="10.10.0.2"
+          Environment=POD_IP="10.42.2.2"
+          Environment=SERVICE_IP="10.43.2.2"
+    - path: /etc/containers/systemd/k3s-server@1.container.d/env.conf
       overwrite: true
       contents:
         inline: |
-          NODE_IP="10.98.0.1"
-    - path: /usr/local/etc/sysconfig/k3s-server-1
+          [Service]
+          Environment=NODE_IP="10.10.0.3"
+          Environment=POD_IP="10.42.2.3"
+          Environment=SERVICE_IP="10.43.2.3"
+    - path: /etc/containers/systemd/k3s-server@2.container.d/env.conf
       overwrite: true
       contents:
         inline: |
-          NODE_IP="10.98.0.2"
-    - path: /usr/local/etc/sysconfig/k3s-server-2
+          [Service]
+          Environment=NODE_IP="10.10.0.4"
+          Environment=POD_IP="10.42.2.4"
+          Environment=SERVICE_IP="10.43.2.4"
+    - path: /etc/containers/systemd/k3s-server@0.container.d/dependencies.conf
       overwrite: true
       contents:
         inline: |
-          NODE_IP="10.98.0.3"
+          [Unit]
+          Upholds=k3s-applb@0.service
+          Upholds=k3s-agent@0.service
+          Before=k3s-applb@0.service
+          Before=k3s-agent@0.service
+    - path: /etc/containers/systemd/k3s-server@1.container.d/dependencies.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Unit]
+          Requires=k3s-apiserverlb@0.service
+          Wants=k3s-server@0.service
+          Wants=k3s-server@2.service
+          After=k3s-server@0.service
+          Before=k3s-server@2.service
+    - path: /etc/containers/systemd/k3s-server@1.container.d/k3s-url.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Container]
+          EnvironmentFile=/usr/local/etc/sysconfig/k3s-url
+    - path: /etc/containers/systemd/k3s-server@2.container.d/k3s-url.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Container]
+          EnvironmentFile=/usr/local/etc/sysconfig/k3s-url
+    - path: /etc/containers/systemd/k3s-server@2.container.d/dependencies.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Unit]
+          Wants=k3s-server@1.service
+          Wants=k3s-server@0.service
+          Requires=k3s-apiserverlb@0.service
+          After=k3s-server@1.service
+          After=k3s-server@0.service
     # Skip Operators
     - path: /usr/local/etc/k3s/skip/local-storage.yaml.skip
       overwrite: true

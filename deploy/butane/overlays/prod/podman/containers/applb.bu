@@ -7,13 +7,30 @@ storage:
       overwrite: true
   files:
     # Systemd environment
-    - path: /var/usrlocal/etc/sysconfig/k3s-applb-0
+    # - path: /etc/containers/systemd/k3s-agent@0.container.d/env.conf
+    - path: /etc/containers/systemd/k3s-applb@0.container.d/env.conf
       overwrite: true
       contents:
         inline: |
-          NODE_IP="10.98.0.253"
+          [Service]
+          Environment=NODE_IP="10.11.0.5"
+          Environment=POD_IP="10.42.0.5"
+          Environment=SERVICE_IP="10.43.0.5"
     # K3S config
-    - path: /var/usrlocal/etc/k3s/config/k3s-applb-0.yaml
+    - path: /usr/local/etc/k3s/config/k3s-applb-0.yaml
       overwrite: true
       contents:
         local: butane/overlays/prod/coreos/files/k3s/k3s-applb-0.yaml
+    # Container drop-ins
+    - path: /etc/containers/systemd/k3s-applb@0.container.d/dependencies.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Unit]
+          After=k3s-server@0.service
+    - path: /etc/containers/systemd/k3s-applb@0.container.d/published-ports.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Container]
+          PublishPort=${NODE_EXTERNAL_IP}:53:30053/udp

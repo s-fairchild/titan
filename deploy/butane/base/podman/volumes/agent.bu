@@ -14,6 +14,13 @@ storage:
           Label="local-path=default"
           Label="app=k3s"
           Label="role=agent"
+          Label="cluster=${CLUSTER}"
 
           [Install]
           WantedBy=default.target
+    - path: /etc/containers/systemd/local-path-default.volume.d/env-k3s.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Service]
+          EnvironmentFile=/usr/local/etc/sysconfig/k3s-cluster

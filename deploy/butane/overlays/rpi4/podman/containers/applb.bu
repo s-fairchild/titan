@@ -1,19 +1,34 @@
+---
 variant: fcos
 version: 1.5.0
 storage:
   links:
-    - path: /etc/containers/systemd/k3s-applb@0.container
+    - path: /etc/containers/systemd/k3s-applb@1.container
       target: /etc/containers/systemd/k3s-applb@.container
       overwrite: true
   files:
     # Systemd environment
-    - path: /var/usrlocal/etc/sysconfig/k3s-applb-0
+    - path: /usr/local/etc/sysconfig/k3s-applb@1
       overwrite: true
       contents:
         inline: |
-          NODE_IP="10.98.0.253"
+          NODE_IP="10.99.0.253"
     # K3S config
-    - path: /var/usrlocal/etc/k3s/config/k3s-applb-0.yaml
+    - path: /usr/local/etc/k3s/config/k3s-applb-1.yaml
       overwrite: true
       contents:
-        local: butane/overlays/prod/coreos/files/k3s/k3s-applb-0.yaml
+        local: butane/overlays/rpi4/podman/containers/files/k3s/k3s-applb-1.yaml
+    - path: /etc/containers/systemd/k3s-applb@1.container.d/dependencies.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Unit]
+          Requires=k3s-agent@0.service
+          After=k3s-agent@0.service
+    - path: /etc/containers/systemd/k3s-applb@1.container.d/published-ports.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Container]
+          PublishPort=${NODE_EXTERNAL_IP}:8554:30555/udp
+          PublishPort=${NODE_EXTERNAL_IP}:8555:30556/tcp

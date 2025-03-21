@@ -43,7 +43,7 @@ storage:
           Options=compress=zstd:1,subvol=local-path/cctv
           Type=btrfs
           Device=LABEL=cctv
-          Labe="local-path=cctv"
+          Label="local-path=cctv"
           Label="app=k3s"
           Label="role=agent"
 

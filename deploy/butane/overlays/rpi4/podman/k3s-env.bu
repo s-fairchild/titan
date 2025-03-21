@@ -1,0 +1,23 @@
+---
+variant: fcos
+version: 1.5.0
+storage:
+  files:
+    # TODO change this to end with cluster specific suffix
+    - path: /usr/local/etc/sysconfig/k3s-cluster
+      overwrite: true
+      contents:
+        inline: |
+          # K3S config shared amongst all nodes
+          # Used to configure podman at container runtime
+          CLUSTER="rick"
+          DNS_SEARCH="expresso.lan"
+          NODE_EXTERNAL_IP="10.50.0.12"
+    - path: /usr/local/etc/sysconfig/k3s
+      overwrite: true
+      contents:
+        inline: |
+          # This is used in the node container environment by K3S
+          # Used at K3S runtime
+          # THIS CANNOT BE QUOTED, it podman adds too many quotes when expanding if so.
+          K3S_URL=https://10.50.0.2:6443

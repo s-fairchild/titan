@@ -1,0 +1,16 @@
+variant: fcos
+version: 1.5.0
+storage:
+  files:
+    - path: /etc/containers/systemd/k3s.image.d/start-delay.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Service]
+          ExecStartPre=/usr/bin/sleep 60
+    - path: /etc/containers/systemd/nginx.image.d/start-delay.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Service]
+          ExecStartPre=/usr/bin/sleep 60

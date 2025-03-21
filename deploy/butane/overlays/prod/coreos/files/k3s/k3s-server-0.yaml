@@ -2,13 +2,11 @@
 # https://docs.k3s.io/cli/server
 # Use embedded etcd
 cluster-init: true
-debug: false
-selinux: true
 servicelb-namespace: kube-system-lb
 tls-san:
-  - 10.98.0.5
-  - loadbalancer
+  - 10.42.0.5
   - 10.50.0.2
+  - apiserverlb
   - rick.expresso.lan
   - app.rick.expresso.lan
 secrets-encryption: true
@@ -17,11 +15,6 @@ default-local-storage-path: /mnt/nvme
 # Network
 # https://docs.k3s.io/installation/network-options#flannel-options
 flannel-backend: wireguard-native
-flannel-external-ip: true
-node-ip: 10.98.0.1
-cluster-cidr: 10.42.0.0/16
-service-cidr: 10.43.0.0/16
-node-external-ip: 10.50.0.2
 
 # kube apiserver
 write-kubeconfig: /root/admin.kubeconfig
@@ -33,5 +26,5 @@ kubelet-arg:
 
 # Kube Proxy
 kube-proxy-arg:
-  - pod-bridge-interface=pods
+  - pod-bridge-interface=pod0
   - metrics-bind-address=0.0.0.0

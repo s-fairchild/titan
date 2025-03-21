@@ -1,3 +1,4 @@
+---
 variant: fcos
 version: 1.5.0
 storage:
@@ -15,23 +16,15 @@ storage:
           ExecStartPre=modprobe iptable_filter
           ExecStartPre=modprobe iptable_nat
           ExecStartPre=/usr/bin/podman secret exists k3s-token
-          # Common agent environment
-          EnvironmentFile=/usr/local/etc/sysconfig/k3s-agent
-          # Agent instance specific environment
-          EnvironmentFile=/usr/local/etc/sysconfig/k3s-agent-%i
           Environment="NAME=k3s-agent-%i"
 
           [Container]
           ContainerName=${NAME}
-          Environment=K3S_NODE_NAME=${NAME}
           HostName=${NAME}
           Label=app=k3s
           Label=cluster=${CLUSTER}
-          Label=role=agent
           Image=k3s.image
-          Exec=agent
-          Network=kube-node.network:ip=${NODE_IP}
-          Network=kube-service.network
+          EnvironmentFile=/usr/local/etc/sysconfig/k3s-url
           DNSSearch=${DNS_SEARCH}
           Pull=never
           ShmSize=5g
@@ -48,3 +41,23 @@ storage:
 
           [Install]
           WantedBy=default.target
+    - path: /etc/containers/systemd/k3s-agent@.container.d/kube-networks.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Container]
+          Network=kube-agent.network:ip=${NODE_IP},interface_name=agent0
+          Network=kube-service.network:ip=${SERVICE_IP},interface_name=service0
+          Network=kube-pod.network:ip=${POD_IP},interface_name=pod0
+    - path: /etc/containers/systemd/k3s-agent@.container.d/exec.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Container]
+          Exec=agent --node-ip=${NODE_IP} --node-external-ip=${NODE_EXTERNAL_IP}
+    - path: /etc/containers/systemd/k3s-agent@.container.d/env-cluster.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Service]
+          EnvironmentFile=/usr/local/etc/sysconfig/k3s-cluster

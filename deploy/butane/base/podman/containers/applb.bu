@@ -1,3 +1,4 @@
+---
 variant: fcos
 version: 1.5.0
 storage:
@@ -15,28 +16,18 @@ storage:
           ExecStartPre=modprobe iptable_filter
           ExecStartPre=modprobe iptable_nat
           ExecStartPre=/usr/bin/podman secret exists k3s-token
-          # TODO update suffix with env variable if possible
-          EnvironmentFile=/var/usrlocal/etc/sysconfig/k3s-loadbalancer
-          EnvironmentFile=/var/usrlocal/etc/sysconfig/k3s-applb-%i
           Environment="NAME=k3s-applb-%i"
 
           [Container]
           ContainerName=${NAME}
-          Environment=K3S_NODE_NAME=${NAME}
           HostName=${NAME}
           Label=app=k3s
           Label=role=loadbalancer
           Label=cluster=${CLUSTER}
           Image=k3s.image
-          Exec=agent --node-external-ip ${HOST_IP}
-          Network=kube-node.network:ip=${NODE_IP}
-          Network=kube-service.network
           DNSSearch=${DNS_SEARCH}
-          PublishPort=${HOST_IP}:80:80
-          PublishPort=${HOST_IP}:443:443
-          PublishPort=${HOST_IP}:53:30053/udp
-          PublishPort=${HOST_IP}:8554:30555/udp
-          PublishPort=${HOST_IP}:8555:30556/tcp
+          PublishPort=${NODE_EXTERNAL_IP}:80:80
+          PublishPort=${NODE_EXTERNAL_IP}:443:443
           Pull=never
           ShmSize=5g
           Secret=k3s-token,type=env,target=K3S_TOKEN
@@ -44,8 +35,36 @@ storage:
           Volume=/etc/machine-id:/etc/machine-id:ro
           Volume=${NAME}-data:/var/lib/rancher/k3s
           Volume=${NAME}-rancher:/etc/rancher
-          Volume=/var/usrlocal/etc/k3s/config/${NAME}.yaml:/etc/rancher/k3s/config.yaml:z,ro
+          Volume=/usr/local/etc/k3s/config/${NAME}.yaml:/etc/rancher/k3s/config.yaml:z,ro
           PodmanArgs=--oom-score-adj=1000 --privileged
 
           [Install]
           WantedBy=default.target
+    - path: /etc/containers/systemd/k3s-applb@.container.d/exec.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Container]
+          Exec=agent --node-ip=${NODE_IP} --node-external-ip=${NODE_EXTERNAL_IP}
+    - path: /etc/containers/systemd/k3s-applb@0.container.d/networks.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Container]
+          Network=kube-agent.network:ip=${NODE_IP},interface_name=agent0
+          Network=kube-service.network:ip=${SERVICE_IP},interface_name=service0
+          Network=kube-pod.network:ip=${POD_IP},interface_name=pod0
+    - path: /etc/containers/systemd/k3s-applb@.container.d/env-cluster.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Service]
+          EnvironmentFile=/var/usrlocal/etc/sysconfig/k3s-cluster
+    # https://docs.k3s.io/cli/agent#cluster-options
+    # https://docs.k3s.io/cli/agent#node
+    - path: /etc/containers/systemd/k3s-applb@.container.d/env-k3s-url.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Container]
+          EnvironmentFile=/usr/local/etc/sysconfig/k3s-url

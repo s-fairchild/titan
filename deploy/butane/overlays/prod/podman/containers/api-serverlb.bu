@@ -2,25 +2,29 @@ variant: fcos
 version: 1.5.0
 storage:
   links:
-    - path: /etc/containers/systemd/k3s-apiserver@0.container
-      target: /etc/containers/systemd/k3s-apiserver@.container
+    - path: /etc/containers/systemd/k3s-apiserverlb@0.container
+      target: /etc/containers/systemd/k3s-apiserverlb@.container
       overwrite: true
   files:
+    - path: /etc/containers/systemd/k3s-apiserverlb@0.container.d/dependencies.conf
+      contents:
+        inline: |
+          [Unit]
+          Upholds=k3s-server@1.service
+          Upholds=k3s-server@2.service
+          Before=k3s-server@1.service
+          Before=k3s-server@2.service
     # Systemd environment
-    - path: /var/usrlocal/etc/sysconfig/k3s-apiserverlb
+    - path: /etc/containers/systemd/k3s-apiserverlb@0.container.d/env.conf
       overwrite: true
       contents:
         inline: |
-          CLUSTER="rick"
-          DNS_SEARCH="expresso.lan"
-    - path: /var/usrlocal/etc/sysconfig/k3s-apiserverlb-0
-      overwrite: true
-      contents:
-        inline: |
-          NODE_IP="10.98.0.5"
-          SERVICE_IP="10.43.0.253"
+          [Service]
+          Environment=NODE_IP="10.10.0.1"
+          Environment=SERVICE_IP="10.43.0.10"
+          # TODO set this to external/internal once two apiserver loadbalancers are setup
     # Nginx config
-    - path: /var/usrlocal/etc/k3s/config/k3s-apiserverlb-0-nginx.conf
+    - path: /usr/local/etc/k3s/config/k3s-apiserverlb-0.conf
       overwrite: true
       contents:
-        local: butane/overlays/prod/coreos/files/k3s/k3s-apiserverlb-0-nginx.conf
+        local: butane/overlays/prod/coreos/files/k3s/k3s-apiserverlb-0.conf

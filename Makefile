@@ -57,6 +57,8 @@ installer-download-live-baremetal:
 				-f iso
 
 # TODO get the latest iso file from deploy/isos to use here
+unmodified_iso := "fedora-coreos-41.20250315.3.0-live.x86_64.iso"
+output_iso := "baremetal_fetch_remote_ignition.iso"
 # Example of writing this image to a drive:
 # Replace this with the correct drive!
 # iso_dest_drive="/dev/sdc"
@@ -75,8 +77,8 @@ installer-customize-embed-ign:
 					--dest-ignition config/live.ign \
 					--dest-console ttyS0,115200n8 \
 					--dest-console tty0 \
-					-o custom/cluster_custom_installer.iso \
-					./fedora-coreos-41.20250117.3.0-live.x86_64.iso
+					-o custom/${output_iso} \
+					./${unmodified_iso}
 
 images := "$(HOME)/.local/share/libvirt/images"
 installer-download-libvirt:

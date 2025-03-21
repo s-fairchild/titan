@@ -36,7 +36,6 @@ serve() {
         80
         -e
         "/${nc_handle_sh}"
-        -k
         -l
     )
 

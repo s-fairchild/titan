@@ -1,3 +1,4 @@
+---
 variant: fcos
 version: 1.5.0
 storage:
@@ -6,6 +7,13 @@ storage:
       overwrite: true
       target: /etc/containers/systemd/k3s-agent@.container
   files:
+    - path: /etc/containers/systemd/k3s-agent@1.container.d/dependencies.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Service]
+          Upholds=k3s-applb@1.service
+          Before=k3s-applb@1.service
     - path: /etc/containers/systemd/k3s-agent@1.container.d/add_render_device.conf
       overwrite: true
       contents:
@@ -16,22 +24,18 @@ storage:
           AddDevice=${DRI_CARD}:/dev/dri/card0
           AddDevice=${V4L0}:${V4L0}
           AddDevice=${V4L1}:${V4L1}
-    # Container systemd environment files
-    - path: /var/usrlocal/etc/sysconfig/k3s-agent
+    - path: /usr/local/etc/sysconfig/k3s-agent@1
       overwrite: true
       contents:
         inline: |
-          CLUSTER="rick"
-          DNS_SEARCH="expresso.lan"
-    - path: /usr/local/etc/sysconfig/k3s-agent-1
-      overwrite: true
-      contents:
-        inline: |
-          NODE_IP="10.98.0.101"
+          # Passed to agent command line
+          NODE_IP="10.99.0.101"
 
+          # Added to container as devices
+          # GPU
           DRI_CARD="/dev/dri/by-path/platform-fec00000.v3d-card"
           DRI_RENDER="/dev/dri/by-path/platform-fec00000.v3d-render"
-
+          # USB Camera
           V4L0="/dev/v4l/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-video-index0"
           V4L1="/dev/v4l/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-video-index1"
     # K3S agent config

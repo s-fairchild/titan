@@ -7,34 +7,24 @@ ignition:
       - inline: deploy/butane/base/coreos/services.bu
       - inline: deploy/butane/base/coreos/storage/filesystem/btrfsmaintenance.bu
       - inline: deploy/butane/base/podman/images/k3s.bu
+      - inline: deploy/butane/base/podman/networks/kube-pod-network.bu
+      - inline: deploy/butane/overlays/rpi4/podman/networks/kube-pod-network.bu
       - inline: deploy/butane/base/podman/volumes/agent.bu
       - inline: deploy/butane/base/podman/containers/agent.bu
       - inline: deploy/butane/base/podman/containers/applb.bu
+      - inline: deploy/butane/base/podman/k3s-env.bu
       - inline: deploy/butane/overlays/rpi4/coreos/users.bu
       - inline: deploy/butane/overlays/rpi4/coreos/storage/disk.bu
-      - inline: deploy/butane/overlays/rpi4/coreos/storage/filesystem.bu
+      - inline: deploy/butane/overlays/rpi4/coreos/storage/filesystem/filesystem.bu
+      - inline: deploy/butane/overlays/rpi4/coreos/storage/filesystem/btrfsmaintenance.bu
       - inline: deploy/butane/overlays/rpi4/podman/containers/agent.bu
       - inline: deploy/butane/overlays/rpi4/podman/containers/applb.bu
+      - inline: deploy/butane/overlays/rpi4/podman/images.bu
 storage:
   files:
     - path: /etc/hostname
       mode: 0644
+      overwrite: true
       contents:
         inline: |
           rpi4.expresso.lan
-    - path: /etc/NetworkManager/system-connections/enp1s0.nmconnection
-      mode: 0600
-      contents:
-        inline: |
-          [connection]
-          id=end0
-          uuid=0af44b04-df3b-3023-b3f2-4194f1203d75
-          type=ethernet
-          interface-name=end0
-          [ipv4]
-          address1=10.50.0.12/32,10.50.0.1
-          dhcp-hostname=rpi4
-          dns=10.50.0.2,8.8.8.8;
-          dns-search=expresso.lan
-          may-fail=false
-          method=manual

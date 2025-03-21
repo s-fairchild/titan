@@ -6,7 +6,15 @@ storage:
       overwrite: true
       target: /etc/containers/systemd/k3s-agent@.container
   files:
-    - path: /etc/containers/systemd/k3s-agent@.container.d/add_render_device.conf
+    - path: /etc/containers/systemd/k3s-agent@0.container.d/dependencies.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Unit]
+          After=k3s-server@0.service
+          Upholds=k3s-applb@0.service
+    # Agent 0 config
+    - path: /etc/containers/systemd/k3s-agent@0.container.d/add_render_device.conf
       overwrite: true
       contents:
         inline: |
@@ -14,28 +22,30 @@ storage:
           AddDevice=/dev/snd:/dev/snd
           AddDevice=${DRI_RENDER}:/dev/dri/renderD128:rwm
           AddDevice=${DRI_CARD}:/dev/dri/card0
-    - path: /etc/containers/systemd/k3s-agent@.container.d/volumes.conf
+    - path: /etc/containers/systemd/k3s-agent@0.container.d/volumes.conf
       overwrite: true
       contents:
         inline: |
-          Volume=local-path-nvme.volume:/mnt/local-path-nvme:z
+          [Container]
           Volume=local-path-appdata.volume:/mnt/local-path-appdata:z
           Volume=local-path-cctv.volume:/mnt/local-path-cctv:z
-    # Container systemd environment files
-    - path: /var/usrlocal/etc/sysconfig/k3s-agent
+    - path: /etc/containers/systemd/k3s-agent@0.container.d/env.conf
       overwrite: true
       contents:
         inline: |
-          CLUSTER="rick"
-          DNS_SEARCH="expresso.lan"
-    - path: /usr/local/etc/sysconfig/k3s-agent-0
+          [Service]
+          Environment=DRI_CARD="/dev/dri/card1"
+          Environment=DRI_RENDER="/dev/dri/renderD128"
+          Environment=NODE_IP="10.11.0.6"
+          Environment=POD_IP="10.42.0.6"
+          Environment=SERVICE_IP="10.43.0.6"
+    # All agent configs
+    - path: /etc/containers/systemd/k3s-agent@.container.d/volume-nvme.conf
       overwrite: true
       contents:
         inline: |
-          NODE_IP="10.98.0.100"
-
-          DRI_CARD="/dev/dri/by-path/pci-0000:00:02.0-card"
-          DRI_RENDER="/dev/dri/by-path/pci-0000:00:02.0-render"
+          [Container]
+          Volume=local-path-nvme.volume:/mnt/local-path-nvme:z
     # K3S agent config
     - path: /usr/local/etc/k3s/config/k3s-agent-0.yaml
       overwrite: true

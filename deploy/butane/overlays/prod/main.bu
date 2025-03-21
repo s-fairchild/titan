@@ -1,3 +1,4 @@
+---
 variant: fcos
 version: 1.5.0
 ignition:
@@ -8,7 +9,10 @@ ignition:
       - inline: deploy/butane/base/coreos/storage/filesystem/btrfsmaintenance.bu
       - inline: deploy/butane/base/podman/images/k3s.bu
       - inline: deploy/butane/base/podman/images/nginx.bu
-      - inline: deploy/butane/base/podman/networks.bu
+      - inline: deploy/butane/base/podman/networks/kube-pod-network.bu
+      - inline: deploy/butane/base/podman/networks/kube-service-network.bu
+      - inline: deploy/butane/base/podman/networks/kube-server-network.bu
+      - inline: deploy/butane/base/podman/networks/kube-agent-network.bu
       - inline: deploy/butane/base/podman/volumes/agent.bu
       - inline: deploy/butane/base/podman/containers/agent.bu
       - inline: deploy/butane/base/podman/containers/server.bu
@@ -17,12 +21,14 @@ ignition:
       - inline: deploy/butane/overlays/prod/coreos/users.bu
       - inline: deploy/butane/overlays/prod/coreos/storage/disk.bu
       - inline: deploy/butane/overlays/prod/coreos/storage/luks.bu
-      - inline: deploy/butane/overlays/prod/coreos/storage/filesystem.bu
+      - inline: deploy/butane/overlays/prod/coreos/storage/filesystem/filesystem.bu
+      - inline: deploy/butane/overlays/prod/coreos/storage/filesystem/btrfsmaintenance.bu
       - inline: deploy/butane/overlays/prod/podman/volumes.bu
       - inline: deploy/butane/overlays/prod/podman/containers/agent.bu
       - inline: deploy/butane/overlays/prod/podman/containers/server.bu
       - inline: deploy/butane/overlays/prod/podman/containers/api-serverlb.bu
       - inline: deploy/butane/overlays/prod/podman/containers/applb.bu
+      - inline: deploy/butane/overlays/prod/podman/k3s-env.bu
 storage:
   files:
     - path: /etc/hostname
@@ -45,17 +51,10 @@ storage:
           [ipv4]
           address1=10.50.0.2/32,10.50.0.1
           dhcp-hostname=rick
-          dns=10.50.0.2,8.8.8.8;
+          dns=10.50.0.1,8.8.8.8;
           dns-search=expresso.lan
           may-fail=false
           method=manual
-      overwrite: true
-    - path: /var/usrlocal/etc/sysconfig/k3s-loadbalancer
-      mode: 0640
-      contents:
-        # TODO HOST_IP value with a local environment variable
-        inline: |
-          HOST_IP="10.50.0.2"
       overwrite: true
     # Needed for the large amount of files kubernetes workloads tend to open
     # Reference: https://discussion.fedoraproject.org/t/setting-ulimit/83508/9
