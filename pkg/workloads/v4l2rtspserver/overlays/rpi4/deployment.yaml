@@ -1,0 +1,52 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rtsp0
+  namespace: v4l2rtspserver
+  labels:
+    app: rtsp0
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: rtsp0
+  template:
+    metadata:
+      name: rtsp0
+      namespace: v4l2rtspserver
+      labels:
+        app: rtsp0
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: rtsp
+                  operator: In
+                  values:
+                    - "0"
+      containers:
+      - name: camera-default
+        args:
+          # TODO setup muticast network once motion is deployed
+          - -P
+          - "8554"
+          - -p
+          - "8085"
+          - -u
+          - ""
+          # -G <w>x<h>[x<f>] : V4L2 capture format (default 0x0x25)
+          - -G
+          - "1280x720x30"
+          - -S60
+          - -A
+          - "48000"
+          - -C
+          - "1"
+          - -a
+          - S16_LE
+          - "/dev/video0,/dev/video0"

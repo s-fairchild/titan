@@ -25,6 +25,7 @@ storage:
           PublishPort=${NODE_EXTERNAL_IP}:6443:6443
           Timezone=UTC
           Pull=never
+          LogDriver=journald
           Volume=/usr/local/etc/k3s/config/${NAME}.conf:/etc/nginx/nginx.conf:Z,ro
           PodmanArgs=--oom-score-adj=1000 --privileged
 
@@ -33,6 +34,11 @@ storage:
     - path: /etc/containers/systemd/k3s-apiserverlb@0.container.d/networks.conf
       contents:
         inline: |
+          [Service]
+          EnvironmentFile=/usr/local/etc/sysconfig/k3s-networks
+          ExecStartPost=-/usr/local/bin/ensure-routes-host.sh /usr/local/etc/sysconfig/k3s-networks \
+                                                              ${SERVER_NETWORK_NAME}
+
           [Container]
           Network=kube-server.network:ip=${NODE_IP}
     - path: /etc/containers/systemd/k3s-apiserverlb@.container.d/env-cluster.conf

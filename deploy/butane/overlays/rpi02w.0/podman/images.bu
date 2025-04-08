@@ -1,0 +1,11 @@
+---
+variant: fiot
+version: 1.0.0
+storage:
+  files:
+    - path: /etc/containers/systemd/k3s.image.d/start-delay.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Service]
+          ExecStartPre=/usr/bin/sleep 60

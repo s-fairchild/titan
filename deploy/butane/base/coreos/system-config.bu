@@ -1,3 +1,4 @@
+---
 variant: fcos
 version: 1.5.0
 storage:
@@ -19,7 +20,6 @@ storage:
         inline: |
           # This config file enables a /dev/zram0 device with the default settings
           [zram0]
-    - path: /etc/containers/storage.conf
+  directories:
+    - path: /etc/containers/systemd
       overwrite: true
-      contents:
-        local: butane/base/podman/storage.conf

@@ -11,6 +11,6 @@ spec:
   ports:
     - name: jellyfin-web
       protocol: TCP
-      port: 8080
-      targetPort: 8096
+      port: 8085
+      targetPort: web
   type: LoadBalancer

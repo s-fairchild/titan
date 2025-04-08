@@ -1,3 +1,4 @@
+---
 variant: fcos
 version: 1.5.0
 ignition:
@@ -7,12 +8,11 @@ ignition:
       - inline: deploy/butane/base/coreos/services.bu
       - inline: deploy/butane/base/coreos/storage/filesystem/btrfsmaintenance.bu
       - inline: deploy/butane/base/podman/images/k3s.bu
-      - inline: deploy/butane/base/podman/networks/kube-pod-network.bu
-      - inline: deploy/butane/overlays/rpi4/podman/networks/kube-pod-network.bu
       - inline: deploy/butane/base/podman/volumes/agent.bu
       - inline: deploy/butane/base/podman/containers/agent.bu
       - inline: deploy/butane/base/podman/containers/applb.bu
-      - inline: deploy/butane/base/podman/k3s-env.bu
+      - inline: deploy/butane/base/podman/networks/kube-agent-network.bu
+      - inline: deploy/butane/overlays/rpi4/podman/k3s-env.bu
       - inline: deploy/butane/overlays/rpi4/coreos/users.bu
       - inline: deploy/butane/overlays/rpi4/coreos/storage/disk.bu
       - inline: deploy/butane/overlays/rpi4/coreos/storage/filesystem/filesystem.bu
@@ -20,6 +20,7 @@ ignition:
       - inline: deploy/butane/overlays/rpi4/podman/containers/agent.bu
       - inline: deploy/butane/overlays/rpi4/podman/containers/applb.bu
       - inline: deploy/butane/overlays/rpi4/podman/images.bu
+      - inline: deploy/butane/overlays/rpi4/podman/networks/kube-agent-network.bu
 storage:
   files:
     - path: /etc/hostname
@@ -28,3 +29,31 @@ storage:
       contents:
         inline: |
           rpi4.expresso.lan
+    - path: /etc/NetworkManager/system-connections/Wired Connection 1.nmconnection
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          [connection]
+          id=Wired connection 1
+          uuid=86ee1b56-3c68-3669-8e3f-5e3af26333b1
+          type=ethernet
+          autoconnect-priority=-999
+          interface-name=end0
+
+          [ethernet]
+
+          [ipv4]
+          address1=10.50.0.12/24,10.50.0.1
+          address2=10.50.0.25/32
+          address2=10.50.0.26/32
+          dns=10.50.0.1;8.8.8.8;
+          dns-search=expresso.lan;
+          may-fail=false
+          method=manual
+
+          [ipv6]
+          addr-gen-mode=default
+          method=disabled
+
+          [proxy]

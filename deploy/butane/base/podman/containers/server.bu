@@ -36,6 +36,7 @@ storage:
           ShmSize=5g
           Secret=k3s-token,type=env,target=K3S_TOKEN
           Timezone=UTC
+          LogDriver=journald
           Volume=/etc/machine-id:/etc/machine-id:ro
           Volume=${NAME}-kubelet:/var/lib/kubelet:Z
           Volume=${NAME}-data:/var/lib/rancher/k3s:Z
@@ -43,9 +44,8 @@ storage:
           Volume=${NAME}-storage:/var/lib/rancher/k3s/storage:Z
           Volume=${NAME}-log:/var/log/pod:Z
           Volume=${NAME}-containers:/var/lib/containers:Z
-          Volume=/usr/local/etc/k3s/config/${NAME}.yaml:/etc/rancher/k3s/config.yaml:Z,ro
           Volume=/usr/local/etc/k3s/manifests:/var/lib/rancher/k3s/server/manifests/compute:z
-          Volume=/usr/local/etc/k3s/skip:/var/lib/rancher/k3s/server/manifests/skip:z,ro
+          Volume=/usr/local/etc/k3s/server/skip:/var/lib/rancher/k3s/server/manifests/skip:z,ro
           AddDevice=/dev/fuse:/dev/fuse
           PodmanArgs=--oom-score-adj=1000 --privileged
 
@@ -55,10 +55,14 @@ storage:
       overwrite: true
       contents:
         inline: |
+          [Service]
+          EnvironmentFile=/usr/local/etc/sysconfig/k3s-networks
+          ExecStartPost=-/usr/local/bin/ensure-routes-host.sh /usr/local/etc/sysconfig/k3s-networks \
+                                                              ${SERVER_NETWORK_NAME} \
+                                                              ${SERVICE_NETWORK_NAME}
           [Container]
           Network=kube-server.network:ip=${NODE_IP},interface_name=server0
           Network=kube-service.network:ip=${SERVICE_IP},interface_name=service0
-          Network=kube-pod.network:ip=${POD_IP},interface_name=pod0
     - path: /etc/containers/systemd/k3s-server@.container.d/exec.conf
       overwrite: true
       contents:
@@ -67,15 +71,24 @@ storage:
         inline: |
           [Container]
           Exec=server --node-ip=${NODE_IP} \
-                      --node-external-ip=${NODE_EXTERNAL_IP} \
-                      --service-cidr=${SERVICE_CIDR} \
-                      --cluster-cidr=${CLUSTER_CIDR} \
                       --flannel-backend=wireguard-native \
-                      --egress-selector-mode=pod \
-                      --secrets-encryption
+                      --default-local-storage-path=/mnt/local-path/default \
+                      --secrets-encryption \
+                      --servicelb-namespace=kube-system-lb \
+                      --etcd-expose-metrics \
+                      --kubelet-arg=cgroup-root=/ \
+                      ${TLS_SAN_LIST} \
+                      ${SERVER_EXTRA_ARGS}
+    - path: /etc/containers/systemd/k3s-server@.container.d/exec-extra-args.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Service]
+          Environment=SERVER_EXTRA_ARGS=""
     - path: /etc/containers/systemd/k3s-server@.container.d/env-cluster.conf
       overwrite: true
       contents:
         inline: |
           [Service]
           EnvironmentFile=/usr/local/etc/sysconfig/k3s-cluster
+          EnvironmentFile=/usr/local/etc/sysconfig/k3s

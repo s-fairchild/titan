@@ -2,7 +2,6 @@ variant: fcos
 version: 1.5.0
 storage:
   links:
-    # TODO create dropin directories to hold Unit conditions for unit dependencies
     - path: /etc/containers/systemd/k3s-server@0.container
       overwrite: true
       target: /etc/containers/systemd/k3s-server@.container
@@ -13,31 +12,6 @@ storage:
       overwrite: true
       target: /etc/containers/systemd/k3s-server@.container
   files:
-    - path: /usr/local/etc/k3s/manifests/coredns-custom.yaml
-      overwrite: true
-    - path: /usr/local/etc/k3s/manifests/jellyfin.yaml
-      overwrite: true
-    - path: /usr/local/etc/k3s/manifests/local-storage-custom.yaml
-      overwrite: true
-    - path: /usr/local/etc/k3s/manifests/pihole.yaml
-      overwrite: true
-    - path: /usr/local/etc/k3s/manifests/traefik-custom.yaml
-      overwrite: true
-    - path: /usr/local/etc/k3s/manifests/.gitignore
-      overwrite: true
-    # K3S config
-    - path: /usr/local/etc/k3s/config/k3s-server-0.yaml
-      overwrite: true
-      contents:
-        local: butane/overlays/prod/coreos/files/k3s/k3s-server-0.yaml
-    - path: /usr/local/etc/k3s/config/k3s-server-1.yaml
-      overwrite: true
-      contents:
-        local: butane/overlays/prod/coreos/files/k3s/k3s-server-1.yaml
-    - path: /usr/local/etc/k3s/config/k3s-server-2.yaml
-      overwrite: true
-      contents:
-        local: butane/overlays/prod/coreos/files/k3s/k3s-server-2.yaml
     # Server environment
     - path: /etc/containers/systemd/k3s-server@0.container.d/env.conf
       overwrite: true
@@ -45,15 +19,16 @@ storage:
         inline: |
           [Service]
           Environment=NODE_IP="10.10.0.2"
-          Environment=POD_IP="10.42.2.2"
           Environment=SERVICE_IP="10.43.2.2"
+
+          [Container]
+          Environment=K3S_CLUSTER_INIT=true
     - path: /etc/containers/systemd/k3s-server@1.container.d/env.conf
       overwrite: true
       contents:
         inline: |
           [Service]
           Environment=NODE_IP="10.10.0.3"
-          Environment=POD_IP="10.42.2.3"
           Environment=SERVICE_IP="10.43.2.3"
     - path: /etc/containers/systemd/k3s-server@2.container.d/env.conf
       overwrite: true
@@ -61,7 +36,6 @@ storage:
         inline: |
           [Service]
           Environment=NODE_IP="10.10.0.4"
-          Environment=POD_IP="10.42.2.4"
           Environment=SERVICE_IP="10.43.2.4"
     - path: /etc/containers/systemd/k3s-server@0.container.d/dependencies.conf
       overwrite: true
@@ -82,6 +56,17 @@ storage:
           Wants=k3s-server@2.service
           After=k3s-server@0.service
           Before=k3s-server@2.service
+    - path: /etc/containers/systemd/k3s-server@.container.d/exec-extra-args.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Service]
+          # https://docs.k3s.io/cli/server?_highlight=tls&_highlight=san#listeners
+          # https://github.com/k3s-io/k3s/pull/7380
+          Environment=TLS_SAN_LIST="--tls-san=10.10.0.1,k3s-apiserverlb-0,10.50.0.2,rick.expresso.lan"
+
+          # https://docs.k3s.io/cli/server#admin-kubeconfig-options
+          Environment=SERVER_EXTRA_ARGS=--write-kubeconfig=/root/admin.kubeconfig
     - path: /etc/containers/systemd/k3s-server@1.container.d/k3s-url.conf
       overwrite: true
       contents:
@@ -104,13 +89,15 @@ storage:
           Requires=k3s-apiserverlb@0.service
           After=k3s-server@1.service
           After=k3s-server@0.service
-    # Skip Operators
-    - path: /usr/local/etc/k3s/skip/local-storage.yaml.skip
+  directories:
+    - path: /usr/local/etc/k3s/server/skip
       overwrite: true
-    - path: /usr/local/etc/k3s/skip/traefik.yaml.skip
+    - path: /usr/local/etc/k3s/manifests
       overwrite: true
   trees:
-    - path: /usr/local/etc/k3s/skip
-      local: butane/overlays/prod/coreos/files/k3s/skip
+    - path: /usr/local/etc/k3s/server/skip
+      local: butane/overlays/prod/coreos/files/k3s/server/skip
+    # TODO update manifests path, requires editing manifests gen script
+    # - path: /usr/local/etc/k3s/server/manifests
     - path: /usr/local/etc/k3s/manifests
       local: butane/overlays/prod/coreos/files/k3s/manifests

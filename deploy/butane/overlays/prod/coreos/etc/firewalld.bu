@@ -1,0 +1,12 @@
+---
+variant: fcos
+version: 1.5.0
+systemd:
+  units:
+    - name: firewalld.service
+      enabled: false
+storage:
+  files:
+  - path: /etc/firewalld/firewalld.conf
+    append:
+    - local: butane/overlays/prod/coreos/etc/firewalld.conf

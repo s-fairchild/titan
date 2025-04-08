@@ -17,14 +17,6 @@ storage:
 
           [Install]
           WantedBy=default.target
-    - path: /etc/containers/systemd/kube-service.network.d/ipv4.conf
-      overwrite: true
-      contents:
-        inline: |
-          [Network]
-          Gateway=10.43.254.254
-          Subnet=10.43.0.0/16
-          IPRange=10.43.100.1-10.43.100.100
     - path: /etc/containers/systemd/kube-service.network.d/env-k3s.conf
       overwrite: true
       contents:

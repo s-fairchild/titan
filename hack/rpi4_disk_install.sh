@@ -12,8 +12,8 @@ main () {
     local -r ignition_config_file="${2?"Ignition config must be provided$error_fail_prefix"}"
     local -r fcos_image_file="${3?"FCOS image file $error_fail_prefix"}"
 
-    local -r boot_files_dir="/tmp/RPi4boot/"
-    local -r boot_efi_files_dir="$boot_files_dir/boot/efi/"
+    local -r boot_files_dir="/tmp/RPi4boot"
+    local -r boot_efi_files_dir="$boot_files_dir/boot/efi"
     mkdir -p "$boot_efi_files_dir"
 
     download_pkgs "$boot_files_dir" "$RELEASE"

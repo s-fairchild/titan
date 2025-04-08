@@ -11,18 +11,18 @@ data:
                     "nodePathMap": [
                     {
                             "node":"DEFAULT_PATH_FOR_NON_LISTED_NODES",
-                            "paths":["/mnt/local-path-default"]
+                            "paths":["/mnt/local-path/default"]
                     }
                     ]
                     },
-                    "local-path-nvme": {
-                            "sharedFilesystemPath": "/mnt/local-path-nvme"
+                    "local-path-default": {
+                            "sharedFilesystemPath": "/mnt/local-path/default"
                     },
                     "local-path-appdata": {
-                            "sharedFilesystemPath": "/mnt/local-path-appdata"
+                            "sharedFilesystemPath": "/mnt/local-path/appdata"
                     },
                     "local-path-cctv": {
-                            "sharedFilesystemPath": "/mnt/local-path-cctv"
+                            "sharedFilesystemPath": "/mnt/local-path/cctv"
                     }
               }
     }

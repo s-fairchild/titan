@@ -1,3 +1,4 @@
+---
 variant: fcos
 version: 1.5.0
 storage:
@@ -21,7 +22,7 @@ storage:
         inline: |
           [Service]
           Environment=NODE_IP="10.10.0.1"
-          Environment=SERVICE_IP="10.43.0.10"
+          Environment=NODE_EXTERNAL_IP="10.50.0.2"
           # TODO set this to external/internal once two apiserver loadbalancers are setup
     # Nginx config
     - path: /usr/local/etc/k3s/config/k3s-apiserverlb-0.conf

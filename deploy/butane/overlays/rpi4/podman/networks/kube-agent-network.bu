@@ -1,0 +1,14 @@
+---
+variant: fcos
+version: 1.5.0
+storage:
+  files:
+    - path: /etc/containers/systemd/kube-agent.network.d/ipv4.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Network]
+          Gateway=10.12.254.254
+          Subnet=10.12.0.0/16
+
+          Options=vrf=vrf-agent
