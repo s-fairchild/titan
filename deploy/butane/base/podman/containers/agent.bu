@@ -30,6 +30,7 @@ storage:
           ShmSize=5g
           Secret=k3s-token,type=env,target=K3S_TOKEN
           Timezone=UTC
+          LogDriver=journald
           Volume=/etc/machine-id:/etc/machine-id:ro
           Volume=local-path-default.volume:/mnt/local-path-default:z
           Volume=${NAME}-kubelet:/var/lib/kubelet:Z
@@ -54,7 +55,13 @@ storage:
       contents:
         inline: |
           [Container]
-          Exec=agent --node-ip=${NODE_IP} --node-external-ip=${NODE_EXTERNAL_IP}
+          Exec=agent --node-ip=${NODE_IP} --node-external-ip=${NODE_EXTERNAL_IP} ${AGENT_EXTRA_ARGS}
+    - path: /etc/containers/systemd/k3s-agent@.container.d/exec-extra-args.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Service]
+          Environment=AGENT_EXTRA_ARGS=""
     - path: /etc/containers/systemd/k3s-agent@.container.d/env-cluster.conf
       overwrite: true
       contents:

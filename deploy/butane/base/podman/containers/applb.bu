@@ -32,6 +32,7 @@ storage:
           ShmSize=5g
           Secret=k3s-token,type=env,target=K3S_TOKEN
           Timezone=UTC
+          LogDriver=journald
           Volume=/etc/machine-id:/etc/machine-id:ro
           Volume=${NAME}-data:/var/lib/rancher/k3s
           Volume=${NAME}-rancher:/etc/rancher
@@ -45,8 +46,14 @@ storage:
       contents:
         inline: |
           [Container]
-          Exec=agent --node-ip=${NODE_IP} --node-external-ip=${NODE_EXTERNAL_IP}
-    - path: /etc/containers/systemd/k3s-applb@0.container.d/networks.conf
+          Exec=agent --node-ip=${NODE_IP} --node-external-ip=${NODE_EXTERNAL_IP} ${AGENT_EXTRA_ARGS}
+    - path: /etc/containers/systemd/k3s-agent@.container.d/exec-extra-args.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Service]
+          Environment=AGENT_EXTRA_ARGS=""
+    - path: /etc/containers/systemd/k3s-applb@.container.d/networks.conf
       overwrite: true
       contents:
         inline: |

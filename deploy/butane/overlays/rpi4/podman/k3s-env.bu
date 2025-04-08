@@ -13,7 +13,7 @@ storage:
           CLUSTER="rick"
           DNS_SEARCH="expresso.lan"
           NODE_EXTERNAL_IP="10.50.0.12"
-    - path: /usr/local/etc/sysconfig/k3s
+    - path: /usr/local/etc/sysconfig/k3s-url
       overwrite: true
       contents:
         inline: |

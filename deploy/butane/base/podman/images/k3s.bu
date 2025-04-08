@@ -9,6 +9,10 @@ storage:
           [Unit]
           Description=Pull image docker.io/rancher/k3s:v1.30.4-k3s1
 
+          [Service]
+          Restart=always
+          RestartSec=30
+
           [Image]
           Image=docker.io/rancher/k3s:v1.30.4-k3s1
 

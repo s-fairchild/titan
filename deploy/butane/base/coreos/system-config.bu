@@ -1,5 +1,9 @@
 variant: fcos
 version: 1.5.0
+systemd:
+  units:
+    - name: systemd-timesyncd.service
+      enabled: true
 storage:
   files:
     - path: /etc/zincati/config.d/55-updates-strategy.toml

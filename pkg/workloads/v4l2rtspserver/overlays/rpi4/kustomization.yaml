@@ -1,8 +1,9 @@
+---
 resources:
-- deployment.yaml
-- service.yaml
-- namespace.yaml
-- ingress.yaml
+- ../../base
+
+# patches:
+#   - 
 
 secretGenerator:
 - name: rtsp0-password

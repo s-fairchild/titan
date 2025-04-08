@@ -36,6 +36,7 @@ storage:
           ShmSize=5g
           Secret=k3s-token,type=env,target=K3S_TOKEN
           Timezone=UTC
+          LogDriver=journald
           Volume=/etc/machine-id:/etc/machine-id:ro
           Volume=${NAME}-kubelet:/var/lib/kubelet:Z
           Volume=${NAME}-data:/var/lib/rancher/k3s:Z

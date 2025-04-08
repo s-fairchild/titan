@@ -8,9 +8,3 @@ storage:
         inline: |
           [Service]
           ExecStartPre=/usr/bin/sleep 60
-    - path: /etc/containers/systemd/nginx.image.d/start-delay.conf
-      overwrite: true
-      contents:
-        inline: |
-          [Service]
-          ExecStartPre=/usr/bin/sleep 60

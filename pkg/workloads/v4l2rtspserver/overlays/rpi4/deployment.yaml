@@ -1,0 +1,33 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rtsp0
+  namespace: v4l2rtspserver
+  labels:
+    app: rtsp0
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: rtsp0
+  template:
+    metadata:
+      name: rtsp0
+      namespace: v4l2rtspserver
+      labels:
+        app: rtsp0
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: camera
+                  operator: In
+                  values:
+                    - "0"
+      containers:
+      - name: camera-default
