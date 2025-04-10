@@ -11,7 +11,7 @@ kube-manifests-gen-staging:
 kube-manifests-gen-prod:
 	hack/gen_kube_manifests.sh ${kustomize_base_dir} deploy/butane/overlays/prod/coreos/files/k3s/manifests prod
 
-# TODO setup overlays for v4l2rtspserver workload
+# These are placed in prod because that is where the servers mount and monitor manifest files
 kube-manifests-gen-rpi4:
 	hack/gen_kube_manifests.sh ${kustomize_base_dir} deploy/butane/overlays/prod/coreos/files/k3s/manifests rpi4
 
@@ -22,10 +22,10 @@ ignition-gen-base: kube-manifests-gen-staging
 ignition-gen-staging: kube-manifests-gen-staging
 	hack/ignition/gen_ignition.sh deploy/butane/overlays/staging/main.bu ${ignition_dest}/staging_main.ign
 
-ignition-gen-prod: kube-manifests-gen-prod
+ignition-gen-prod: kube-manifests-gen-prod kube-manifests-gen-rpi4
 	hack/ignition/gen_ignition.sh deploy/butane/overlays/prod/main.bu ${ignition_dest}/prod_main.ign
 
-ignition-gen-rpi4: kube-manifests-gen-rpi4
+ignition-gen-rpi4:
 	hack/ignition/gen_ignition.sh deploy/butane/overlays/rpi4/main.bu ${ignition_dest}/rpi4_main.ign
 
 ignition-serve-http-base:
@@ -34,7 +34,7 @@ ignition-serve-http-base:
 ignition-serve-http-staging:
 	hack/ignition/deploy/serve_ignition.sh staging
 
-ignition-serve-http-prod:
+ignition-serve-http-prod: ignition-gen-prod
 	hack/ignition/deploy/serve_ignition.sh prod
 
 ignition-serve-http-rpi4:

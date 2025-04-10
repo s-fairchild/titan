@@ -14,13 +14,9 @@ storage:
         inline: |
           [Service]
           Environment=NODE_IP="10.11.0.5"
+          Environment=NODE_EXTERNAL_IP="10.50.0.24"
           Environment=POD_IP="10.42.0.5"
           Environment=SERVICE_IP="10.43.0.5"
-    # K3S config
-    - path: /usr/local/etc/k3s/config/k3s-applb-0.yaml
-      overwrite: true
-      contents:
-        local: butane/overlays/prod/coreos/files/k3s/k3s-applb-0.yaml
     # Container drop-ins
     - path: /etc/containers/systemd/k3s-applb@0.container.d/dependencies.conf
       overwrite: true
@@ -39,4 +35,8 @@ storage:
       contents:
         inline: |
           [Service]
-          Environment=AGENT_EXTRA_ARGS=--node-label=svccontroller.k3s.cattle.io/enablelb=true --node-label=svccontroller.k3s.cattle.io/lbpool=pool0
+          Environment=AGENT_EXTRA_ARGS=--node-label=svccontroller.k3s.cattle.io/enablelb=true \
+                                       --node-label=svccontroller.k3s.cattle.io/lbpool=pool0 \
+                                       --kube-proxy-arg=pod-bridge-interface=pod0 \
+                                       --kube-proxy-arg=detect-local-mode=BridgeInterface \
+                                       --with-node-id

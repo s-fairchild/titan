@@ -13,6 +13,7 @@ storage:
       contents:
         inline: |
           NODE_IP="10.99.0.253"
+          NODE_EXTERNAL_IP="10.50.0.26"
     # K3S config
     - path: /usr/local/etc/k3s/config/k3s-applb-1.yaml
       overwrite: true
@@ -50,4 +51,5 @@ storage:
         inline: |
           [Service]
           # https://docs.k3s.io/cli/agent#node-labels-and-taints-for-agents
-          Environment=AGENT_EXTRA_ARGS=--node-label=svccontroller.k3s.cattle.io/enablelb=true --node-label=svccontroller.k3s.cattle.io/lbpool=pool1
+          Environment=AGENT_EXTRA_ARGS=--node-label=svccontroller.k3s.cattle.io/enablelb=true \
+                                       --node-label=svccontroller.k3s.cattle.io/lbpool=pool1

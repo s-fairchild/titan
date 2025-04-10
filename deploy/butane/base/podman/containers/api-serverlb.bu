@@ -35,7 +35,7 @@ storage:
       contents:
         inline: |
           [Container]
-          Network=kube-server.network:ip=${NODE_IP}
+          Network=kube-server.network:ip=${NODE_IP},alias=${NAME}
     - path: /etc/containers/systemd/k3s-apiserverlb@.container.d/env-cluster.conf
       overwrite: true
       contents:

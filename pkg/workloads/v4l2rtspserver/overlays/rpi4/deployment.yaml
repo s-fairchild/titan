@@ -42,11 +42,11 @@ spec:
           # -G <w>x<h>[x<f>] : V4L2 capture format (default 0x0x25)
           - -G
           - "1280x720x30"
+          - -S60
           - -A
           - "48000"
           - -C
           - "1"
           - -a
           - S16_LE
-          - "/dev/video1,/dev/video1"
-          - " : one"
+          - "/dev/video0,/dev/video0"

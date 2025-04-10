@@ -34,29 +34,41 @@ storage:
   files:
     - path: /etc/hostname
       mode: 0644
+      overwrite: true
       contents:
-        # TODO populate this with environment variable
         inline: |
           rick.expresso.lan
-      overwrite: true
-        # TODO populate this with environment variable
-    - path: /etc/NetworkManager/system-connections/enp1s0.nmconnection
+    - path: /etc/NetworkManager/system-connections/Wired Connection 1.nmconnection
       mode: 0600
+      overwrite: true
       contents:
         inline: |
           [connection]
-          id=eno1
-          uuid=0c74648e-5c31-4bfd-b609-8be3c9e36feb
+          id=Wired connection 1
+          uuid=4693ebc5-803c-3fc9-bec7-9f6207b29ce5
           type=ethernet
-          interface-name=enp5s0
+          autoconnect-priority=-999
+          interface-name=eno1
+
+          [ethernet]
+
           [ipv4]
-          address1=10.50.0.2/32,10.50.0.1
-          dhcp-hostname=rick
-          dns=10.50.0.1,8.8.8.8;
-          dns-search=expresso.lan
+          address1=10.50.0.2/24,10.50.0.1
+          address2=10.50.0.20/32
+          address3=10.50.0.21/32
+          address4=10.50.0.22/32
+          address5=10.50.0.23/32
+          address6=10.50.0.24/32
+          dns=10.50.0.1;8.8.8.8;
+          dns-search=expresso.lan;
           may-fail=false
           method=manual
-      overwrite: true
+
+          [ipv6]
+          addr-gen-mode=default
+          method=disabled
+
+          [proxy]
     # Needed for the large amount of files kubernetes workloads tend to open
     # Reference: https://discussion.fedoraproject.org/t/setting-ulimit/83508/9
     - path: /etc/security/limits.conf

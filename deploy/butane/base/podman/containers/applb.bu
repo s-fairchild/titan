@@ -37,16 +37,27 @@ storage:
           Volume=${NAME}-data:/var/lib/rancher/k3s
           Volume=${NAME}-rancher:/etc/rancher
           Volume=/usr/local/etc/k3s/config/${NAME}.yaml:/etc/rancher/k3s/config.yaml:z,ro
+          PublishPort=${NODE_EXTERNAL_IP}:51820:51820/udp
           PodmanArgs=--oom-score-adj=1000 --privileged
 
           [Install]
           WantedBy=default.target
+    # - path: /etc/containers/systemd/k3s-server@.container.d/podman-socket.conf
+    #   overwrite: true
+    #   contents:
+    #     inline: |
+    #       [Container]
+    #       Volume=${PODMAN_SOCKET_LOCAL}:/run/podman/podman.sock
     - path: /etc/containers/systemd/k3s-applb@.container.d/exec.conf
       overwrite: true
       contents:
         inline: |
           [Container]
-          Exec=agent --with-node-id --node-ip=${NODE_IP} --node-external-ip=${NODE_EXTERNAL_IP} ${AGENT_EXTRA_ARGS}
+          Exec=agent --with-node-id \
+                     --node-ip=${NODE_IP} \
+                     --node-external-ip=${NODE_EXTERNAL_IP} \
+                      --kube-proxy-arg=metrics-bind-address=0.0.0.0 \
+                     ${AGENT_EXTRA_ARGS}
     - path: /etc/containers/systemd/k3s-agent@.container.d/exec-extra-args.conf
       overwrite: true
       contents:

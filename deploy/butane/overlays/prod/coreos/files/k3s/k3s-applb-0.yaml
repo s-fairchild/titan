@@ -1,6 +1,0 @@
----
-node-label:
-  - svccontroller.k3s.cattle.io/enablelb=true
-  - svccontroller.k3s.cattle.io/lbpool=pool0
-debug: false
-with-node-id: true

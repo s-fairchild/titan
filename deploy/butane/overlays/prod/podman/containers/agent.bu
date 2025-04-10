@@ -37,6 +37,7 @@ storage:
           Environment=DRI_CARD="/dev/dri/card1"
           Environment=DRI_RENDER="/dev/dri/renderD128"
           Environment=NODE_IP="10.11.0.6"
+          Environment=NODE_EXTERNAL_IP="10.50.0.23"
           Environment=POD_IP="10.42.0.6"
           Environment=SERVICE_IP="10.43.0.6"
     # K3S agent config
@@ -46,4 +47,8 @@ storage:
         inline: |
           [Service]
           # https://docs.k3s.io/cli/agent#node-labels-and-taints-for-agents
-          Environment=AGENT_EXTRA_ARGS=--node-label=app=compute --node-label=rtsp=1
+          Environment=AGENT_EXTRA_ARGS=--node-label=app=compute \
+                                       --node-label=rtsp=1 \
+                                       --kube-proxy-arg=pod-bridge-interface=pod0 \
+                                       --kube-proxy-arg=detect-local-mode=BridgeInterface
+

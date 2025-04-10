@@ -12,7 +12,8 @@ storage:
           # Used to configure podman at container runtime
           CLUSTER="rick"
           DNS_SEARCH="expresso.lan"
-          NODE_EXTERNAL_IP="10.50.0.12"
+
+          PODMAN_SOCKET_LOCAL=/run/podman/podman.sock
     - path: /usr/local/etc/sysconfig/k3s-url
       overwrite: true
       contents:

@@ -46,11 +46,18 @@ storage:
           Volume=${NAME}-containers:/var/lib/containers:Z
           Volume=/usr/local/etc/k3s/manifests:/var/lib/rancher/k3s/server/manifests/compute:z
           Volume=/usr/local/etc/k3s/server/skip:/var/lib/rancher/k3s/server/manifests/skip:z,ro
+          PublishPort=${NODE_EXTERNAL_IP}:51820:51820/udp
           AddDevice=/dev/fuse:/dev/fuse
           PodmanArgs=--oom-score-adj=1000 --privileged
 
           [Install]
           WantedBy=default.target
+    # - path: /etc/containers/systemd/k3s-server@.container.d/podman-socket.conf
+    #   overwrite: true
+    #   contents:
+    #     inline: |
+    #       [Container]
+    #       Volume=${PODMAN_SOCKET_LOCAL}:/run/podman/podman.sock
     - path: /etc/containers/systemd/k3s-server@.container.d/kube-networks.conf
       overwrite: true
       contents:
@@ -68,9 +75,10 @@ storage:
           [Container]
           Exec=server --node-ip=${NODE_IP} \
                       --node-external-ip=${NODE_EXTERNAL_IP} \
+                      --flannel-backend=wireguard-native \
+                      --flannel-external-ip \
                       --service-cidr=${SERVICE_CIDR} \
                       --cluster-cidr=${CLUSTER_CIDR} \
-                      --flannel-backend=wireguard-native \
                       --egress-selector-mode=agent \
                       --default-local-storage-path=/mnt/local-path/default \
                       --secrets-encryption \
@@ -79,6 +87,7 @@ storage:
                       --kubelet-arg=cgroup-root=/ \
                       --kube-proxy-arg=pod-bridge-interface=pod0 \
                       --kube-proxy-arg=metrics-bind-address=0.0.0.0 \
+                      --kube-proxy-arg=detect-local-mode=BridgeInterface \
                       ${SERVER_EXTRA_ARGS}
     - path: /etc/containers/systemd/k3s-server@.container.d/exec-extra-args.conf
       overwrite: true

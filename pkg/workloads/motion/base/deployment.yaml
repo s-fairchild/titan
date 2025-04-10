@@ -1,3 +1,4 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -28,23 +29,24 @@ spec:
                     - compute
       containers:
       - name: motion
-        image: docker.io/steve51516/motionplus:latest
+        image: docker.io/steve51516/motion:release-4.7.0
         ports:
-        - containerPort: 8091
-          name: http-web-svc
+        - containerPort: 8081
+          name: stream
           protocol: TCP
         securityContext:
           privileged: true
-          capabilities:
-            drop:
-            - CAP_MKNOD
-            - CAP_NET_RAW
-            - CAP_AUDIT_WRITE
+          # capabilities:
+            # drop:
+            # - CAP_MKNOD
+            # - CAP_NET_RAW
+            # - CAP_AUDIT_WRITE
         volumeMounts:
-        - name: media
-          mountPath: /media
-        - name: conf
-          mountPath: /config
+        - name: primary-config
+          mountPath: /root/.motion/
+          readOnly: true
+        - name: target-dir
+          mountPath: /var/motion/
         - name: dev-dri
           mountPath: /dev/dri/renderD128
         - name: card1
@@ -56,14 +58,13 @@ spec:
           limits:
             memory: "10G"
             cpu: "1000m"
-      enableServiceLinks: false
       volumes:
-      - name: media
+      - name: primary-config
+        configMap:
+          name: motion-conf
+      - name: target-dir
         persistentVolumeClaim:
-          claimName: motion-media-pvc
-      - name: conf
-        persistentVolumeClaim:
-          claimName: motion-conf-pvc
+          claimName: target-dir-pvc
       - name: dev-dri
         hostPath:
           path: /dev/dri/renderD128

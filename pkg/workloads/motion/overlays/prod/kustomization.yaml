@@ -1,0 +1,7 @@
+---
+resources:
+  - ../../base
+  - config-map-camera1.yaml
+
+patches:
+  - path: deployment.yaml

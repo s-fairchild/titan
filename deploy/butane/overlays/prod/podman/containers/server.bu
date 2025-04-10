@@ -19,16 +19,19 @@ storage:
         inline: |
           [Service]
           Environment=NODE_IP="10.10.0.2"
+          Environment=NODE_EXTERNAL_IP="10.50.0.20"
           Environment=POD_IP="10.42.2.2"
           Environment=SERVICE_IP="10.43.2.2"
+
+          [Container]
+          Environment=K3S_CLUSTER_INIT=true
     - path: /etc/containers/systemd/k3s-server@1.container.d/env.conf
       overwrite: true
       contents:
         inline: |
           [Service]
-          Environment=K3S_CLUSTER_INIT=true
-
           Environment=NODE_IP="10.10.0.3"
+          Environment=NODE_EXTERNAL_IP="10.50.0.21"
           Environment=POD_IP="10.42.2.3"
           Environment=SERVICE_IP="10.43.2.3"
     - path: /etc/containers/systemd/k3s-server@2.container.d/env.conf
@@ -37,6 +40,7 @@ storage:
         inline: |
           [Service]
           Environment=NODE_IP="10.10.0.4"
+          Environment=NODE_EXTERNAL_IP="10.50.0.22"
           Environment=POD_IP="10.42.2.4"
           Environment=SERVICE_IP="10.43.2.4"
     - path: /etc/containers/systemd/k3s-server@0.container.d/dependencies.conf
@@ -58,13 +62,6 @@ storage:
           Wants=k3s-server@2.service
           After=k3s-server@0.service
           Before=k3s-server@2.service
-    # - path: /etc/containers/systemd/k3s-server@.container.d/k3s-shared-env.conf
-    #   overwrite: true
-    #   contents:
-    #     inline: |
-    #       [Container]
-    #       # https://docs.k3s.io/cli/server#admin-kubeconfig-options
-    #       Environment=K3S_KUBECONFIG_OUTPUT=/root/admin.kubeconfig
     - path: /etc/containers/systemd/k3s-server@.container.d/exec-extra-args.conf
       overwrite: true
       contents:

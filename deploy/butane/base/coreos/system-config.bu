@@ -27,3 +27,6 @@ storage:
       overwrite: true
       contents:
         local: butane/base/podman/storage.conf
+  directories:
+    - path: /etc/containers/systemd
+      overwrite: true

@@ -3,20 +3,6 @@ variant: fcos
 version: 1.5.0
 storage:
   files:
-    - path: /etc/containers/systemd/kube-agent.network
-      overwrite: true
-      contents:
-        inline: |
-          [Unit]
-          Description=Podman Network kube-agent. Each K3S host (physical machine, VM) will need a route to this network.
-
-          [Network]
-          NetworkName=kube-agent
-          Label=cluster=${CLUSTER}
-          Label=app=k3s
-
-          [Install]
-          WantedBy=default.target
     - path: /etc/containers/systemd/kube-agent.network.d/ipv4.conf
       overwrite: true
       contents:
@@ -24,9 +10,5 @@ storage:
           [Network]
           Gateway=10.12.254.254
           Subnet=10.12.0.0/16
-    - path: /etc/containers/systemd/kube-agent.network.d/env-k3s.conf
-      overwrite: true
-      contents:
-        inline: |
-          [Service]
-          EnvironmentFile=/usr/local/etc/sysconfig/k3s-cluster
+
+          Options=vrf=vrf-agent

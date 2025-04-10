@@ -1,0 +1,6 @@
+---
+resources:
+- config-map-motion.yaml
+- deployment.yaml
+- namespace.yaml
+- pvc.yaml

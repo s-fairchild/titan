@@ -34,6 +34,6 @@ spec:
     app: rtsp0
   ports:
   - name: hls
-    port: 8086
-    targetPort: rtsp-http
+    port: 8087
+    targetPort: rtsp-hls
   type: LoadBalancer

@@ -1,3 +1,4 @@
+---
 variant: fcos
 version: 1.5.0
 storage:
@@ -7,13 +8,19 @@ storage:
       contents:
         inline: |
           [Unit]
-          Description=Podman volume %N with btrfs subvolume as backing drive
+          Description=Podman volume local-path-appdata with btrfs subvolume as backing drive
+
+          [Service]
+          # subvolume path is local/lib/k3s/local-path/default
+          ExecStartPre=-btrfs subvolume create -p /var/local/lib/k3s/local-path/default
 
           [Volume]
-          VolumeName=local-path-nvme
-          Label="local-path=default"
+          VolumeName=local-path-default
+          Options=compress=zstd:1,subvol=local/lib/k3s/local-path/default
+          Type=btrfs
+          Device=LABEL=var
+          Label="local-path-class=default"
           Label="app=k3s"
-          Label="role=agent"
           Label="cluster=${CLUSTER}"
 
           [Install]
