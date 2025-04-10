@@ -27,8 +27,8 @@ storage:
       contents:
         inline: |
           [Container]
-          Volume=local-path-appdata.volume:/mnt/local-path-appdata:z
-          Volume=local-path-cctv.volume:/mnt/local-path-cctv:z
+          Volume=local-path-appdata.volume:/mnt/local-path/appdata:z
+          Volume=local-path-cctv.volume:/mnt/local-path/cctv:z
     - path: /etc/containers/systemd/k3s-agent@0.container.d/env.conf
       overwrite: true
       contents:
@@ -39,15 +39,11 @@ storage:
           Environment=NODE_IP="10.11.0.6"
           Environment=POD_IP="10.42.0.6"
           Environment=SERVICE_IP="10.43.0.6"
-    # All agent configs
-    - path: /etc/containers/systemd/k3s-agent@.container.d/volume-nvme.conf
+    # K3S agent config
+    - path: /etc/containers/systemd/k3s-agent@0.container.d/exec-extra-args.conf
       overwrite: true
       contents:
         inline: |
-          [Container]
-          Volume=local-path-nvme.volume:/mnt/local-path-nvme:z
-    # K3S agent config
-    - path: /usr/local/etc/k3s/config/k3s-agent-0.yaml
-      overwrite: true
-      contents:
-        local: butane/overlays/prod/coreos/files/k3s/k3s-agent-0.yaml
+          [Service]
+          # https://docs.k3s.io/cli/agent#node-labels-and-taints-for-agents
+          Environment=AGENT_EXTRA_ARGS=--node-label=app=compute --node-label=rtsp=1

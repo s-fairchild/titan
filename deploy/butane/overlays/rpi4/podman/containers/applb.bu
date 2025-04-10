@@ -49,4 +49,5 @@ storage:
       contents:
         inline: |
           [Service]
-          Environment=AGENT_EXTRA_ARGS=--node-label=svccontroller.k3s.cattle.io/enablelb=true --node-label=svccontroller.k3s.cattle.io/lbpool=pool1 --with-node-id
+          # https://docs.k3s.io/cli/agent#node-labels-and-taints-for-agents
+          Environment=AGENT_EXTRA_ARGS=--node-label=svccontroller.k3s.cattle.io/enablelb=true --node-label=svccontroller.k3s.cattle.io/lbpool=pool1

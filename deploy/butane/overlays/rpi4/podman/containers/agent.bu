@@ -51,6 +51,7 @@ storage:
       contents:
         inline: |
           [Service]
+          # https://docs.k3s.io/cli/agent#node-labels-and-taints-for-agents
           Environment=AGENT_EXTRA_ARGS=--node-label=rtsp=0
     # K3S agent config
     - path: /usr/local/etc/k3s/config/k3s-agent-1.yaml

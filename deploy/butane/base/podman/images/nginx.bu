@@ -9,10 +9,6 @@ storage:
           [Unit]
           Description=Pull image docker.io/nginx:stable
 
-          [Service]
-          Restart=always
-          RestartSec=30
-
           [Image]
           Image=docker.io/nginx:stable
 

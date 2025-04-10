@@ -32,12 +32,11 @@ storage:
           Timezone=UTC
           LogDriver=journald
           Volume=/etc/machine-id:/etc/machine-id:ro
-          Volume=local-path-default.volume:/mnt/local-path-default:z
+          Volume=local-path-default.volume:/mnt/local-path/default:z
           Volume=${NAME}-kubelet:/var/lib/kubelet:Z
           Volume=${NAME}-pod-logs:/var/log/pods:Z
           Volume=${NAME}-data:/var/lib/rancher/k3s:Z
           Volume=${NAME}-etc-rancher:/etc/rancher:Z
-          Volume=/usr/local/etc/k3s/config/${NAME}.yaml:/etc/rancher/k3s/config.yaml:Z,ro
           PodmanArgs=--oom-score-adj=1000 --privileged
 
           [Install]
@@ -68,3 +67,4 @@ storage:
         inline: |
           [Service]
           EnvironmentFile=/usr/local/etc/sysconfig/k3s-cluster
+          EnvironmentFile=/usr/local/etc/sysconfig/k3s

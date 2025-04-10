@@ -69,6 +69,7 @@ installer-customize-embed-ign:
 			--pull=always \
 			--rm \
 			-v ./deploy/iso:/data \
+			-v ./hack/coreos-installer:/data/hack \
 			-w /data \
 			${coreos-installer-image} \
 				iso \
@@ -77,6 +78,7 @@ installer-customize-embed-ign:
 					--dest-ignition config/live.ign \
 					--dest-console ttyS0,115200n8 \
 					--dest-console tty0 \
+					--pre-install hack/post-install.sh \
 					-o custom/${output_iso} \
 					./${unmodified_iso}
 

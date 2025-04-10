@@ -46,7 +46,7 @@ storage:
       contents:
         inline: |
           [Container]
-          Exec=agent --node-ip=${NODE_IP} --node-external-ip=${NODE_EXTERNAL_IP} ${AGENT_EXTRA_ARGS}
+          Exec=agent --with-node-id --node-ip=${NODE_IP} --node-external-ip=${NODE_EXTERNAL_IP} ${AGENT_EXTRA_ARGS}
     - path: /etc/containers/systemd/k3s-agent@.container.d/exec-extra-args.conf
       overwrite: true
       contents:
@@ -67,8 +67,7 @@ storage:
         inline: |
           [Service]
           EnvironmentFile=/var/usrlocal/etc/sysconfig/k3s-cluster
-    # https://docs.k3s.io/cli/agent#cluster-options
-    # https://docs.k3s.io/cli/agent#node
+          EnvironmentFile=/usr/local/etc/sysconfig/k3s
     - path: /etc/containers/systemd/k3s-applb@.container.d/env-k3s-url.conf
       overwrite: true
       contents:

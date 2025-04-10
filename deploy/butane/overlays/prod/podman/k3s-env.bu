@@ -20,5 +20,7 @@ storage:
         inline: |
           # This is used in the node container environment by K3S
           # Used at K3S runtime
-          # K3S_URL=https://10.50.0.2:6443
+          #
+          # https://docs.k3s.io/cli/agent#cluster-options
+          # https://docs.k3s.io/cli/agent#node
           K3S_URL=https://10.10.0.1:6443

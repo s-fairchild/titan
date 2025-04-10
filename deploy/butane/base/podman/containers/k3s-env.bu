@@ -1,0 +1,11 @@
+---
+variant: fcos
+version: 1.5.0
+storage:
+  files:
+    - path: /usr/local/etc/sysconfig/k3s
+      overwrite: true
+      contents:
+        inline: |
+          # https://docs.k3s.io/cli/server#logging
+          K3S_DEBUG=false

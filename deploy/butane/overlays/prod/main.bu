@@ -18,6 +18,7 @@ ignition:
       - inline: deploy/butane/base/podman/containers/server.bu
       - inline: deploy/butane/base/podman/containers/api-serverlb.bu
       - inline: deploy/butane/base/podman/containers/applb.bu
+      - inline: deploy/butane/base/podman/containers/k3s-env.bu
       - inline: deploy/butane/overlays/prod/coreos/users.bu
       - inline: deploy/butane/overlays/prod/coreos/storage/disk.bu
       - inline: deploy/butane/overlays/prod/coreos/storage/luks.bu
