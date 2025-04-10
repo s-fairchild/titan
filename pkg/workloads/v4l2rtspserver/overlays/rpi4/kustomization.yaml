@@ -2,8 +2,10 @@
 resources:
 - ../../base
 
-# patches:
-#   - 
+patches:
+  - path: deployment.yaml
+  - path: service-rtsp.yaml
+  - path: service-hls.yaml
 
 secretGenerator:
 - name: rtsp0-password

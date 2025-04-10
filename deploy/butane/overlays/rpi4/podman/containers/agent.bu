@@ -19,11 +19,11 @@ storage:
       contents:
         inline: |
           [Container]
-          AddDevice=/dev/snd:/dev/snd
           AddDevice=${DRI_RENDER}:/dev/dri/renderD128:rwm
           AddDevice=${DRI_CARD}:/dev/dri/card0
           AddDevice=${V4L0}:/dev/video0
           AddDevice=${V4L1}:/dev/video1
+          AddDevice=${SND_CONTROL0}:/dev/snd/controlC0
     - path: /etc/containers/systemd/k3s-agent@1.container.d/kube-networks.conf
       overwrite: true
       contents:
@@ -44,6 +44,8 @@ storage:
           # USB Camera
           Environment=V4L0="/dev/v4l/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-video-index0"
           Environment=V4L1="/dev/v4l/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-video-index1"
+          # USB Camera Sound Control
+          Environment=SND_CONTROL0="/dev/snd/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-02"
     - path: /etc/containers/systemd/k3s-agent@1.container.d/exec-extra-args.conf
       overwrite: true
       contents:

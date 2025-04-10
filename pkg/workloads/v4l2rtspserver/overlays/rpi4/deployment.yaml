@@ -25,9 +25,28 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
               - matchExpressions:
-                - key: camera
+                - key: rtsp
                   operator: In
                   values:
                     - "0"
       containers:
       - name: camera-default
+        args:
+          # TODO setup muticast network once motion is deployed
+          - -P
+          - "8554"
+          - -p
+          - "8085"
+          - -u
+          - ""
+          # -G <w>x<h>[x<f>] : V4L2 capture format (default 0x0x25)
+          - -G
+          - "1280x720x30"
+          - -A
+          - "48000"
+          - -C
+          - "1"
+          - -a
+          - S16_LE
+          - "/dev/video1,/dev/video1"
+          - " : one"

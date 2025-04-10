@@ -1,3 +1,4 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -19,31 +20,8 @@ spec:
       labels:
         app: rtsp0
     spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                - key: camera
-                  operator: In
-                  values:
-                    - "0"
       containers:
       - name: camera-default
-        args:
-          # TODO setup muticast network once motion is deployed
-          # HTTP over HLS port
-          - "-p"
-          - "8085"
-          # RTSP port
-          - "-P"
-          - "8554"
-          - "-u"
-          - ""
-          - -W 1280
-          - -H 720
-          - -F 30
-          - "/dev/video0,/dev/video0"
         livenessProbe:
           tcpSocket:
             port: rtsp-tcp
@@ -54,10 +32,10 @@ spec:
           name: rtsp-tcp
           protocol: TCP
         - containerPort: 8554
-          name: rtsp-tcp
+          name: rtsp-udp
           protocol: UDP
         - containerPort: 8085
-          name: rtsp-http
+          name: rtsp-hls
         securityContext:
           privileged: true
         volumeMounts:
