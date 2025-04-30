@@ -1,0 +1,13 @@
+---
+variant: fiot
+version: 1.0.0
+passwd:
+  users:
+    - name: core
+      groups:
+        - wheel
+      ssh_authorized_keys_local:
+        - keys/id_ed25519_rpi4.pub
+    - name: root
+      ssh_authorized_keys_local:
+        - keys/id_ed25519_rpi4.pub

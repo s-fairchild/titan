@@ -28,6 +28,9 @@ ignition-gen-prod: kube-manifests-gen-prod kube-manifests-gen-rpi4
 ignition-gen-rpi4:
 	hack/ignition/gen_ignition.sh deploy/butane/overlays/rpi4/main.bu ${ignition_dest}/rpi4_main.ign
 
+ignition-gen-rpi02w-0:
+	hack/ignition/gen_ignition.sh deploy/butane/overlays/rpi02w.0/main.bu ${ignition_dest}/rpi02w-0_main.ign
+
 ignition-serve-http-base:
 	hack/ignition/deploy/serve_ignition.sh base
 
@@ -39,6 +42,9 @@ ignition-serve-http-prod: ignition-gen-prod
 
 ignition-serve-http-rpi4:
 	hack/ignition/deploy/serve_ignition.sh rpi4
+
+ignition-serve-http-rpi02w-0: ignition-gen-rpi02w-0
+	hack/ignition/deploy/serve_ignition.sh rpi02w-0
 
 stream := "stable"
 coreos-installer-image := "quay.io/coreos/coreos-installer:release"

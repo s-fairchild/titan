@@ -1,0 +1,12 @@
+---
+variant: fiot
+version: 1.0.0
+storage:
+  files:
+    - path: /etc/containers/systemd/kube-agent.network.d/ipv4.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Network]
+          Gateway=10.13.254.254
+          Subnet=10.13.0.0/16
