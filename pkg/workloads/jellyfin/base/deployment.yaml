@@ -46,7 +46,7 @@ spec:
               name: web-password
               key: web.password.txt
               optional: false
-        image: docker.io/linuxserver/jellyfin:10.10.5
+        image: docker.io/linuxserver/jellyfin:10.10.7
         ports:
         - containerPort: 8096
           protocol: TCP
