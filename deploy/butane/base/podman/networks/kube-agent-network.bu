@@ -6,20 +6,4 @@ storage:
     - path: /etc/containers/systemd/kube-agent.network
       overwrite: true
       contents:
-        inline: |
-          [Unit]
-          Description=Podman Network kube-agent. Each K3S host (physical machine, VM) will need a route to this network.
-
-          [Network]
-          NetworkName=kube-agent
-          Label=cluster=${CLUSTER}
-          Label=app=k3s
-
-          [Install]
-          WantedBy=default.target
-    - path: /etc/containers/systemd/kube-agent.network.d/env-k3s.conf
-      overwrite: true
-      contents:
-        inline: |
-          [Service]
-          EnvironmentFile=/usr/local/etc/sysconfig/k3s-cluster
+        local: butane/base/podman/networks/kube-agent.network

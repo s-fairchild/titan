@@ -67,18 +67,18 @@ storage:
 
           # https://docs.k3s.io/cli/server#admin-kubeconfig-options
           Environment=SERVER_EXTRA_ARGS=--write-kubeconfig=/root/admin.kubeconfig
-    - path: /etc/containers/systemd/k3s-server@1.container.d/k3s-url.conf
+    - path: /etc/containers/systemd/k3s-server@1.container.d/k3s-env.conf
       overwrite: true
       contents:
         inline: |
           [Container]
-          EnvironmentFile=/usr/local/etc/sysconfig/k3s-url
-    - path: /etc/containers/systemd/k3s-server@2.container.d/k3s-url.conf
+          EnvironmentFile=/usr/local/etc/sysconfig/k3s
+    - path: /etc/containers/systemd/k3s-server@2.container.d/k3s-env.conf
       overwrite: true
       contents:
         inline: |
           [Container]
-          EnvironmentFile=/usr/local/etc/sysconfig/k3s-url
+          EnvironmentFile=/usr/local/etc/sysconfig/k3s
     - path: /etc/containers/systemd/k3s-server@2.container.d/dependencies.conf
       overwrite: true
       contents:
@@ -89,15 +89,3 @@ storage:
           Requires=k3s-apiserverlb@0.service
           After=k3s-server@1.service
           After=k3s-server@0.service
-  directories:
-    - path: /usr/local/etc/k3s/server/skip
-      overwrite: true
-    - path: /usr/local/etc/k3s/manifests
-      overwrite: true
-  trees:
-    - path: /usr/local/etc/k3s/server/skip
-      local: butane/overlays/prod/coreos/files/k3s/server/skip
-    # TODO update manifests path, requires editing manifests gen script
-    # - path: /usr/local/etc/k3s/server/manifests
-    - path: /usr/local/etc/k3s/manifests
-      local: butane/overlays/prod/coreos/files/k3s/manifests

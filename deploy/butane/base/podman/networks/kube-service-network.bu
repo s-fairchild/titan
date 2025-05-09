@@ -7,6 +7,9 @@ storage:
       overwrite: true
       contents:
         inline: |
+          [Service]
+          EnvironmentFile=/usr/local/etc/sysconfig/podman-options
+
           [Unit]
           Description=Podman Network kube-service
 
@@ -14,12 +17,7 @@ storage:
           NetworkName=kube-service
           Label=cluster=${CLUSTER}
           Label=app=k3s
+          Options=com.docker.network.bridge.name=kube-service
 
           [Install]
           WantedBy=default.target
-    - path: /etc/containers/systemd/kube-service.network.d/env-k3s.conf
-      overwrite: true
-      contents:
-        inline: |
-          [Service]
-          EnvironmentFile=/usr/local/etc/sysconfig/k3s-cluster

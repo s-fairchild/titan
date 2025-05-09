@@ -1,0 +1,35 @@
+[Unit]
+Description=K3S Agent Node %i Podman Container
+
+[Service]
+Restart=always
+RestartSec=30
+ExecStartPre=modprobe iptable_filter
+ExecStartPre=modprobe iptable_nat
+ExecStartPre=/usr/bin/podman secret exists k3s-token
+Environment="NAME=k3s-agent-%i"
+EnvironmentFile=/usr/local/etc/sysconfig/podman-options
+
+[Container]
+ContainerName=${NAME}
+HostName=${NAME}
+Label=app=k3s
+Label=cluster=${CLUSTER}
+Image=k3s.image
+Pull=never
+ShmSize=5g
+Secret=k3s-token,type=env,target=K3S_TOKEN
+Timezone=UTC
+LogDriver=journald
+EnvironmentFile=/usr/local/etc/sysconfig/k3s
+Volume=/etc/machine-id:/etc/machine-id:ro
+Volume=${NAME}-kubelet:/var/lib/kubelet:Z
+Volume=${NAME}-pod-logs:/var/log/pods:Z
+Volume=${NAME}-data:/var/lib/rancher/k3s:Z
+Volume=${NAME}-etc-rancher:/etc/rancher:Z
+PodmanArgs=--oom-score-adj=1000 --privileged
+Exec=agent --node-ip=${NODE_IP} \
+            ${AGENT_EXTRA_ARGS}
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,22 @@
+[connection]
+id=Wired connection 1
+uuid=4693ebc5-803c-3fc9-bec7-9f6207b29ce5
+type=ethernet
+autoconnect-priority=-999
+interface-name=eno1
+
+[ethernet]
+
+[ipv4]
+address1=10.50.0.2/24,10.50.0.1
+address2=10.50.0.24/32
+dns=10.50.0.1;8.8.8.8;
+dns-search=expresso.lan;
+may-fail=false
+method=manual
+
+[ipv6]
+addr-gen-mode=default
+method=disabled
+
+[proxy]

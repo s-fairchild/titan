@@ -1,0 +1,12 @@
+# shellcheck shell=bash
+# shellcheck disable=SC2034
+
+# https://docs.k3s.io/cli/agent#cluster-options
+# https://docs.k3s.io/cli/agent#node
+#
+# Internal kube-apiserver loadbalancer address
+# Used by k3s to connect to servers
+K3S_URL=https://k3s-apiserverlb-0:6443
+
+# https://docs.k3s.io/cli/server#logging
+K3S_DEBUG=false

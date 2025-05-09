@@ -8,23 +8,25 @@ storage:
       contents:
         inline: |
           [Unit]
-          Description=Podman volume local-path-appdata with btrfs subvolume as backing drive
+          Description=Podman volume %N with btrfs subvolume as backing drive
 
           [Service]
           # root fs mount point /local-path-appdata
           # subvolume local-path/appdata
-          ExecStartPre=-btrfs subvolume create -p /var/local/lib/k3s/agent/local-path-appdata/local-path/appdata
+          ExecStartPre=-btrfs subvolume create -p /var/local/lib/k3s/agent/%N/local-path/appdata
 
           [Volume]
           VolumeName=local-path-appdata
-          Options=compress=zstd:1,subvol=local-path/appdata
-          Type=btrfs
-          Device=LABEL=appdata
+          Label=cluster=${CLUSTER}
           Label="local-path-class=appdata"
           Label="app=k3s"
+          Type=btrfs
+          Device=LABEL=appdata
+          Options=compress=zstd:1,subvol=local-path/appdata
 
           [Install]
           WantedBy=default.target
+
     - path: /etc/containers/systemd/local-path-cctv.volume
       overwrite: true
       contents:
@@ -35,30 +37,38 @@ storage:
           # root fs mount point /local-path-cctv
           # subvolume local-path/cctv
           [Service]
-          ExecStartPre=-btrfs subvolume create -p /var/local/lib/k3s/agent/local-path-cctv/local-path/cctv
+          ExecStartPre=-btrfs subvolume create -p /var/local/lib/k3s/agent/%N/local-path/cctv
 
           [Volume]
           VolumeName=local-path-cctv
-          Options=compress=zstd:1,subvol=local-path/cctv
+          Label=cluster=${CLUSTER}
+          Label=local-path-class=cctv
+          Label=app=k3s
           Type=btrfs
           Device=LABEL=cctv
-          Label="local-path-class=cctv"
-          Label="app=k3s"
+          Options=compress=zstd:1,subvol=local-path/cctv
 
           [Install]
           WantedBy=default.target
+
     - path: /etc/containers/systemd/local-path-nvme.volume
       overwrite: true
       contents:
         inline: |
-          [Unit]
-          Description=Podman volume %N with btrfs subvolume as backing drive
+          [Service]
+          EnvironmentFile=/usr/local/etc/sysconfig/podman-options
+
+          # subvolume path is local/lib/k3s/local-path/default
+          ExecStartPre=-btrfs subvolume create -p /var/local/lib/k3s/agent/local-path/nvme
 
           [Volume]
-          VolumeName=local-path-nvme
-          Label="local-path=nvme"
-          Label="app=k3s"
-          Label="role=agent"
+          VolumeName=local-path-default
+          Label=cluster=${CLUSTER}
+          Label=local-path-class=nvme
+          Label=app=k3s
+          Type=btrfs
+          Device=LABEL=var
+          Options=compress=zstd:1,subvol=local/lib/k3s/agent/local-path/nvme
 
           [Install]
           WantedBy=default.target

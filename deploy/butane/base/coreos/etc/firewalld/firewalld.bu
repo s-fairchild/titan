@@ -1,0 +1,37 @@
+---
+variant: fcos
+version: 1.5.0
+systemd:
+  units:
+    - name: rpm-ostree-install-firewalld.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Layer firewalld with rpm-ostree
+        Wants=network-online.target
+        After=network-online.target
+        Before=zincati.service
+        ConditionPathExists=!/var/lib/%N.stamp
+
+        [Service]
+        Type=oneshot
+        RemainAfterExit=yes
+        ExecStart=/usr/bin/rpm-ostree install \
+                                      -y \
+                                      --allow-inactive \
+                                      firewalld
+        ExecStart=/bin/touch /var/lib/%N.stamp
+        ExecStart=/bin/systemctl --no-block reboot
+
+        [Install]
+        WantedBy=multi-user.target
+
+    # TODO enable this once firewalld is configured
+    - name: firewalld.service
+      enabled: false
+
+storage:
+  files:
+  - path: /etc/firewalld/firewalld.conf
+    append:
+    - local: butane/base/coreos/etc/firewalld/firewalld.conf

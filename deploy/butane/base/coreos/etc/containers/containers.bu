@@ -1,0 +1,40 @@
+---
+variant: fcos
+version: 1.5.0
+systemd:
+  units:
+    - name: podman.socket
+      enabled: true
+storage:
+  files:
+  - path: /etc/containers/storage.conf
+    overwrite: true
+    contents:
+      local: butane/base/coreos/etc/containers/storage.conf
+
+  - path: /etc/containers/containers.conf.d/network.conf
+    overwrite: true
+    contents:
+      local: butane/base/coreos/etc/containers/containers.conf.d/containers-network.conf
+
+  - path: /etc/containers/containers.conf.d/firewall.conf
+    overwrite: true
+    contents:
+      local: butane/base/coreos/etc/containers/containers.conf.d/containers-firewall.conf
+
+  - path: /etc/containers/containers.conf.d/engine.conf
+    overwrite: true
+    contents:
+      local: butane/base/coreos/etc/containers/containers.conf.d/containers-engine.conf
+
+  - path: /etc/containers/containers.conf.d/containers.conf
+    overwrite: true
+    contents:
+      local: butane/base/coreos/etc/containers/containers.conf.d/containers-containers.conf
+
+  directories:
+    # Ensure all previous configs are removed
+    - path: /etc/containers/containers.conf.d
+      overwrite: true
+    - path: /etc/containers/systemd
+      overwrite: true

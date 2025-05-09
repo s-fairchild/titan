@@ -12,22 +12,21 @@ ignition:
       - inline: deploy/butane/base/podman/networks/kube-service-network.bu
       - inline: deploy/butane/base/podman/networks/kube-server-network.bu
       - inline: deploy/butane/base/podman/networks/kube-agent-network.bu
-      - inline: deploy/butane/base/podman/volumes/agent.bu
-      - inline: deploy/butane/base/podman/containers/agent.bu
-      - inline: deploy/butane/base/podman/containers/server.bu
-      - inline: deploy/butane/base/podman/containers/api-serverlb.bu
-      - inline: deploy/butane/base/podman/containers/applb.bu
-      - inline: deploy/butane/base/podman/containers/k3s-env.bu
-      - inline: deploy/butane/base/podman/containers.bu
+      - inline: deploy/butane/base/podman/volumes/local-path-default.bu
+      - inline: deploy/butane/base/podman/containers/agent/agent.bu
+      - inline: deploy/butane/base/podman/containers/server/server.bu
+      - inline: deploy/butane/base/podman/containers/api-serverlb/api-serverlb.bu
+      - inline: deploy/butane/base/podman/containers/svclb/applb.bu
+      - inline: deploy/butane/base/coreos/etc/containers/containers.bu
+      - inline: deploy/butane/base/coreos/etc/firewalld/firewalld.bu
+      - inline: deploy/butane/base/coreos/etc/sysctl.d/systctl.bu
+      - inline: deploy/butane/base/coreos/usr/local/lib/lib.bu
       - inline: deploy/butane/overlays/prod/coreos/users.bu
-      - inline: deploy/butane/overlays/prod/coreos/usr/usr.bu
+      - inline: deploy/butane/overlays/prod/coreos/usr/local/etc/etc.bu
       - inline: deploy/butane/overlays/prod/coreos/storage/disk.bu
       - inline: deploy/butane/overlays/prod/coreos/storage/luks.bu
       - inline: deploy/butane/overlays/prod/coreos/storage/filesystem/filesystem.bu
       - inline: deploy/butane/overlays/prod/coreos/storage/filesystem/btrfsmaintenance.bu
-      - inline: deploy/butane/overlays/prod/podman/containers.bu
-      - inline: deploy/butane/overlays/prod/coreos/etc/sysctl.d/sysctl.bu
-      - inline: deploy/butane/overlays/prod/coreos/etc/firewalld.bu
       - inline: deploy/butane/overlays/prod/coreos/etc/NetworkManager/NetworkManager.bu
       - inline: deploy/butane/overlays/prod/podman/volumes.bu
       - inline: deploy/butane/overlays/prod/podman/networks/kube-service-network.bu
@@ -37,7 +36,6 @@ ignition:
       - inline: deploy/butane/overlays/prod/podman/containers/server.bu
       - inline: deploy/butane/overlays/prod/podman/containers/api-serverlb.bu
       - inline: deploy/butane/overlays/prod/podman/containers/applb.bu
-      - inline: deploy/butane/overlays/prod/podman/k3s-env.bu
 storage:
   files:
     - path: /etc/hostname

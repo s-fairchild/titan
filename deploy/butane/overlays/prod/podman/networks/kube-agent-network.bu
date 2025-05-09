@@ -7,18 +7,6 @@ storage:
       overwrite: true
       contents:
         inline: |
-          [Service]
-          EnvironmentFile=/usr/local/etc/sysconfig/k3s-networks
-          EnvironmentFile=/usr/local/etc/sysconfig/k3s-cluster
-
           [Network]
-          Gateway=${AGENT_GATEWAY}
-          Subnet=${AGENT_CIDR}
-          DisableDNS=true
-    - path: /etc/containers/systemd/kube-agent.network.d/options.conf
-      overwrite: true
-      contents:
-        inline: |
-          [Network]
-          Options=vrf=${VRF_NETWORK_NAME}
-          Options=com.docker.network.bridge.name=${AGENT_NETWORK_NAME}
+          Subnet=10.11.0.0/16
+          Gateway=10.11.254.254

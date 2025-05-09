@@ -1,0 +1,14 @@
+[Service]
+EnvironmentFile=/usr/local/etc/sysconfig/podman-options
+
+[Unit]
+Description=Podman Network kube-agent. Each K3S host (physical machine, VM) will need a route to this network.
+
+[Network]
+NetworkName=kube-agent
+Label=cluster=${CLUSTER}
+Label=app=k3s
+Options=com.docker.network.bridge.name=kube-agent
+
+[Install]
+WantedBy=default.target

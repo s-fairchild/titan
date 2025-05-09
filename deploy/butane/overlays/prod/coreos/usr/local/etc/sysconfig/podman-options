@@ -1,0 +1,8 @@
+# shellcheck shell=bash
+# shellcheck disable=SC2034
+
+# Applied as label to podman components
+CLUSTER="rick"
+
+# Used by podman run
+DNS_SEARCH="expresso.lan"

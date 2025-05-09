@@ -7,6 +7,9 @@ storage:
       overwrite: true
       contents:
         inline: |
+          [Service]
+          EnvironmentFile=/usr/local/etc/sysconfig/podman-options
+
           [Unit]
           Description=Podman Network kube-server. Each K3S host (physical machine, VM) will need a route to this network.
 
@@ -14,12 +17,7 @@ storage:
           NetworkName=kube-server
           Label=cluster=${CLUSTER}
           Label=app=k3s
+          Options=com.docker.network.bridge.name=kube-server
 
           [Install]
           WantedBy=default.target
-    - path: /etc/containers/systemd/kube-server.network.d/env-k3s.conf
-      overwrite: true
-      contents:
-        inline: |
-          [Service]
-          EnvironmentFile=/usr/local/etc/sysconfig/k3s-cluster

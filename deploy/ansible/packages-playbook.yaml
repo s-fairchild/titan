@@ -1,0 +1,25 @@
+---
+- name: My first play
+  hosts: rpi02ws
+  remote_user: alarm
+  become: true
+  tasks:
+  - name: Update all packages (pacman -Syu)
+    community.general.pacman:
+      update_cache: true
+      upgrade: true
+
+  - name: Install package podman
+    community.general.pacman:
+      name: podman
+      state: present
+
+  - name: Install package podman-docker
+    community.general.pacman:
+      name: podman-docker
+      state: present
+
+  - name: Install package podman-docker
+    community.general.pacman:
+      name: bash-completion
+      state: present

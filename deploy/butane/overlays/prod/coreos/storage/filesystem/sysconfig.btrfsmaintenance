@@ -1,3 +1,6 @@
+# shellcheck shell=bash
+# shellcheck disable=SC2034
+
 ## Path:        System/File systems/btrfs
 ## Type:        string(none,stdout,journal,syslog)
 ## Default:     "stdout"
@@ -41,7 +44,7 @@ BTRFS_DEFRAG_MIN_SIZE="+1M"
 # (Colon separated paths)
 # The special word/mountpoint "auto" will evaluate all mounted btrfs
 # filesystems
-BTRFS_BALANCE_MOUNTPOINTS="/"
+BTRFS_BALANCE_MOUNTPOINTS="auto"
 
 ## Path:           System/File systems/btrfs
 ## Type:           string(none,daily,weekly,monthly)

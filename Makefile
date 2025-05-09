@@ -8,12 +8,10 @@ kustomize_base_dir := "pkg"
 kube-manifests-gen-staging:
 	hack/gen_kube_manifests.sh ${kustomize_base_dir} deploy/butane/overlays/staging/coreos/files/k3s/manifests staging
 
+manifests_prod_dir := "deploy/butane/overlays/prod/coreos/usr/local/etc/k3s/server/manifests"
 kube-manifests-gen-prod:
-	hack/gen_kube_manifests.sh ${kustomize_base_dir} deploy/butane/overlays/prod/coreos/files/k3s/manifests prod
-
-# These are placed in prod because that is where the servers mount and monitor manifest files
-kube-manifests-gen-rpi4:
-	hack/gen_kube_manifests.sh ${kustomize_base_dir} deploy/butane/overlays/prod/coreos/files/k3s/manifests rpi4
+	rm -rf ${manifests_prod_dir}/*.yaml
+	hack/gen_kube_manifests.sh ${kustomize_base_dir} ${manifests_prod_dir} prod
 
 ignition_dest := "deploy/.ignition"
 ignition-gen-base: kube-manifests-gen-staging
@@ -22,7 +20,7 @@ ignition-gen-base: kube-manifests-gen-staging
 ignition-gen-staging: kube-manifests-gen-staging
 	hack/ignition/gen_ignition.sh deploy/butane/overlays/staging/main.bu ${ignition_dest}/staging_main.ign
 
-ignition-gen-prod: kube-manifests-gen-prod kube-manifests-gen-rpi4
+ignition-gen-prod: kube-manifests-gen-prod
 	hack/ignition/gen_ignition.sh deploy/butane/overlays/prod/main.bu ${ignition_dest}/prod_main.ign
 
 ignition-gen-rpi4:

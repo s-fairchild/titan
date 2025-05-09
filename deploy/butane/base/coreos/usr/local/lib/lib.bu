@@ -1,0 +1,10 @@
+---
+variant: fcos
+version: 1.5.0
+storage:
+  files:
+    - path: /usr/local/lib/utils.sh
+      mode: 0755
+      overwrite: true
+      contents:
+        local: butane/base/coreos/usr/local/lib/utils.sh

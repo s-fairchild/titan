@@ -23,9 +23,3 @@ storage:
           [Service]
           Environment=NODE_IP="10.10.0.1"
           Environment=NODE_EXTERNAL_IP="10.50.0.2"
-          # TODO set this to external/internal once two apiserver loadbalancers are setup
-    # Nginx config
-    - path: /usr/local/etc/k3s/config/k3s-apiserverlb-0.conf
-      overwrite: true
-      contents:
-        local: butane/overlays/prod/coreos/files/k3s/k3s-apiserverlb-0.conf

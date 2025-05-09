@@ -2,58 +2,10 @@
 variant: fcos
 version: 1.5.0
 storage:
-  files:
-  - path: /etc/NetworkManager/system-connections/Wired Connection 1.nmconnection
-    mode: 0600
-    overwrite: true
-    contents:
-      inline: |
-        [connection]
-        id=Wired connection 1
-        uuid=4693ebc5-803c-3fc9-bec7-9f6207b29ce5
-        type=ethernet
-        autoconnect-priority=-999
-        interface-name=eno1
-
-        [ethernet]
-
-        [ipv4]
-        address1=10.50.0.2/24,10.50.0.1
-        address2=10.50.0.24/32
-        dns=10.50.0.1;8.8.8.8;
-        dns-search=expresso.lan;
-        may-fail=false
-        method=manual
-
-        [ipv6]
-        addr-gen-mode=default
-        method=disabled
-
-        [proxy]
-  - path: /etc/NetworkManager/system-connections/vrf-kube.nmconnection
-    mode: 0600
-    overwrite: true
-    contents:
-      inline: |
-        [connection]
-        id=vrf-kube
-        uuid=6cb29e17-3e5b-46de-802f-335dc330b2c2
-        type=vrf
-        interface-name=vrf-kube
-
-        [vrf]
-        table=1000
-
-        [ipv4]
-        method=disabled
-
-        [ipv6]
-        addr-gen-mode=default
-        method=disabled
-
-        [proxy]
-  - path: /etc/NetworkManager/dispatcher.d/99-add-device-routes-vrf
-    mode: 0700
-    overwrite: true
-    contents:
-      local: butane/overlays/prod/coreos/etc/NetworkManager/dispatcher.d/99-add-device-routes-vrf
+  directories:
+    - path: /etc/NetworkManager/system-connections
+      overwrite: true
+  
+  trees:
+    - path: /etc/NetworkManager/system-connections
+      local: butane/overlays/prod/coreos/etc/NetworkManager/system-connections

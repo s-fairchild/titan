@@ -1,0 +1,65 @@
+---
+variant: fcos
+version: 1.5.0
+storage:
+  files:
+    - path: /etc/containers/systemd/k3s-applb@.container
+      overwrite: true
+      contents:
+        inline: |
+          [Unit]
+          Description=K3S Application Loadbalancer Node %i Podman Container
+
+          [Service]
+          Restart=always
+          RestartSec=30
+          ExecStartPre=modprobe iptable_filter
+          ExecStartPre=modprobe iptable_nat
+          ExecStartPre=/usr/bin/podman secret exists k3s-token
+          Environment="NAME=k3s-applb-%i"
+
+          [Container]
+          ContainerName=${NAME}
+          HostName=${NAME}
+          Label=app=k3s
+          Label=role=loadbalancer
+          Label=cluster=${CLUSTER}
+          Image=k3s.image
+          DNSSearch=${DNS_SEARCH}
+          PublishPort=${NODE_EXTERNAL_IP}:80:80
+          PublishPort=${NODE_EXTERNAL_IP}:443:443
+          Pull=never
+          ShmSize=5g
+          Secret=k3s-token,type=env,target=K3S_TOKEN
+          Timezone=UTC
+          LogDriver=journald
+          EnvironmentFile=/usr/local/etc/sysconfig/k3s
+          Volume=/etc/machine-id:/etc/machine-id:ro
+          Volume=${NAME}-data:/var/lib/rancher/k3s
+          Volume=${NAME}-rancher:/etc/rancher
+          PodmanArgs=--oom-score-adj=1000 --privileged
+
+          [Install]
+          WantedBy=default.target
+    - path: /etc/containers/systemd/k3s-applb@.container.d/exec.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Container]
+          Exec=agent --with-node-id \
+                     --node-ip=${NODE_IP} \
+                     --node-external-ip=${NODE_EXTERNAL_IP} \
+                     ${AGENT_EXTRA_ARGS}
+    - path: /etc/containers/systemd/k3s-agent@.container.d/exec-extra-args.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Service]
+          Environment=AGENT_EXTRA_ARGS=""
+    - path: /etc/containers/systemd/k3s-applb@.container.d/networks.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Container]
+          Network=kube-agent.network:ip=${NODE_IP},interface_name=agent0
+          Network=kube-service.network:ip=${SERVICE_IP},interface_name=service0
