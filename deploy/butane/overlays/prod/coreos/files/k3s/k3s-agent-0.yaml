@@ -1,5 +1,0 @@
----
-node-label:
-  - app=compute
-  - camera=0
-debug: false

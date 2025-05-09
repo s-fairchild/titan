@@ -20,9 +20,8 @@ storage:
           Options=compress=zstd:1,subvol=local-path/appdata
           Type=btrfs
           Device=LABEL=appdata
-          Label="local-path=appdata"
+          Label="local-path-class=appdata"
           Label="app=k3s"
-          Label="role=agent"
 
           [Install]
           WantedBy=default.target
@@ -43,9 +42,8 @@ storage:
           Options=compress=zstd:1,subvol=local-path/cctv
           Type=btrfs
           Device=LABEL=cctv
-          Label="local-path=cctv"
+          Label="local-path-class=cctv"
           Label="app=k3s"
-          Label="role=agent"
 
           [Install]
           WantedBy=default.target

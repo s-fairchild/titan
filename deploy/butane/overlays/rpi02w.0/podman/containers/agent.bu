@@ -1,0 +1,56 @@
+---
+variant: fiot
+version: 1.0.0
+storage:
+  links:
+    - path: /etc/containers/systemd/k3s-agent@2.container
+      overwrite: true
+      target: /etc/containers/systemd/k3s-agent@.container
+  files:
+    - path: /etc/containers/systemd/k3s-agent@2.container.d/dependencies.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Unit]
+          Upholds=k3s-applb@2.service
+          Before=k3s-applb@2.service
+    # - path: /etc/containers/systemd/k3s-agent@2.container.d/add_render_device.conf
+      # overwrite: true
+      # contents:
+        # inline: |
+          # [Container]
+          # AddDevice=${DRI_RENDER}:/dev/dri/renderD128:rwm
+          # AddDevice=${DRI_CARD}:/dev/dri/card0
+          # AddDevice=${V4L0}:/dev/video0
+          # AddDevice=${V4L1}:/dev/video1
+          # AddDevice=${SND_CONTROL0}:/dev/snd/controlC0
+    - path: /etc/containers/systemd/k3s-agent@2.container.d/kube-networks.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Container]
+          Network=kube-agent.network:ip=${NODE_IP},interface_name=agent0
+    - path: /etc/containers/systemd/k3s-agent@2.container.d/env.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Service]
+          Environment=NODE_IP="10.13.0.2"
+          NODE_EXTERNAL_IP="10.50.0.27"
+
+          # Added to container as devices
+          # GPU
+          # Environment=DRI_CARD="/dev/dri/by-path/platform-fec00000.v3d-card"
+          # Environment=DRI_RENDER="/dev/dri/by-path/platform-fec00000.v3d-render"
+          # USB Camera
+          #  Environment=V4L0="/dev/v4l/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-video-index0"
+          #  Environment=V4L1="/dev/v4l/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-video-index1"
+          # USB Camera Sound Control
+          # Environment=SND_CONTROL0="/dev/snd/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-02"
+    - path: /etc/containers/systemd/k3s-agent@2.container.d/exec-extra-args.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Service]
+          # https://docs.k3s.io/cli/agent#node-labels-and-taints-for-agents
+          Environment=AGENT_EXTRA_ARGS=--node-label=rtsp=1

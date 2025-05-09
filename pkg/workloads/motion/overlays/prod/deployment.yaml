@@ -1,0 +1,39 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: motion
+  namespace: motion
+  labels:
+    app: motion
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: motion
+  template:
+    metadata:
+      name: motion
+      namespace: motion
+      labels:
+        app: motion
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - compute
+      containers:
+      - name: motion
+        volumeMounts:
+        - name: camera1
+          mountPath: /etc/motion/conf.d/
+          readOnly: true
+      volumes:
+      - name: camera1
+        configMap:
+          name: camera1-conf

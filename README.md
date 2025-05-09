@@ -9,8 +9,13 @@
 ### To Do Items
 
 1. Setup k3d registry node to serve as cluster registry
-1. 
+1. Set these sysctls
+   ```bash
+   Sysctl=net/netfilter/nf_conntrack_tcp_timeout_close_wait=3600
+   Sysctl=net/netfilter/nf_conntrack_tcp_timeout_established=86400
+   Sysctl=net/netfilter/nf_conntrack_max=196608
+   ```
 
-1. References
+2. References
    1. [Getting Started with Fedora CoreOS](https://docs.fedoraproject.org/en-US/fedora-coreos/getting-started/)
    2. [Butane Config v1.5](https://coreos.github.io/butane/config-fcos-v1_5/)

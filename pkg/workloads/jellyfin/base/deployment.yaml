@@ -48,7 +48,8 @@ spec:
               optional: false
         image: docker.io/linuxserver/jellyfin:10.10.7
         ports:
-        - containerPort: 8096
+        - name: web
+          containerPort: 8096
           protocol: TCP
         securityContext:
           privileged: true

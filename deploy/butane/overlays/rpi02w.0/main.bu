@@ -1,0 +1,22 @@
+---
+variant: fiot
+version: 1.0.0
+ignition:
+  config:
+    merge:
+    - inline: deploy/butane/base/coreos/system-config.bu
+    - inline: deploy/butane/base/coreos/services.bu
+    - inline: deploy/butane/base/coreos/storage/filesystem/btrfsmaintenance.bu
+    - inline: deploy/butane/base/podman/images/k3s.bu
+    - inline: deploy/butane/base/podman/volumes/agent.bu
+    - inline: deploy/butane/base/podman/containers/agent.bu
+    - inline: deploy/butane/base/podman/containers/applb.bu
+    - inline: deploy/butane/base/podman/networks/kube-agent-network.bu
+    - inline: deploy/butane/overlays/rpi02w.0/podman/k3s-env.bu
+    - inline: deploy/butane/overlays/rpi02w.0/coreos/users.bu
+    - inline: deploy/butane/overlays/rpi02w.0/coreos/network.bu
+    - inline: deploy/butane/overlays/rpi02w.0/coreos/hostname.bu
+    - inline: deploy/butane/overlays/rpi02w.0/podman/containers/agent.bu
+    - inline: deploy/butane/overlays/rpi02w.0/podman/containers/applb.bu
+    - inline: deploy/butane/overlays/rpi02w.0/podman/images.bu
+    - inline: deploy/butane/overlays/rpi02w.0/podman/networks/kube-agent-network.bu

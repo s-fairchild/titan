@@ -1,0 +1,13 @@
+---
+variant: fcos
+version: 1.5.0
+systemd:
+  units:
+    - name: podman.socket
+      enabled: true
+storage:
+  files:
+  - path: /etc/containers/storage.conf
+    overwrite: true
+    contents:
+      local: butane/base/coreos/etc/containers/containers-storage.conf

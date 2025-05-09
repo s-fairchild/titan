@@ -32,6 +32,7 @@ storage:
           ShmSize=5g
           Secret=k3s-token,type=env,target=K3S_TOKEN
           Timezone=UTC
+          LogDriver=journald
           Volume=/etc/machine-id:/etc/machine-id:ro
           Volume=${NAME}-data:/var/lib/rancher/k3s
           Volume=${NAME}-rancher:/etc/rancher
@@ -45,24 +46,36 @@ storage:
       contents:
         inline: |
           [Container]
-          Exec=agent --node-ip=${NODE_IP} --node-external-ip=${NODE_EXTERNAL_IP}
-    - path: /etc/containers/systemd/k3s-applb@0.container.d/networks.conf
+          Exec=agent --with-node-id \
+                     --node-ip=${NODE_IP} \
+                     --node-external-ip=${NODE_EXTERNAL_IP} \
+                     ${AGENT_EXTRA_ARGS}
+    - path: /etc/containers/systemd/k3s-agent@.container.d/exec-extra-args.conf
       overwrite: true
       contents:
         inline: |
+          [Service]
+          Environment=AGENT_EXTRA_ARGS=""
+    - path: /etc/containers/systemd/k3s-applb@.container.d/networks.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Service]
+          EnvironmentFile=/usr/local/etc/sysconfig/k3s-networks
+          ExecStartPost=-/usr/local/bin/ensure-routes-host.sh /usr/local/etc/sysconfig/k3s-networks \
+                                                              ${AGENT_NETWORK_NAME} \
+                                                              ${SERVICE_NETWORK_NAME}
           [Container]
           Network=kube-agent.network:ip=${NODE_IP},interface_name=agent0
           Network=kube-service.network:ip=${SERVICE_IP},interface_name=service0
-          Network=kube-pod.network:ip=${POD_IP},interface_name=pod0
     - path: /etc/containers/systemd/k3s-applb@.container.d/env-cluster.conf
       overwrite: true
       contents:
         inline: |
           [Service]
           EnvironmentFile=/var/usrlocal/etc/sysconfig/k3s-cluster
-    # https://docs.k3s.io/cli/agent#cluster-options
-    # https://docs.k3s.io/cli/agent#node
-    - path: /etc/containers/systemd/k3s-applb@.container.d/env-k3s-url.conf
+          EnvironmentFile=/usr/local/etc/sysconfig/k3s
+    - path: /etc/containers/systemd/k3s-applb@.container.d/k3s-url.conf
       overwrite: true
       contents:
         inline: |

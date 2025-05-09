@@ -18,12 +18,12 @@ spec:
     providers:
       kubernetesCRD:
         enabled: true
-        allowCrossNamespace: false
+        allowCrossNamespace: true
         allowExternalNameServices: true
         # -- Allows to return 503 when there is no endpoints available
         allowEmptyServices: true
       kubernetesIngress:
-        enabled: false
+        enabled: true
     hostNetwork: false
     priorityClassName: "system-cluster-critical"
     nodeSelector:
@@ -54,8 +54,6 @@ spec:
       spec: {}
       ipFamilies:
         - IPv4
-      externalIPs:
-        - 10.50.0.2
       ## -- An additional and optional internal Service.
       ## Same parameters as external Service
       internal:
