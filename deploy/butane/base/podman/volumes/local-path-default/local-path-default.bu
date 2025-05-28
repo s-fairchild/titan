@@ -1,0 +1,9 @@
+---
+variant: fcos
+version: 1.5.0
+storage:
+  files:
+    - path: /etc/containers/systemd/local-path-default.volume
+      overwrite: true
+      contents:
+        local: butane/base/podman/volumes/local-path-default/local-path-default.volume

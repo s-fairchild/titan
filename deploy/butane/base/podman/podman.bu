@@ -1,0 +1,7 @@
+---
+variant: fcos
+version: 1.5.0
+storage:
+  directories:
+    - path: /etc/containers/systemd
+      overwrite: true

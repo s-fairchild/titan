@@ -1,4 +1,4 @@
-#!/bin/bash
+# shellcheck disable=SC2148
 # Utilies to be sourced for use in other scripts
 
 # log()
@@ -7,43 +7,25 @@
 # 1) msg - string
 # 2) stack_level - int; optional, defaults to calling function
 log() {
-    local -r msg="${1:-"log message is empty"}"
-    local -r stack_level="${2:-1}"
-    echo "${FUNCNAME[${stack_level}]}: ${msg}"
+    local -r msg="${1}"
+    local -ri stack_level="${2:-1}"
+
+    local -r calling_func="${FUNCNAME[${stack_level}]}"
+    echo -e "$calling_func: ${msg}"
 }
 
 # abort()
 # abort is a wrapper for log that exits with an error code
+# 1) msg - string; optional, additional messages to log before exiting
 abort() {
     local -ri origin_stacklevel=2
-    log "${1}" "$origin_stacklevel"
+
+    if [ -n "$1" ]; then
+        log "${1}" "$origin_stacklevel"
+    fi
+
     log "Exiting"
     exit 1
-}
-
-# yq()
-# yq is a portable command-line data file processor (https://github.com/mikefarah/yq/) 
-# See https://mikefarah.gitbook.io/yq/ for detailed documentation and examples.
-#
-# Use "yq [command] --help" for more information about a command.
-yq() {
-    image="docker.io/mikefarah/yq:latest"
-
-           # -v yq_out:/workdir/out:z \
-    podman run \
-           --name yq \
-           --security-opt label=disable \
-           -i \
-           --rm \
-           --env-host \
-           -v "${PWD}":/workdir \
-           "$image" \
-           "$@"
-}
-
-# TODO create a directory named prefix
-get_merge_file_prefix() {
-    basename "$(dirname "$1")"
 }
 
 # cleanup()
@@ -57,7 +39,7 @@ cleanup() {
     # shellcheck disable=SC2068
     for t in ${trash[@]}; do
         if [ -f "$t" ] || [ -d "$t" ]; then
-            log "$t"
+            log "Deleting: $t"
             rm -rf "$t"
         fi
     done
@@ -65,5 +47,9 @@ cleanup() {
 
 # check_dir_exists()
 check_dir_exists() {
-    [ -d "$1" ] || abort "Could not find $1"
+    [ -d "$1" ] || return 1
+}
+
+check_file_exists() {
+    [ -f "$1" ] || return 1
 }

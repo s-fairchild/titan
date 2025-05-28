@@ -20,13 +20,57 @@ spec:
       labels:
         app: rtsp0
     spec:
+      initContainers:
+      # TODO determine what capabilities need added to the sidecar container to allow it to access /dev/video0
+      - name: v4l2compress
+        image: docker.io/mpromonet/v4l2tools:latest
+        securityContext:
+          privileged: true
+          procMount: Unmasked
+          # capabilities:
+            # add:
+            # - CAP_SYS_RAWIO
+            # - CAP_NET_RAW
+            # - CAP_NET_BIND_SERVICE
+            # - CAP_SYS_NICE
+        restartPolicy: Always
+        args:
+        - -vv
+        - -fH264
+        - /dev/video0
+        - /dev/video10
+        # Capture device
+        volumeMounts:
+        - name: video0
+          mountPath: /dev/video0
+        # v4l2loopback device
+        - name: video10
+          mountPath: /dev/video10
+        resources:
+          requests:
+            memory: "200Mi"
+            cpu: "1000m"
+          limits:
+            memory: "500Mi"
+            cpu: "2000m"
       containers:
-      - name: camera-default
+      - name: rtsp0
         livenessProbe:
           tcpSocket:
             port: rtsp-tcp
           initialDelaySeconds: 120
         image: docker.io/mpromonet/v4l2rtspserver:latest
+        securityContext:
+          privileged: true
+          procMount: Unmasked
+          # TODO configure only required capabilities
+          # TODO configure seccomp profiles
+          # capabilities:
+            # add:
+            # - CAP_SYS_RAWIO
+            # - CAP_NET_RAW
+            # - CAP_NET_BIND_SERVICE
+            # - CAP_SYS_NICE
         ports:
         - containerPort: 8554
           name: rtsp-tcp
@@ -36,15 +80,15 @@ spec:
           protocol: UDP
         - containerPort: 8085
           name: rtsp-hls
-        securityContext:
-          privileged: true
         volumeMounts:
-        - name: snd0
-          mountPath: /dev/snd
+        # Used to find sound capture device for alsa stream
         - name: video0
           mountPath: /dev/video0
-        - name: video1
-          mountPath: /dev/video1
+        # Compressed video (v4l2loopback) capture device
+        - name: video10
+          mountPath: /dev/video10
+        - name: snd0
+          mountPath: /dev/snd
         env:
         - name: RTSP_PASSWORD
           valueFrom:
@@ -55,22 +99,29 @@ spec:
         resources:
           requests:
             memory: "200Mi"
-            cpu: "100m"
+            cpu: "1000m"
           limits:
             memory: "500Mi"
             cpu: "2000m"
+      securityContext:
+        # TODO map video group to k3s-agent
+        # Create v4l2 user
+        # runAsGroup: 985
+        runAsUser: 0
       volumes:
-      - name: video0
-        hostPath: 
-          path: /dev/video0
-          type: CharDevice
-      - name: video1
-        hostPath: 
-          path: /dev/video1
-          type: CharDevice
       - name: snd0
         hostPath:
           path: /dev/snd
           type: Directory
+      # Capture device
+      - name: video0
+        hostPath: 
+          path: /dev/video0
+          type: CharDevice
+      # v4l2loopback device
+      - name: video10
+        hostPath: 
+          path: /dev/video10
+          type: CharDevice
       dnsPolicy: ClusterFirst
       restartPolicy: Always

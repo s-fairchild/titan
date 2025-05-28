@@ -50,14 +50,12 @@ output_ignition() {
     fi
 }
 
-declare lib
-lib="hack/ignition/lib/lib.sh"
-if [ -f "$lib" ]; then
+declare lib_sh="hack/ignition/lib/lib.sh"
+if [ -f "$lib_sh" ]; then
     # shellcheck source=lib/lib.sh
-    source "$lib"
+    source "$lib_sh"
 else
-    echo "$lib not found. Are you in the repository root?"
-    exit 1
+    echo "$lib_sh not found. Are you in the repository root?"; exit 1
 fi
 
 # shellcheck disable=SC2034

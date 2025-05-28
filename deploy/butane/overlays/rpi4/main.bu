@@ -10,7 +10,7 @@ ignition:
       - inline: deploy/butane/base/podman/images/k3s.bu
       - inline: deploy/butane/base/podman/volumes/agent.bu
       - inline: deploy/butane/base/podman/containers/agent.bu
-      - inline: deploy/butane/base/podman/containers/applb.bu
+      - inline: deploy/butane/base/podman/containers/svc-lb/svc-lb.bu
       - inline: deploy/butane/base/podman/networks/kube-agent-network.bu
       - inline: deploy/butane/overlays/rpi4/podman/k3s-env.bu
       - inline: deploy/butane/overlays/rpi4/coreos/users.bu
@@ -18,7 +18,7 @@ ignition:
       - inline: deploy/butane/overlays/rpi4/coreos/storage/filesystem/filesystem.bu
       - inline: deploy/butane/overlays/rpi4/coreos/storage/filesystem/btrfsmaintenance.bu
       - inline: deploy/butane/overlays/rpi4/podman/containers/agent.bu
-      - inline: deploy/butane/overlays/rpi4/podman/containers/applb.bu
+      - inline: deploy/butane/overlays/rpi4/podman/containers/svc-lb/svc-lb.bu
       - inline: deploy/butane/overlays/rpi4/podman/images.bu
       - inline: deploy/butane/overlays/rpi4/podman/networks/kube-agent-network.bu
 storage:

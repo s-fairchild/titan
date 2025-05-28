@@ -1,0 +1,408 @@
+---
+- name: Standup k3s agent node on Raspberry Pi Zero 2W (rpi02w)
+  hosts: rpi5-0
+  remote_user: root
+  vars:
+    quadlet_base_dir: /etc/containers/systemd
+    sysconfig_dir: /usr/local/etc/sysconfig
+    kubelet_agent_dir: /usr/local/var/lib/k3s/agent/kubelet
+  tasks:
+    - name: Delete directory "{{ sysconfig_dir }}"
+      ansible.builtin.file:
+        path: "{{ sysconfig_dir }}"
+        state: absent
+        mode: '0755'
+      tags:
+        - quadlet
+        - environment
+        - directories
+
+    - name: Create directory "{{ sysconfig_dir }}"
+      ansible.builtin.file:
+        path: "{{ sysconfig_dir }}"
+        state: directory
+        mode: '0755'
+      tags:
+        - quadlet
+        - environment
+        - directories
+
+    - name: Copy EnvironmentFile for to k3s container use {{ FILES_PROD.K3S_ENV_SRC }}
+      ansible.builtin.copy:
+        src: "{{ FILES_PROD.K3S_ENV_SRC }}"
+        dest: "{{ sysconfig_dir }}/k3s"
+        owner: root
+        group: root
+        mode: '0644'
+      tags:
+        - k3s
+        - environment
+
+    - name: Copy podman quadlet env file "{{ FILES_PROD.PODMAN_OPTIONS_SRC }}"
+      ansible.builtin.copy:
+        src: "{{ FILES_PROD.PODMAN_OPTIONS_SRC }}"
+        dest: "{{ sysconfig_dir }}/podman-options"
+        owner: root
+        group: root
+        mode: '0644'
+      tags:
+        - quadlet
+        - environment
+    
+    - name: Create /etc/containers/systemd Directory - "{{ quadlet_base_dir }}"
+      ansible.builtin.file:
+        path: "{{ quadlet_base_dir }}"
+        state: directory
+        mode: '0755'
+      tags:
+        - quadlet
+
+    - name: Copy k3s.image podman quadlet file
+      ansible.builtin.copy:
+        src: "{{ DIRS_BASE.PODMAN_IMAGES }}/k3s/k3s.image"
+        dest: "{{ quadlet_base_dir }}/k3s.image"
+        owner: root
+        group: root
+        mode: '0644'
+      tags:
+        - quadlet
+        - images
+
+    - name: Copy end0.network.d/routes.conf
+      ansible.builtin.copy:
+        content: |
+          [Route]
+          Destination={{ K3S_NETWORK.K3S_SERVER_SUBNET }}
+          Source={{ K3S_INSTANCE_NETWORK.KUBE_AGENT_SUBNET }}
+          Scope=link
+          Table=main
+          NextHop=1
+
+          [Route]
+          Destination={{ K3S_NETWORK.K3S_AGENT_PROD_SUBNET }}
+          Source={{ K3S_INSTANCE_NETWORK.KUBE_AGENT_SUBNET }}
+          Scope=link
+          Table=main
+          NextHop=1
+
+          [NextHop]
+          Id=1
+          Gateway={{ K3S_NETWORK.APISERVER_EXTERNAL_LB }}
+
+        dest: /etc/systemd/network/end0.network.d/routes.conf
+        owner: root
+        group: root
+        mode: '0644'
+      tags:
+        - systemd-networkd.routes
+
+    - name: Reload systemd-networkd configs
+      ansible.builtin.command:
+        argv:
+          - networkctl
+          - reload
+      register: reload_output
+      changed_when: reload_output.rc == 0
+      tags:
+        - systemd-networkd.routes
+
+    - name: Delete {{ kubelet_agent_dir }} directory
+      ansible.builtin.file:
+        path: "{{ kubelet_agent_dir }}"
+        state: absent
+      tags:
+        - kubelet
+
+    - name: Create {{ kubelet_agent_dir }} directory
+      ansible.builtin.file:
+        path: "{{ kubelet_agent_dir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+      tags:
+        - kubelet
+
+    - name: Copy {{ kubelet_agent_dir }}/seccomp/profiles directory
+      ansible.builtin.copy:
+        src: "{{ DIRS_KUBELET.AGENT }}/seccomp/profiles/"
+        dest: "{{ kubelet_agent_dir }}/seccomp/profiles/"
+        owner: root
+        group: root
+        directory_mode: '0755'
+      tags:
+        - kubelet.seccomp
+
+    - name: Delete directory kube-agent.network.d - quadlet_base_dir "{{ quadlet_base_dir }}/"
+      ansible.builtin.file:
+        path: "{{ quadlet_base_dir }}/kube-agent.network.d"
+        state: absent
+      tags:
+        - quadlet
+        - networks
+
+    - name: Create directory kube-agent.network.d - quadlet_base_dir "{{ quadlet_base_dir }}/"
+      ansible.builtin.file:
+        path: "{{ quadlet_base_dir }}/kube-agent.network.d"
+        state: directory
+        mode: '0755'
+      tags:
+        - quadlet
+        - networks
+
+    - name: Copy kube-agent.network podman quadlet file - quadlet_base_dir "{{ quadlet_base_dir }}/"
+      ansible.builtin.copy:
+        src: "{{ DIRS_BASE.KUBE_AGENT_NETWORK }}/kube-agent.network"
+        dest: "{{ quadlet_base_dir }}/kube-agent.network"
+        owner: root
+        group: root
+        mode: '0644'
+      tags:
+        - quadlet
+        - networks
+
+    - name: Copy kube-agent.network.d/subnet.conf podman quadlet file - quadlet_base_dir "{{ quadlet_base_dir }}/"
+      ansible.builtin.copy:
+        content: |
+          [Network]
+          Subnet={{ K3S_INSTANCE_NETWORK.KUBE_AGENT_SUBNET }}
+        dest: "{{ quadlet_base_dir }}/kube-agent.network.d/subnet.conf"
+        owner: root
+        group: root
+        mode: '0644'
+      tags:
+        - quadlet
+        - networks
+
+    - name: Copy kube-agent.network.d/dns.conf podman quadlet file - quadlet_base_dir "{{ quadlet_base_dir }}/"
+      ansible.builtin.copy:
+        content: |
+          [Network]
+          # kube-agent (podman) dns server on rick.expresso.lan
+          DNS=10.11.254.254
+        dest: "{{ quadlet_base_dir }}/kube-agent.network.d/dns.conf"
+        owner: root
+        group: root
+        mode: '0644'
+      tags:
+        - quadlet
+        - networks
+
+    - name: Copy k3s-agent@.container podman quadlet file - quadlet_base_dir "{{ quadlet_base_dir }}/"
+      ansible.builtin.copy:
+        src: "{{ DIRS_BASE.PODMAN_CONTAINERS }}/k3s-agent@.container"
+        dest: "{{ quadlet_base_dir }}/k3s-agent@.container"
+        owner: root
+        group: root
+        mode: '0644'
+      tags:
+        - quadlet
+        - containers
+
+    - name: Delete directory k3s-agent@<K3S_AGENT_INSTANCE>.d/ - K3S_AGENT_INSTANCE - {{ K3S_AGENT_INSTANCE }}
+      ansible.builtin.file:
+        path: "{{ quadlet_base_dir }}/k3s-agent@{{ K3S_AGENT_INSTANCE }}.container.d"
+        state: absent
+        mode: '0755'
+      tags:
+        - quadlet
+        - containers
+
+    - name: Create directory k3s-agent@<K3S_AGENT_INSTANCE>.d/ - K3S_AGENT_INSTANCE - {{ K3S_AGENT_INSTANCE }}
+      ansible.builtin.file:
+        path: "{{ quadlet_base_dir }}/k3s-agent@{{ K3S_AGENT_INSTANCE }}.container.d"
+        state: directory
+        mode: '0755'
+      tags:
+        - quadlet
+        - containers
+
+    - name: Copy k3s-agent@<K3S_AGENT_INSTANCE>.container.d/exec-extra-args.conf - K3S_AGENT_INSTANCE - {{ K3S_AGENT_INSTANCE }}
+      ansible.builtin.copy:
+        content: |
+          [Service]
+          # https://docs.k3s.io/cli/agent#node-labels-and-taints-for-agents
+          Environment=AGENT_EXTRA_ARGS=--node-label=rtsp=0
+        dest: "{{ quadlet_base_dir }}/k3s-agent@{{ K3S_AGENT_INSTANCE }}.container.d/exec-extra-args.conf"
+        owner: root
+        group: root
+        mode: '0644'
+      tags:
+        - quadlet
+        - containers
+
+    - name: Copy k3s-agent@<K3S_AGENT_INSTANCE>.container.d/node-ip.conf - K3S_AGENT_INSTANCE - {{ K3S_AGENT_INSTANCE }}
+      ansible.builtin.copy:
+        content: |
+          [Service]
+          Environment=NODE_IP={{ K3S_INSTANCE_NETWORK.NODE_IP }}
+        dest: "{{ quadlet_base_dir }}/k3s-agent@{{ K3S_AGENT_INSTANCE }}.container.d/node-ip.conf"
+        owner: root
+        group: root
+        mode: '0644'
+      tags:
+        - quadlet
+        - containers
+
+    - name: Copy k3s-agent@<K3S_AGENT_INSTANCE>.container.d/devices.conf - K3S_AGENT_INSTANCE - {{ K3S_AGENT_INSTANCE }}
+      ansible.builtin.copy:
+        content: |
+          [Container]
+          AddDevice=-/dev/v4l/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-video-index0:/dev/video0:rwm
+          AddDevice=-/dev/v4l/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-video-index1:/dev/video1:rwm
+          AddDevice=-/dev/video10:/dev/video10:rwm
+        dest: "{{ quadlet_base_dir }}/k3s-agent@{{ K3S_AGENT_INSTANCE }}.container.d/devices.conf"
+        owner: root
+        group: root
+        mode: '0644'
+      tags:
+        - quadlet
+        - containers
+
+    - name: Copy k3s-agent@<K3S_AGENT_INSTANCE>.container.d/limits.conf - K3S_AGENT_INSTANCE - {{ K3S_AGENT_INSTANCE }}
+      ansible.builtin.copy:
+        content: |
+          [Container]
+          # memory cgroup controller must be enabled by adding cgroup_enable=memory to /boot/cmdline.txt
+          # https://archlinuxarm.org/forum/viewtopic.php?f=23&t=17131#p73138
+          # https://github.com/raspberrypi/linux/pull/6524
+          Memory=6g
+          PodmanArgs=--cpus=3.5
+        dest: "{{ quadlet_base_dir }}/k3s-agent@{{ K3S_AGENT_INSTANCE }}.container.d/limits.conf"
+        owner: root
+        group: root
+        mode: '0644'
+      tags:
+        - quadlet
+        - containers
+
+    - name: Delete directory k3s-agent@.container.d - quadlet_base_dir "{{ quadlet_base_dir }}/"
+      ansible.builtin.file:
+        path: "{{ quadlet_base_dir }}/k3s-agent@.container.d"
+        state: absent
+        mode: '0755'
+      tags:
+        - quadlet
+        - networks
+
+    - name: Create directory k3s-agent@.container.d - quadlet_base_dir "{{ quadlet_base_dir }}/"
+      ansible.builtin.file:
+        path: "{{ quadlet_base_dir }}/k3s-agent@.container.d"
+        state: directory
+        mode: '0755'
+      tags:
+        - quadlet
+        - networks
+
+    - name: Copy k3s-agent@.container.d/kube-agent-network.conf - quadlet_base_dir "{{ quadlet_base_dir }}/"
+      ansible.builtin.copy:
+        src: ../../butane/base/podman/containers/agent/k3s-agent@.container.d/kube-agent-network.conf
+        dest: "{{ quadlet_base_dir }}/k3s-agent@.container.d/kube-agent-network.conf"
+        owner: root
+        group: root
+        mode: '0644'
+      tags:
+        - quadlet
+        - containers
+
+    - name: Copy k3s-agent@.container.d/global-debug.conf podman quadlet file - quadlet_base_dir "{{ quadlet_base_dir }}/"
+      ansible.builtin.copy:
+        content: |
+          [Container]
+          GlobalArgs=--log-level=debug
+        dest: "{{ quadlet_base_dir }}/k3s-agent@.container.d/log-level.conf"
+        owner: root
+        group: root
+        mode: '0644'
+      tags:
+        - never
+        - debug
+        - quadlet.generator
+
+    - name: Create symlink k3s-agent@<K3S_AGENT_INSTANCE>.container - K3S_AGENT_INSTANCE - {{ K3S_AGENT_INSTANCE }}
+      ansible.builtin.file:
+        src: "{{ quadlet_base_dir }}/k3s-agent@.container"
+        dest: "{{ quadlet_base_dir }}/k3s-agent@{{ K3S_AGENT_INSTANCE }}.container"
+        owner: root
+        group: root
+        state: link
+      tags:
+        - quadlet
+        - containers
+
+    - name: Run podman-systemd-generator
+      ansible.builtin.command:
+        argv:
+          - /usr/lib/podman/quadlet
+          - /run/systemd/generator/
+      register: generator_output
+      changed_when: generator_output.rc == 0
+      tags:
+        - images
+        - containers
+        - networks
+        - quadlet.files
+        - quadlet.generator
+
+    - name: (Re)Start k3s-image.service
+      ansible.builtin.systemd_service:
+        state: restarted
+        daemon_reload: true
+        name: k3s-image
+      tags:
+        - quadlet.files
+        - quadlet.generator
+        - images
+
+    # Gracefully stop k3s-agent before deleting the network
+    - name: Stop and mask k3s-agent service
+      ansible.builtin.systemd_service:
+        name: k3s-agent@{{ K3S_AGENT_INSTANCE }}
+        state: stopped
+        masked: true
+      tags:
+        - networks
+        - containers
+        - quadlet.files
+        - quadlet.generator
+
+    - name: Delete a podman network {{ PODMAN_NETWORKS.KUBE_AGENT_NETWORK_NAME }}
+      containers.podman.podman_network:
+        name: "{{ PODMAN_NETWORKS.KUBE_AGENT_NETWORK_NAME }}"
+        state: absent
+        force: true
+
+    - name: (Re)Start service {{ PODMAN_NETWORKS.KUBE_AGENT_NETWORK_SERVICE_NAME }}
+      ansible.builtin.systemd_service:
+        state: restarted
+        daemon_reload: true
+        name: "{{ PODMAN_NETWORKS.KUBE_AGENT_NETWORK_SERVICE_NAME }}"
+      tags:
+        - quadlet
+        - networks
+
+    - name: Create or Update k3s-token podman secret
+      containers.podman.podman_secret:
+        state: present
+        name: k3s-token
+        # recreate the secret
+        force: true
+        data: "{{ K3S_TOKEN }}"
+      when: K3S_TOKEN is defined
+      tags:
+        - k3s
+        - k3s-token
+        - secrets
+
+    - name: (Re)Start "k3s-agent@<K3S_AGENT_INSTANCE>.service"- K3S_AGENT_INSTANCE - "{{ K3S_AGENT_INSTANCE }}"
+      ansible.builtin.systemd_service:
+        name: "k3s-agent@{{ K3S_AGENT_INSTANCE }}.service"
+        state: restarted
+        daemon_reload: true
+        masked: false
+      tags:
+        - networks
+        - containers
+        - quadlet
+        - quadlet.files
+        - quadlet.generator

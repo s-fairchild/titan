@@ -9,18 +9,22 @@ kube-manifests-gen-staging:
 	hack/gen_kube_manifests.sh ${kustomize_base_dir} deploy/butane/overlays/staging/coreos/files/k3s/manifests staging
 
 manifests_prod_dir := "deploy/butane/overlays/prod/coreos/usr/local/etc/k3s/server/manifests"
-kube-manifests-gen-prod:
+clean:
 	rm -rf ${manifests_prod_dir}/*.yaml
+
+kube-manifests-gen-prod:
 	hack/gen_kube_manifests.sh ${kustomize_base_dir} ${manifests_prod_dir} prod
 
-ignition_dest := "deploy/.ignition"
-ignition-gen-base: kube-manifests-gen-staging
-	hack/ignition/gen_ignition.sh deploy/butane/base/main.bu ${ignition_dest}/base_main.ign
+kube-manifests-gen-rpi5-0:
+	hack/gen_kube_manifests.sh ${kustomize_base_dir} ${manifests_prod_dir} rpi5-0
 
+kube-manifests-gen-all: clean kube-manifests-gen-prod kube-manifests-gen-rpi5-0
+
+ignition_dest := "deploy/.ignition"
 ignition-gen-staging: kube-manifests-gen-staging
 	hack/ignition/gen_ignition.sh deploy/butane/overlays/staging/main.bu ${ignition_dest}/staging_main.ign
 
-ignition-gen-prod: kube-manifests-gen-prod
+ignition-gen-prod: kube-manifests-gen-all
 	hack/ignition/gen_ignition.sh deploy/butane/overlays/prod/main.bu ${ignition_dest}/prod_main.ign
 
 ignition-gen-rpi4:
@@ -61,7 +65,7 @@ installer-download-live-baremetal:
 				-f iso
 
 # TODO get the latest iso file from deploy/isos to use here
-unmodified_iso := "fedora-coreos-41.20250315.3.0-live.x86_64.iso"
+unmodified_iso := "fedora-coreos-42.20250512.3.0-live-iso.x86_64.iso"
 output_iso := "baremetal_fetch_remote_ignition.iso"
 # Example of writing this image to a drive:
 # Replace this with the correct drive!

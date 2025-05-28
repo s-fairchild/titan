@@ -15,6 +15,9 @@
    Sysctl=net/netfilter/nf_conntrack_tcp_timeout_established=86400
    Sysctl=net/netfilter/nf_conntrack_max=196608
    ```
+1. [CIS Hardening Guide](https://docs.k3s.io/security/hardening-guide)
+    * [API Server audit configuration](https://docs.k3s.io/security/hardening-guide?_highlight=seccomp#api-server-audit-configuration)
+    * [Configuration for Kubernetes Components](https://docs.k3s.io/security/hardening-guide?_highlight=seccomp#configuration-for-kubernetes-components)
 
 2. References
    1. [Getting Started with Fedora CoreOS](https://docs.fedoraproject.org/en-US/fedora-coreos/getting-started/)

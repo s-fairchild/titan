@@ -1,80 +1,17 @@
+---
 variant: fcos
 version: 1.5.0
 storage:
+  directories:
+    - path: /etc/containers/systemd/k3s-server@.container.d
+      overwrite: true
+
+  trees:
+    - path: /etc/containers/systemd/k3s-server@.container.d
+      local: butane/base/podman/containers/server/k3s-server@.container.d
+
   files:
-    # systemd quadlet files for podman
-    # Containers
     - path: /etc/containers/systemd/k3s-server@.container
       overwrite: true
       contents:
-        # TODO set nf_conntrack_max via podman
-        # "Set sysctl 'net/netfilter/nf_conntrack_max' to 131072"
-        inline: |
-          [Unit]
-          Description=K3S Server Node %i Podman Container
-          Upholds=k3s-apiserverlb@0.service
-
-          [Service]
-          Restart=always
-          RestartSec=30
-          ExecStartPre=modprobe iptable_filter
-          ExecStartPre=modprobe iptable_nat
-          ExecStartPre=/usr/bin/podman secret exists k3s-token
-          Environment="NAME=k3s-server-%i"
-
-          [Container]
-          ContainerName=${NAME}
-          HostName=${NAME}
-          AddCapability=ALL
-          Label=app=k3s
-          Label=cluster=${CLUSTER}
-          Image=k3s.image
-          DNSSearch=${DNS_SEARCH}
-          Pull=never
-          SeccompProfile=unconfined
-          SecurityLabelDisable=true
-          ShmSize=5g
-          Secret=k3s-token,type=env,target=K3S_TOKEN
-          Timezone=UTC
-          LogDriver=journald
-          Volume=/etc/machine-id:/etc/machine-id:ro
-          Volume=${NAME}-kubelet:/var/lib/kubelet:Z
-          Volume=${NAME}-data:/var/lib/rancher/k3s:Z
-          Volume=${NAME}-rancher:/etc/rancher:Z
-          Volume=${NAME}-storage:/var/lib/rancher/k3s/storage:Z
-          Volume=${NAME}-log:/var/log/pod:Z
-          Volume=${NAME}-containers:/var/lib/containers:Z
-          Volume=/usr/local/etc/k3s/server/manifests:/var/lib/rancher/k3s/server/manifests/compute:z,ro
-          Volume=/usr/local/etc/k3s/server/manifests/skip:/var/lib/rancher/k3s/server/manifests/skip:z,ro
-          AddDevice=/dev/fuse:/dev/fuse
-          PodmanArgs=--oom-score-adj=1000 --privileged
-
-          [Install]
-          WantedBy=default.target
-    - path: /etc/containers/systemd/k3s-server@.container.d/kube-networks.conf
-      overwrite: true
-      contents:
-        inline: |
-          [Container]
-          Network=kube-server.network:ip=${NODE_IP},interface_name=server0
-          Network=kube-service.network:ip=${SERVICE_IP},interface_name=service0
-    - path: /etc/containers/systemd/k3s-server@.container.d/exec.conf
-      overwrite: true
-      contents:
-        inline: |
-          [Container]
-          Exec=server --node-ip=${NODE_IP} \
-                      --flannel-backend=wireguard-native \
-                      --default-local-storage-path=/mnt/local-path/default \
-                      --secrets-encryption \
-                      --servicelb-namespace=kube-system-lb \
-                      --etcd-expose-metrics \
-                      --kubelet-arg=cgroup-root=/ \
-                      ${TLS_SAN_LIST} \
-                      ${SERVER_EXTRA_ARGS}
-    - path: /etc/containers/systemd/k3s-server@.container.d/exec-extra-args.conf
-      overwrite: true
-      contents:
-        inline: |
-          [Service]
-          Environment=SERVER_EXTRA_ARGS=""
+        local: butane/base/podman/containers/server/k3s-server@.container

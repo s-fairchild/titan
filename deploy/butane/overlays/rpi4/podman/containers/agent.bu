@@ -12,8 +12,8 @@ storage:
       contents:
         inline: |
           [Unit]
-          Upholds=k3s-applb@1.service
-          Before=k3s-applb@1.service
+          Upholds=k3s-svc-lb@1.service
+          Before=k3s-svc-lb@1.service
     - path: /etc/containers/systemd/k3s-agent@1.container.d/add_render_device.conf
       overwrite: true
       contents:

@@ -12,7 +12,7 @@ secretGenerator:
 
 patches:
 - path: deployment.yaml
-- path: service.yaml
+- path: pvc.yaml
 
 patchesStrategicMerge:
 - ingressroute.yaml

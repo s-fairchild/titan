@@ -1,0 +1,25 @@
+[Unit]
+Description=K3S ApiServer Loadbalancer Node %i Podman Container
+
+[Service]
+Restart=always
+RestartSec=30
+Environment="NAME=k3s-apiserverlb-%i"
+EnvironmentFile=/usr/local/etc/sysconfig/podman-options
+
+[Container]
+ContainerName=${NAME}
+HostName=${NAME}
+Label=app=k3s
+Label=loadbalancer=apiserverlb
+Label=cluster=${CLUSTER}
+Image=nginx.image
+DNSSearch=${DNS_SEARCH}
+Timezone=UTC
+Pull=never
+LogDriver=journald
+Volume=/usr/local/etc/${NAME}.conf:/etc/nginx/nginx.conf:Z,ro
+PodmanArgs=--oom-score-adj=1000 --privileged
+
+[Install]
+WantedBy=default.target

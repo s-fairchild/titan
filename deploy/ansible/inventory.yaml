@@ -1,14 +1,34 @@
 ---
 rpi02ws:
   hosts:
-    rpi02w-0:
-      KUBE_AGENT_SUBNET: 10.12.0.0/16
-      KUBE_AGENT_GATEWAY: 10.12.254.254
-      NODE_IP: 10.13.0.3
+    rpi5-0:
+      ansible_host: 10.50.0.10
+      K3S_INSTANCE_NETWORK:
+        NODE_IP: 10.15.0.10
+        KUBE_AGENT_SUBNET: 10.15.0.0/16
+        KUBE_AGENT_GATEWAY: 10.15.254.254
+      K3S_AGENT_INSTANCE: 1
+      ansible_ssh_private_key_file: ~/.ssh/id_ed25519_rpi5-0
+  vars:
+    NETWORK:
+      GATEWAY_IP: 10.50.0.1
+      DNS_IP: 10.50.0.1
+    FILES_PROD:
+      K3S_ENV_SRC: ../../butane/overlays/prod/coreos/usr/local/etc/sysconfig/k3s
+      PODMAN_OPTIONS_SRC: ../../butane/overlays/prod/coreos/usr/local/etc/sysconfig/podman-options
+    DIRS_BASE:
+      KUBE_AGENT_NETWORK: ../../butane/base/podman/networks/kube-agent-network
+      PODMAN_CONTAINERS: ../../butane/base/podman/containers/agent
+      PODMAN_IMAGES: ../../butane/base/podman/images
+    DIRS_KUBELET:
+      AGENT: ../../../pkg/kubelet/agent
+      SERVER: ../../../pkg/kubelet/server
+    PODMAN_NETWORKS:
+      KUBE_AGENT_NETWORK_NAME: kube-agent
+      KUBE_AGENT_NETWORK_SERVICE_NAME: kube-agent-network
+    K3S_NETWORK:
+      K3S_SERVER_SUBNET: 10.10.0.0/16
+      K3S_AGENT_PROD_SUBNET: 10.11.0.0/16
+      KUBE_SERVICE_SUBNET: 10.43.0.0/16
       APISERVER_EXTERNAL_LB: 10.50.0.2
       APISERVER_INTERNAL_LB: 10.10.0.1
-      K3S_AGENT_INSTANCE: 1
-      ansible_host: 10.50.0.13
-  vars:
-    K3S_ENV_SRC: ../../butane/overlays/prod/coreos/usr/local/etc/sysconfig/k3s
-    PODMAN_OPTIONS_SRC: ../../butane/overlays/prod/coreos/usr/local/etc/sysconfig/podman-options

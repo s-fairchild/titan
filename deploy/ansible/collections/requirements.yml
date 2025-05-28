@@ -1,0 +1,7 @@
+collections:
+  # Install a collection from Ansible Galaxy.
+  - name: community.general
+    # version: ">=7.0.0"
+    source: https://galaxy.ansible.com
+  - name: containers.podman.podman_network
+    source: https://galaxy.ansible.com

@@ -5,7 +5,7 @@ storage:
   directories:
     - path: /etc/containers/systemd/k3s-agent@.container.d
       overwrite: true
-  
+
   trees:
     - path: /etc/containers/systemd/k3s-agent@.container.d
       local: butane/base/podman/containers/agent/k3s-agent@.container.d

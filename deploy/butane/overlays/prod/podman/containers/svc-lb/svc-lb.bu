@@ -1,0 +1,16 @@
+---
+variant: fcos
+version: 1.5.0
+storage:
+  links:
+    - path: /etc/containers/systemd/k3s-svc-lb@0.container
+      target: /etc/containers/systemd/k3s-svc-lb@.container
+      overwrite: true
+
+  directories:
+    - path: /etc/containers/systemd/k3s-svc-lb@0.container.d
+      overwrite: true
+  
+  trees:
+    - path: /etc/containers/systemd/k3s-svc-lb@0.container.d
+      local: butane/overlays/prod/podman/containers/svc-lb/k3s-svc-lb@0.container.d

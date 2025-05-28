@@ -6,4 +6,3 @@ resources:
 
 patches:
 - path: config-map.yaml
-# - path: service.yaml
