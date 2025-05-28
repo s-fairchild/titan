@@ -1,0 +1,16 @@
+variant: fcos
+version: 1.5.0
+storage:
+  directories:
+    - path: /etc/containers/systemd/api-server-lb/k3s-apiserverlb@.container.d
+      overwrite: true
+
+  trees:
+    - path: /etc/containers/systemd/k3s-apiserverlb@.container.d
+      local: butane/base/podman/containers/api-server-lb/k3s-apiserverlb@.container.d
+
+  files:
+    - path: /etc/containers/systemd/k3s-apiserverlb@.container
+      overwrite: true
+      contents:
+        local: butane/base/podman/containers/api-server-lb/k3s-apiserverlb@.container

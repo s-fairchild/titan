@@ -1,0 +1,16 @@
+[Unit]
+Description=Podman volume %N with btrfs subvolume as backing drive
+
+[Service]
+EnvironmentFile=/usr/local/etc/sysconfig/podman-options
+
+[Volume]
+VolumeName=local-path-default
+Label=local-path-class=default
+Label=app=k3s
+Label=cluster=${CLUSTER}
+Type=btrfs
+Device=LABEL=var
+
+[Install]
+WantedBy=default.target

@@ -21,7 +21,7 @@ spec:
         app: rtsp0
     spec:
       containers:
-      - name: camera-default
+      - name: rtsp-0
         livenessProbe:
           tcpSocket:
             port: rtsp-tcp

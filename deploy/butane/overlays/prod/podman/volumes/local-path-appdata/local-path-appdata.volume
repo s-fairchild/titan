@@ -1,0 +1,20 @@
+[Unit]
+Description=Podman volume %N with btrfs subvolume as backing drive
+
+[Service]
+# root fs mount point /local-path-appdata
+# subvolume local-path/appdata
+ExecStartPre=-btrfs subvolume create -p /var/local/lib/k3s/agent/%N/local-path/appdata
+EnvironmentFile=/usr/local/etc/sysconfig/podman-options
+
+[Volume]
+VolumeName=local-path-appdata
+Label=cluster=${CLUSTER}
+Label="local-path-class=appdata"
+Label="app=k3s"
+Type=btrfs
+Device=LABEL=appdata
+Options=compress=zstd:1,subvol=local-path/appdata
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,54 @@
+---
+variant: fcos
+version: 1.5.0
+storage:
+  links:
+    - path: /etc/containers/systemd/k3s-svc-lb@1.container
+      target: /etc/containers/systemd/k3s-svc-lb@.container
+      overwrite: true
+  files:
+    # Systemd environment
+    - path: /usr/local/etc/sysconfig/k3s-svc-lb@1
+      overwrite: true
+      contents:
+        inline: |
+          NODE_IP="10.99.0.253"
+          NODE_EXTERNAL_IP="10.50.0.26"
+    # K3S config
+    - path: /usr/local/etc/k3s/config/k3s-svc-lb-1.yaml
+      overwrite: true
+      contents:
+        local: butane/overlays/rpi4/podman/containers/files/k3s/k3s-svc-lb-1.yaml
+    - path: /etc/containers/systemd/k3s-svc-lb@1.container.d/dependencies.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Unit]
+          After=k3s-agent@1.service
+          Requires=k3s-agent@1.service
+    - path: /etc/containers/systemd/k3s-svc-lb@1.container.d/env.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Service]
+          Environment=NODE_IP="10.12.0.1"
+    - path: /etc/containers/systemd/k3s-svc-lb@1.container.d/published-ports.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Container]
+          PublishPort=${NODE_EXTERNAL_IP}:8554:30555/udp
+          PublishPort=${NODE_EXTERNAL_IP}:8555:30556/tcp
+    - path: /etc/containers/systemd/k3s-svc-lb@1.container.d/networks.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Container]
+          Network=kube-agent.network:ip=${NODE_IP},interface_name=agent0
+    - path: /etc/containers/systemd/k3s-svc-lb@1.container.d/exec-extra-args.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Service]
+          # https://docs.k3s.io/cli/agent#node-labels-and-taints-for-agents
+          Environment=AGENT_EXTRA_ARGS=--node-label=svccontroller.k3s.cattle.io/enablelb=true \

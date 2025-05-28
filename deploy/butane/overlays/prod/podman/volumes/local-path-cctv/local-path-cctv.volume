@@ -1,0 +1,20 @@
+[Unit]
+Description=Podman volume %N with btrfs subvolume as backing drive
+EnvironmentFile=/usr/local/etc/sysconfig/podman-options
+
+# root fs mount point /local-path-cctv
+# subvolume local-path/cctv
+[Service]
+ExecStartPre=-btrfs subvolume create -p /var/local/lib/k3s/agent/%N/local-path/cctv
+
+[Volume]
+VolumeName=local-path-cctv
+Label=cluster=${CLUSTER}
+Label=local-path-class=cctv
+Label=app=k3s
+Type=btrfs
+Device=LABEL=cctv
+Options=compress=zstd:1,subvol=local-path/cctv
+
+[Install]
+WantedBy=default.target

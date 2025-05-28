@@ -4,7 +4,7 @@ version: 1.5.0
 storage:
   files:
     # Nginx config
-    - path: /usr/local/etc/k3s/config/k3s-apiserverlb-0.conf
+    - path: /usr/local/etc/k3s-apiserverlb-0.conf
       overwrite: true
       contents:
         local: butane/overlays/prod/coreos/usr/local/etc/k3s-apiserverlb-0.conf
@@ -20,5 +20,5 @@ storage:
     - path: /usr/local/etc/k3s
       local: butane/overlays/prod/coreos/usr/local/etc/k3s
     
-    - path: /usr/local/etc/sysconfig/k3s
+    - path: /usr/local/etc/sysconfig
       local: butane/overlays/prod/coreos/usr/local/etc/sysconfig

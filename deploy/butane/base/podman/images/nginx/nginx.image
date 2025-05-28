@@ -1,0 +1,8 @@
+[Unit]
+Description=Pull image docker.io/nginx:stable
+
+[Image]
+Image=docker.io/nginx:stable
+
+[Install]
+WantedBy=default.target

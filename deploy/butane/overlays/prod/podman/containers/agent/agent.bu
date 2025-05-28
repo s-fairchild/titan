@@ -1,0 +1,15 @@
+variant: fcos
+version: 1.5.0
+storage:
+  links:
+    - path: /etc/containers/systemd/k3s-agent@0.container
+      overwrite: true
+      target: /etc/containers/systemd/k3s-agent@.container
+
+  directories:
+    - path: /etc/containers/systemd/k3s-agent@0.container.d
+      overwrite: true
+  
+  trees:
+    - path: /etc/containers/systemd/k3s-agent@0.container.d
+      local: butane/overlays/prod/podman/containers/agent/k3s-agent@0.container.d

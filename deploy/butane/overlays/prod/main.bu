@@ -7,16 +7,17 @@ ignition:
       - inline: deploy/butane/base/coreos/system-config.bu
       - inline: deploy/butane/base/coreos/services.bu
       - inline: deploy/butane/base/coreos/storage/filesystem/btrfsmaintenance.bu
-      - inline: deploy/butane/base/podman/images/k3s.bu
-      - inline: deploy/butane/base/podman/images/nginx.bu
-      - inline: deploy/butane/base/podman/networks/kube-service-network.bu
-      - inline: deploy/butane/base/podman/networks/kube-server-network.bu
-      - inline: deploy/butane/base/podman/networks/kube-agent-network.bu
-      - inline: deploy/butane/base/podman/volumes/local-path-default.bu
+      - inline: deploy/butane/base/podman/podman.bu
+      - inline: deploy/butane/base/podman/images/k3s/k3s.bu
+      - inline: deploy/butane/base/podman/images/nginx/nginx.bu
+      - inline: deploy/butane/base/podman/networks/kube-service-network/kube-service-network.bu
+      - inline: deploy/butane/base/podman/networks/kube-server-network/kube-server-network.bu
+      - inline: deploy/butane/base/podman/networks/kube-agent-network/kube-agent-network.bu
+      - inline: deploy/butane/base/podman/volumes/local-path-default/local-path-default.bu
       - inline: deploy/butane/base/podman/containers/agent/agent.bu
       - inline: deploy/butane/base/podman/containers/server/server.bu
-      - inline: deploy/butane/base/podman/containers/api-serverlb/api-serverlb.bu
-      - inline: deploy/butane/base/podman/containers/svclb/applb.bu
+      - inline: deploy/butane/base/podman/containers/api-server-lb/api-server-lb.bu
+      - inline: deploy/butane/base/podman/containers/svclb/svc-lb.bu
       - inline: deploy/butane/base/coreos/etc/containers/containers.bu
       - inline: deploy/butane/base/coreos/etc/firewalld/firewalld.bu
       - inline: deploy/butane/base/coreos/etc/sysctl.d/systctl.bu
@@ -27,30 +28,12 @@ ignition:
       - inline: deploy/butane/overlays/prod/coreos/storage/luks.bu
       - inline: deploy/butane/overlays/prod/coreos/storage/filesystem/filesystem.bu
       - inline: deploy/butane/overlays/prod/coreos/storage/filesystem/btrfsmaintenance.bu
+      - inline: deploy/butane/overlays/prod/coreos/etc/hostname.bu
       - inline: deploy/butane/overlays/prod/coreos/etc/NetworkManager/NetworkManager.bu
-      - inline: deploy/butane/overlays/prod/podman/volumes.bu
-      - inline: deploy/butane/overlays/prod/podman/networks/kube-service-network.bu
-      - inline: deploy/butane/overlays/prod/podman/networks/kube-server-network.bu
-      - inline: deploy/butane/overlays/prod/podman/networks/kube-agent-network.bu
-      - inline: deploy/butane/overlays/prod/podman/containers/agent.bu
-      - inline: deploy/butane/overlays/prod/podman/containers/server.bu
-      - inline: deploy/butane/overlays/prod/podman/containers/api-serverlb.bu
-      - inline: deploy/butane/overlays/prod/podman/containers/applb.bu
-storage:
-  files:
-    - path: /etc/hostname
-      mode: 0644
-      overwrite: true
-      contents:
-        inline: |
-          rick.expresso.lan
-    # Needed for the large amount of files kubernetes workloads tend to open
-    # Reference: https://discussion.fedoraproject.org/t/setting-ulimit/83508/9
-    - path: /etc/security/limits.conf
-      mode: 0644
-      append:
-        - inline: |
-            * soft nofile 6144
-            * hard nofile 8192
-            root soft nofile 6144
-            root hard nofile 8192
+      - inline: deploy/butane/overlays/prod/podman/volumes/local-path-appdata/local-path-appdata.bu
+      - inline: deploy/butane/overlays/prod/podman/volumes/local-path-cctv/local-path-cctv.bu
+      - inline: deploy/butane/overlays/prod/podman/volumes/local-path-nvme/local-path-nvme.bu
+      - inline: deploy/butane/overlays/prod/podman/containers/agent/agent.bu
+      - inline: deploy/butane/overlays/prod/podman/containers/server/server.bu
+      - inline: deploy/butane/overlays/prod/podman/containers/api-server-lb/api-server-lb.bu
+      - inline: deploy/butane/overlays/prod/podman/containers/svc-lb/svc-lb.bu

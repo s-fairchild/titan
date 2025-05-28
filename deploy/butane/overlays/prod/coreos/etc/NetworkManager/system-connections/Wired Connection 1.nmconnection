@@ -14,6 +14,7 @@ dns=10.50.0.1;8.8.8.8;
 dns-search=expresso.lan;
 may-fail=false
 method=manual
+route1=10.15.0.0/16,10.50.0.13
 
 [ipv6]
 addr-gen-mode=default

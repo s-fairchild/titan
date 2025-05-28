@@ -1,0 +1,69 @@
+---
+- name: Base System Setup
+  hosts: rpi02ws
+  remote_user: alarm
+  become: true
+  vars:
+    swapfile_location: /swapfile
+  tasks:
+    - name: Create Swap File "{{ swapfile_location }}"
+      ansible.builtin.command:
+        argv:
+          - mkswap
+          - -U
+          - clear
+          - --size
+          - 4G
+          - -L
+          - SWAP
+          - --file
+          - "{{ swapfile_location }}"
+      register: mkswap_output
+      changed_when: mkswap_output.rc == 0
+      tags:
+        - swap.file.mkswap
+
+    - name: Enable Swap File
+      ansible.builtin.command:
+        argv:
+          - swapon
+          - "{{ swapfile_location }}"
+      register: swapon_output
+      changed_when: swapon_output.rc == 0
+      tags:
+        - swap.file.swapon
+
+    - name: Add swapfile mount to /etc/fstab
+      ansible.builtin.lineinfile:
+        path: /etc/fstab
+        line: /swapfile none swap defaults 0 0
+        create: false
+        backup: true
+      tags:
+        - swap.file.mount
+
+    - name: Update all packages (pacman -Syu)
+      community.general.pacman:
+        update_cache: true
+        upgrade: true
+
+    - name: Install package podman
+      community.general.pacman:
+        name: podman
+        state: present
+
+    - name: Install package podman-docker
+      community.general.pacman:
+        name: podman-docker
+        state: present
+
+    - name: Install package podman-docker
+      community.general.pacman:
+        name: bash-completion
+        state: present
+
+    # Will use to export metrics to prometheus
+    - name: Install package extra/pcp-pmda-podman
+      community.general.pacman:
+        name: extra/pcp-pmda-podman
+        state: present

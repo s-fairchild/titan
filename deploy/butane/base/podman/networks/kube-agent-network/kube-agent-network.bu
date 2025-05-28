@@ -1,0 +1,18 @@
+---
+variant: fcos
+version: 1.5.0
+storage:
+  directories:
+    - path: /etc/containers/systemd/kube-agent.network.d
+      overwrite: true
+
+  files:
+    - path: /etc/containers/systemd/kube-agent.network
+      overwrite: true
+      contents:
+        local: butane/base/podman/networks/kube-agent-network/kube-agent.network
+
+    - path: /etc/containers/systemd/kube-agent.network.d/subnet.conf
+      overwrite: true
+      contents:
+        local: butane/base/podman/networks/kube-agent-network/kube-agent.network.d/subnet.conf
