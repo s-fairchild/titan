@@ -87,24 +87,6 @@
           DHCP=no
           DNSSEC=no
 
-          [Route]
-          Destination={{ K3S_SERVER_SUBNET }}
-          Source={{ KUBE_AGENT_SUBNET }}
-          Scope=link
-          Table=main
-          NextHop=1
-
-          [Route]
-          Destination={{ KUBE_SERVICE_SUBNET }}
-          Source={{ KUBE_AGENT_SUBNET }}
-          Scope=link
-          Table=main
-          NextHop=1
-
-          [NextHop]
-          Id=1
-          Gateway={{ APISERVER_EXTERNAL_LB }}
-
         dest: /etc/systemd/network/enu1u4.network
         owner: root
         group: root
@@ -236,6 +218,20 @@
         - quadlet
         - containers
 
+    - name: Copy k3s-agent@<K3S_AGENT_INSTANCE>.container.d/limits.conf - K3S_AGENT_INSTANCE - {{ K3S_AGENT_INSTANCE }}
+      ansible.builtin.copy:
+        content: |
+          [Container]
+          Memory=199.5m
+          PodmanArgs=--cpus=3
+        dest: "{{ quadlet_base_dir }}/k3s-agent@{{ K3S_AGENT_INSTANCE }}.container.d/devices.conf"
+        owner: root
+        group: root
+        mode: '0640'
+      tags:
+        - quadlet
+        - containers
+
     - name: Delete directory <quadlet_base_dir>/k3s-agent@.container.d - quadlet_base_dir "{{ quadlet_base_dir }}/"
       ansible.builtin.file:
         path: "{{ quadlet_base_dir }}/k3s-agent@.container.d"
@@ -269,7 +265,7 @@
       ansible.builtin.copy:
         content: |
           [Container]
-          AddHost=k3s-apiserverlb-0:{{ APISERVER_INTERNAL_LB }}
+          AddHost=k3s-apiserverlb-0:{{ APISERVER_EXTERNAL_LB }}
         dest: "{{ quadlet_base_dir }}/k3s-agent@.container.d/add-hosts.conf"
         owner: root
         group: root
@@ -291,8 +287,6 @@
 
     - name: Run podman-systemd-generator
       ansible.builtin.command:
-      # register: my_output # <- Registers the command output.
-      # changed_when: my_output.rc != 0 # <- Uses the return code to define when the task has changed.
         argv:
           - /usr/lib/podman/quadlet
           - /run/systemd/generator/
