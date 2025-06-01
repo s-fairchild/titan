@@ -5,6 +5,8 @@
   become: true
   vars:
     swapfile_location: /swapfile
+    v4l2loopback_clone_dest: /tmp/v4l2loopback
+    v4l2loopback_version: v0.15.0
   tasks:
     - name: Create Swap File "{{ swapfile_location }}"
       ansible.builtin.command:
@@ -41,11 +43,72 @@
         backup: true
       tags:
         - swap.file.mount
+    
+    - name: Create journald.conf.d drop-in directory
+      ansible.builtin.file:
+        path: /etc/systemd/journald.conf.d
+        state: directory
+        mode: "0755"
+      
+    - name: Set systemd-journald RuntimeMaxUse
+      ansible.builtin.copy:
+        path: /etc/systemd/journald.conf.d/runtime-max-use.conf
+        content: |
+          # About 60MiB
+          RuntimeMaxUse=62791680
+        mode: "0644"
 
     - name: Update all packages (pacman -Syu)
       community.general.pacman:
         update_cache: true
         upgrade: true
+
+    # Currently arch repo need to update to the latest version (v0.15.0)
+    # The current version (v0.14.0) has a safety issue that dkms refuses to build
+    # Current work around is:
+    #    - clone https://gitlab.archlinux.org/archlinux/packaging/packages/v4l2loopback
+    #    - Edit PKGBUILD with the latest release details from upstream
+    #    - pacman -U ./built-package.tar.gz
+
+    # Packages required to build v4l2loopback
+    - name: Install base-devel
+      community.general.pacman:
+        name: core/base-devel
+        state: present
+    
+    - name: Install help2man
+      community.general.pacman:
+        name: extra/help2man
+        state: present
+
+    # - name: Install v4l2loopback-dkms
+    #   community.general.pacman:
+    #     name: extra/v4l2loopback-dkms
+    #     state: present
+    #   tags:
+    #     - v4l2loopback 
+
+    # - name: Install v4l2loopback-utils
+    #   community.general.pacman:
+    #     name: extra/v4l2loopback-utils
+    #     state: present
+    #   tags:
+    #     - v4l2loopback 
+
+    - name: Install alarm/raspberrypi-utils
+      community.general.pacman:
+        name: alarm/raspberrypi-utils
+        state: present
+
+    - name: Install alarm/firmware-raspberrypi
+      community.general.pacman:
+        name: alarm/firmware-raspberrypi
+        state: present
+
+    - name: Install tuned
+      community.general.pacman:
+        name: extra/tuned
+        state: present
 
     - name: Install package podman
       community.general.pacman:
@@ -67,3 +130,28 @@
       community.general.pacman:
         name: extra/pcp-pmda-podman
         state: present
+    
+    - name: Install tree (required for alsa-info.sh)
+      community.general.pacman:
+        name: tree
+        state: present
+
+    - name: Install alsa-utils
+      community.general.pacman:
+        name: extra/alsa-utils
+        state: present
+    
+    - name: Enable tuned service
+      ansible.builtin.systemd_service:
+        name: tuned
+        state: started
+        enabled: true
+    
+    - name: Set tuned profile throughput-performance
+      ansible.builtin.command:
+        argv:
+          - tuned-adm
+          - profile
+          - throughput-performance
+      register: tuned_adm_output
+      changed_when: tuned_adm_output.rc == 0
