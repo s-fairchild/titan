@@ -87,6 +87,24 @@
           DHCP=no
           DNSSEC=no
 
+          [Route]
+          Destination={{ K3S_SERVER_SUBNET }}
+          Source={{ KUBE_AGENT_SUBNET }}
+          Scope=link
+          Table=main
+          NextHop=1
+
+          [Route]
+          Destination={{ K3S_AGENT_PROD_SUBNET }}
+          Source={{ KUBE_AGENT_SUBNET }}
+          Scope=link
+          Table=main
+          NextHop=1
+
+          [NextHop]
+          Id=1
+          Gateway={{ APISERVER_EXTERNAL_LB }}
+
         dest: /etc/systemd/network/enu1u4.network
         owner: root
         group: root
@@ -166,7 +184,7 @@
         mode: '0750'
       tags:
         - quadlet
-        - networks
+        - containers
 
     - name: Create directory <quadlet_base_dir>/k3s-agent@<K3S_AGENT_INSTANCE>.d/ - K3S_AGENT_INSTANCE - {{ K3S_AGENT_INSTANCE }}
       ansible.builtin.file:
@@ -175,7 +193,7 @@
         mode: '0750'
       tags:
         - quadlet
-        - networks
+        - containers
 
     - name: Copy k3s-agent@<K3S_AGENT_INSTANCE>.container.d/exec-extra-args.conf - K3S_AGENT_INSTANCE - {{ K3S_AGENT_INSTANCE }}
       ansible.builtin.copy:
@@ -265,7 +283,7 @@
       ansible.builtin.copy:
         content: |
           [Container]
-          AddHost=k3s-apiserverlb-0:{{ APISERVER_EXTERNAL_LB }}
+          AddHost=k3s-apiserverlb-0:{{ APISERVER_INTERNAL_LB }}
         dest: "{{ quadlet_base_dir }}/k3s-agent@.container.d/add-hosts.conf"
         owner: root
         group: root
@@ -314,6 +332,9 @@
         name: k3s-agent@{{ K3S_AGENT_INSTANCE }}
         state: stopped
         masked: true
+      tags:
+        - networks
+        - containers
 
     - name: Delete a podman network {{ KUBE_AGENT_NETWORK_NAME }}
       containers.podman.podman_network:
@@ -350,5 +371,6 @@
         daemon_reload: true
         masked: false
       tags:
+        - networks
         - quadlet
         - containers
