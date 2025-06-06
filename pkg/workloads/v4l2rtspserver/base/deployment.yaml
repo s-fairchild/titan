@@ -20,6 +20,20 @@ spec:
       labels:
         app: rtsp0
     spec:
+      initContainers:
+        - name: v4l2loopback
+          image: docker.io/mpromonet/v4l2tools:latest
+          restartPolicy: Always
+          args:
+          - -v
+          - -fH264
+          - /dev/video0
+          - /dev/video10
+          volumeMounts:
+          - name: video0
+            mountPath: /dev/video0
+          - name: video1
+            mountPath: /dev/video1
       containers:
       - name: rtsp-0
         livenessProbe:
@@ -41,10 +55,6 @@ spec:
         volumeMounts:
         - name: snd0
           mountPath: /dev/snd
-        - name: video0
-          mountPath: /dev/video0
-        - name: video1
-          mountPath: /dev/video1
         env:
         - name: RTSP_PASSWORD
           valueFrom:
@@ -60,6 +70,10 @@ spec:
             memory: "500Mi"
             cpu: "2000m"
       volumes:
+      - name: snd0
+        hostPath:
+          path: /dev/snd
+          type: Directory
       - name: video0
         hostPath: 
           path: /dev/video0
@@ -68,9 +82,5 @@ spec:
         hostPath: 
           path: /dev/video1
           type: CharDevice
-      - name: snd0
-        hostPath:
-          path: /dev/snd
-          type: Directory
       dnsPolicy: ClusterFirst
       restartPolicy: Always
