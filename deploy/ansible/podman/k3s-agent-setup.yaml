@@ -169,6 +169,36 @@
         - systemd-networkd
         - enu-config
 
+    # May remove, config is meant for micro usb 100M ethernet and USB hub on Raspberry Pi Zero 2 W
+    - name: Copy 10-enu1u4.link systemd-networkd config
+      ansible.builtin.copy:
+        content: |
+          [Match]
+          Driver=r8152
+
+          [Link]
+          NamePolicy=keep kernel database onboard slot path
+          AlternativeNamesPolicy=database onboard slot path mac
+          MACAddressPolicy=persistent
+
+          Description="USB 100MB Ethernet Device"
+          AutoNegotiation=true
+          Advertise=100basefx-full
+          Port=tp
+          MDI=auto
+
+          ReceiveChecksumOffload=true
+          TransmitChecksumOffload=true
+          TCPSegmentationOffload=true
+
+        dest: /etc/systemd/network/10-enu1u4.link
+        owner: root
+        group: root
+        mode: '0644'
+      tags:
+        - systemd-networkd
+        - enu-config
+
     - name: Reload systemd-networkd configs
       ansible.builtin.command:
         argv:
