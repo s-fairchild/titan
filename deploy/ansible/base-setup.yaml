@@ -50,13 +50,13 @@
         state: directory
         mode: "0755"
       
-    - name: Set systemd-journald RuntimeMaxUse
-      ansible.builtin.copy:
-        path: /etc/systemd/journald.conf.d/runtime-max-use.conf
-        content: |
-          # About 60MiB
-          RuntimeMaxUse=62791680
-        mode: "0644"
+    # - name: Set systemd-journald RuntimeMaxUse
+      # ansible.builtin.copy:
+        # path: /etc/systemd/journald.conf.d/runtime-max-use.conf
+        # content: |
+          # # About 60MiB
+          # RuntimeMaxUse=62791680
+        # mode: "0644"
 
     - name: Update all packages (pacman -Syu)
       community.general.pacman:
@@ -124,6 +124,9 @@
       community.general.pacman:
         name: bash-completion
         state: present
+    
+    # TODO make optional packages section with optional tag
+    # vim htop bash-completion
 
     # Will use to export metrics to prometheus
     - name: Install package extra/pcp-pmda-podman
