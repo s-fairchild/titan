@@ -41,6 +41,7 @@
         state: present
       tags:
         - packages.install
+        - zram-generator
         - packages.install.zram-generator
 
     - name: Install alarm/raspberrypi-utils
@@ -121,8 +122,8 @@
         state: present
       tags:
         - packages.install
-    
-    - name: Enable tuned service
+
+    - name: Enable and Start tuned service
       ansible.builtin.systemd_service:
         name: tuned
         state: started
@@ -136,12 +137,22 @@
           [zram0]
           zram-size = min(ram / 2, 4096)
           compression-algorithm = zstd
-        path: /etc/systemd/zram-generator.conf
+        dest: /etc/systemd/zram-generator.conf
         owner: root
         group: root
         mode: '0644'
-        tags:
-          - zram-generator.configure
+      tags:
+        - zram-generator
+        - zram-generator.configure
+
+    - name: Enable and Start systemd-zram-setup@zram0.service
+      ansible.builtin.systemd_service:
+        name: systemd-zram-setup@zram0.service
+        state: started
+        daemon_reload: true
+      tags:
+        - zram-generator
+        - zram-generator.start
 
     - name: Set tuned profile throughput-performance
       ansible.builtin.command:
