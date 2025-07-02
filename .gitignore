@@ -10,3 +10,4 @@ deploy/butane/.*.tmp
 *.iso.sig
 deploy/manifests/*
 *.txt
+.ansible

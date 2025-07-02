@@ -1,14 +1,17 @@
 ---
 rpi02ws:
   hosts:
-    rpi02w-0:
-      NET_CONFIG:
-        NODE_IP: 10.15.0.10
-        KUBE_AGENT_SUBNET: 10.15.0.0/16
-        KUBE_AGENT_GATEWAY: 10.15.254.254
+    rpi5-0:
+      ansible_host: 10.50.0.10
+      NODE_IP: 10.15.0.10
+      KUBE_AGENT_SUBNET: 10.15.0.0/16
+      KUBE_AGENT_GATEWAY: 10.15.254.254
       K3S_AGENT_INSTANCE: 1
-      ansible_host: 10.50.0.13
+      ansible_ssh_private_key_file: ~/.ssh/id_ed25519_rpi5-0
   vars:
+    NETWORK:
+      GATEWAY_IP: 10.50.0.1
+      DNS_IP: 10.50.0.1
     REPO_FILES:
       K3S_ENV_SRC: ../../butane/overlays/prod/coreos/usr/local/etc/sysconfig/k3s
       PODMAN_OPTIONS_SRC: ../../butane/overlays/prod/coreos/usr/local/etc/sysconfig/podman-options
@@ -21,6 +24,3 @@ rpi02ws:
       KUBE_SERVICE_SUBNET: 10.43.0.0/16
       APISERVER_EXTERNAL_LB: 10.50.0.2
       APISERVER_INTERNAL_LB: 10.10.0.1
-    LAN_NET_CONFIG:
-      GATEWAY_IP: 10.50.0.1
-      DNS_IP: 10.50.0.1

@@ -74,60 +74,6 @@
       tags:
         - systemd-networkd
 
-    - name: Create directory /etc/systemd/networkd.conf.d for drop-ins
-      ansible.builtin.file:
-        path: /etc/systemd/networkd.conf.d
-        state: directory
-        mode: '0750'
-      tags:
-        - systemd-networkd
-
-    - name: Configure systemd-networkd
-      ansible.builtin.file:
-        path: /etc/systemd/networkd.conf.d
-      tags:
-        - systemd-networkd
-
-    - name: Create 90-speedmeter.conf systemd-networkd drop-in
-      ansible.builtin.copy:
-        dest: /etc/systemd/networkd.conf.d/90-speedmeter.conf
-        content: |
-          SpeedMeter=true
-        mode: '0644'
-        # validate: systemd-analyze cat-config %s
-      tags:
-        - systemd-networkd
-
-    - name: Create 90-ip-forward.conf systemd-networkd drop-in
-      ansible.builtin.copy:
-        dest: /etc/systemd/networkd.conf.d/90-ipv4-forward.conf
-        content: |
-          IPv4Forwarding=true
-          IPv6Forwarding=false
-        mode: '0644'
-        # validate: systemd-analyze cat-config %s
-      tags:
-        - systemd-networkd
-
-    - name: Reload systemd-networkd configuration
-      ansible.builtin.command:
-        argv:
-          - systemctl
-          - reload
-          - systemd-networkd
-      register: systemctl_reload
-      changed_when: systemctl_reload.rc == 0
-      tags:
-        - systemd-networkd
-
-    - name: Remove default en.network systemd-networkd config
-      ansible.builtin.file:
-        path: /etc/systemd/network/en.network
-        state: absent
-      tags:
-        - systemd-networkd
-        - enu-config
-
     - name: Copy enu1u4.network systemd-networkd config
       ansible.builtin.copy:
         content: |
@@ -167,37 +113,7 @@
         mode: '0644'
       tags:
         - systemd-networkd
-        - enu-config
-
-    # May remove, config is meant for micro usb 100M ethernet and USB hub on Raspberry Pi Zero 2 W
-    - name: Copy 10-enu1u4.link systemd-networkd config
-      ansible.builtin.copy:
-        content: |
-          [Match]
-          Driver=r8152
-
-          [Link]
-          NamePolicy=keep kernel database onboard slot path
-          AlternativeNamesPolicy=database onboard slot path mac
-          MACAddressPolicy=persistent
-
-          Description="USB 100MB Ethernet Device"
-          AutoNegotiation=true
-          Advertise=100basefx-full
-          Port=tp
-          MDI=auto
-
-          ReceiveChecksumOffload=true
-          TransmitChecksumOffload=true
-          TCPSegmentationOffload=true
-
-        dest: /etc/systemd/network/10-enu1u4.link
-        owner: root
-        group: root
-        mode: '0644'
-      tags:
-        - systemd-networkd
-        - enu-config
+        - systemd-networkd.routes
 
     - name: Reload systemd-networkd configs
       ansible.builtin.command:
@@ -208,7 +124,7 @@
       changed_when: reload_output.rc == 0
       tags:
         - systemd-networkd
-        - enu-config
+        - systemd-networkd.routes
 
     - name: Delete directory <quadlet_base_dir>/kube-agent.network.d - quadlet_base_dir "{{ quadlet_base_dir }}/"
       ansible.builtin.file:

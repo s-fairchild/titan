@@ -1,155 +1,148 @@
 ---
 - name: Base System Setup
-  hosts: rpi02ws
-  remote_user: alarm
-  become: true
-  vars:
-    swapfile_location: /swapfile
-    v4l2loopback_clone_dest: /tmp/v4l2loopback
-    v4l2loopback_version: v0.15.0
+  hosts: rpi5-0
+  remote_user: root
   tasks:
-    - name: Create Swap File "{{ swapfile_location }}"
-      ansible.builtin.command:
-        argv:
-          - mkswap
-          - -U
-          - clear
-          - --size
-          - 4G
-          - -L
-          - SWAP
-          - --file
-          - "{{ swapfile_location }}"
-      register: mkswap_output
-      changed_when: mkswap_output.rc == 0
-      tags:
-        - swap.file.mkswap
-
-    - name: Enable Swap File
-      ansible.builtin.command:
-        argv:
-          - swapon
-          - "{{ swapfile_location }}"
-      register: swapon_output
-      changed_when: swapon_output.rc == 0
-      tags:
-        - swap.file.swapon
-
-    - name: Add swapfile mount to /etc/fstab
-      ansible.builtin.lineinfile:
-        path: /etc/fstab
-        line: /swapfile none swap defaults 0 0
-        create: false
-        backup: true
-      tags:
-        - swap.file.mount
-    
-    - name: Create journald.conf.d drop-in directory
-      ansible.builtin.file:
-        path: /etc/systemd/journald.conf.d
-        state: directory
-        mode: "0755"
-      
-    # - name: Set systemd-journald RuntimeMaxUse
-      # ansible.builtin.copy:
-        # path: /etc/systemd/journald.conf.d/runtime-max-use.conf
-        # content: |
-          # # About 60MiB
-          # RuntimeMaxUse=62791680
-        # mode: "0644"
-
     - name: Update all packages (pacman -Syu)
       community.general.pacman:
         update_cache: true
         upgrade: true
+      tags:
+        - packages.update
 
-    # Currently arch repo need to update to the latest version (v0.15.0)
-    # The current version (v0.14.0) has a safety issue that dkms refuses to build
-    # Current work around is:
-    #    - clone https://gitlab.archlinux.org/archlinux/packaging/packages/v4l2loopback
-    #    - Edit PKGBUILD with the latest release details from upstream
-    #    - pacman -U ./built-package.tar.gz
+    - name: Set hostname
+      ansible.builtin.copy:
+        content: |
+          rpi5-0.expresso.lan
+        dest: /etc/hostname
+        owner: root
+        group: root
+        mode: '0400'
 
-    # Packages required to build v4l2loopback
-    - name: Install base-devel
+    - name: Install v4l2loopback-dkms
       community.general.pacman:
-        name: core/base-devel
+        name: extra/v4l2loopback-dkms
         state: present
-    
-    - name: Install help2man
+      tags:
+        - packages.install
+        - packages.install.v4l2loopback
+
+    - name: Install v4l2loopback-utils
       community.general.pacman:
-        name: extra/help2man
+        name: extra/v4l2loopback-utils
         state: present
+      tags:
+        - packages.install
+        - packages.install.v4l2loopback
 
-    # - name: Install v4l2loopback-dkms
-    #   community.general.pacman:
-    #     name: extra/v4l2loopback-dkms
-    #     state: present
-    #   tags:
-    #     - v4l2loopback 
-
-    # - name: Install v4l2loopback-utils
-    #   community.general.pacman:
-    #     name: extra/v4l2loopback-utils
-    #     state: present
-    #   tags:
-    #     - v4l2loopback 
+    - name: Install zram-generator
+      community.general.pacman:
+        name: extra/zram-generator
+        state: present
+      tags:
+        - packages.install
+        - packages.install.zram-generator
 
     - name: Install alarm/raspberrypi-utils
       community.general.pacman:
         name: alarm/raspberrypi-utils
         state: present
-
-    - name: Install alarm/firmware-raspberrypi
-      community.general.pacman:
-        name: alarm/firmware-raspberrypi
-        state: present
+      tags:
+        - packages.install
 
     - name: Install tuned
       community.general.pacman:
         name: extra/tuned
         state: present
+      tags:
+        - packages.install
+        - tuned
 
     - name: Install package podman
       community.general.pacman:
         name: podman
         state: present
+      tags:
+        - packages.install
 
     - name: Install package podman-docker
       community.general.pacman:
         name: podman-docker
         state: present
+      tags:
+        - packages.install
 
-    - name: Install package podman-docker
+    - name: Install package bash-completion
       community.general.pacman:
         name: bash-completion
         state: present
-    
-    # TODO make optional packages section with optional tag
-    # vim htop bash-completion
+      tags:
+        - packages.install.optional
+
+    - name: Install package vim
+      community.general.pacman:
+        name: vim
+        state: present
+      tags:
+        - packages.install.optional
+
+    - name: Install package htop
+      community.general.pacman:
+        name: htop
+        state: present
+      tags:
+        - packages.install.optional
+
+    - name: Install package lsusb
+      community.general.pacman:
+        name: extra/cyme
+        state: present
+      tags:
+        - packages.install.optional
 
     # Will use to export metrics to prometheus
     - name: Install package extra/pcp-pmda-podman
       community.general.pacman:
         name: extra/pcp-pmda-podman
         state: present
-    
+      tags:
+        - packages.install
+
     - name: Install tree (required for alsa-info.sh)
       community.general.pacman:
         name: tree
         state: present
+      tags:
+        - packages.install
 
     - name: Install alsa-utils
       community.general.pacman:
         name: extra/alsa-utils
         state: present
+      tags:
+        - packages.install
     
     - name: Enable tuned service
       ansible.builtin.systemd_service:
         name: tuned
         state: started
         enabled: true
-    
+      tags:
+        - packages.install
+
+    - name: Configure zram-generator
+      ansible.builtin.copy:
+        content: |
+          [zram0]
+          zram-size = min(ram / 2, 4096)
+          compression-algorithm = zstd
+        path: /etc/systemd/zram-generator.conf
+        owner: root
+        group: root
+        mode: '0644'
+        tags:
+          - zram-generator.configure
+
     - name: Set tuned profile throughput-performance
       ansible.builtin.command:
         argv:
@@ -158,3 +151,85 @@
           - throughput-performance
       register: tuned_adm_output
       changed_when: tuned_adm_output.rc == 0
+      tags:
+        - tuned
+
+    # Used to add route drop-in configs during agent setup
+    - name: Create end0.network.d drop-in directory
+      ansible.builtin.file:
+        path: /etc/systemd/network/end0.network.d
+        state: directory
+        mode: '0750'
+      tags:
+        - systemd-networkd
+
+    - name: Copy end0 ethernet configuration
+      ansible.builtin.copy:
+        content: |
+          [Match]
+          Name=end0
+
+          [Network]
+          Address={{ ansible_host }}/24
+          Gateway={{ NETWORK.GATEWAY_IP }}
+          DNS={{ NETWORK.DNS_IP }}
+          IPv4Forwarding=yes
+          IPv4AcceptLocal=yes
+          DHCP=no
+          DNSSEC=no
+        dest: /etc/systemd/network/end0.network
+        owner: root
+        group: root
+        mode: '0644'
+      tags:
+        - systemd-networkd
+
+    - name: Remove default en.network config file
+      ansible.builtin.file:
+        path: /etc/systemd/network/en.network
+        state: absent
+      tags:
+        - systemd-networkd
+
+    - name: Create directory /etc/systemd/networkd.conf.d for drop-ins
+      ansible.builtin.file:
+        path: /etc/systemd/networkd.conf.d
+        state: directory
+        mode: '0750'
+      tags:
+        - systemd-networkd
+
+    - name: Create 90-speedmeter.conf systemd-networkd drop-in
+      ansible.builtin.copy:
+        dest: /etc/systemd/networkd.conf.d/90-speedmeter.conf
+        content: |
+          [Network]
+          SpeedMeter=true
+          SpeedMeterIntervalSec=10sec
+        mode: '0644'
+        # validate: systemd-analyze cat-config %s
+      tags:
+        - systemd-networkd
+
+    - name: Create 90-ip-forward.conf systemd-networkd drop-in
+      ansible.builtin.copy:
+        dest: /etc/systemd/networkd.conf.d/90-ipv4-forward.conf
+        content: |
+          [Network]
+          IPv4Forwarding=true
+          IPv6Forwarding=false
+        mode: '0644'
+        # validate: systemd-analyze cat-config %s
+      tags:
+        - systemd-networkd
+
+    - name: Reload systemd-networkd configuration
+      ansible.builtin.command:
+        argv:
+          - systemctl
+          - reload
+          - systemd-networkd
+      register: systemctl_reload
+      changed_when: systemctl_reload.rc == 0
+      tags:
+        - systemd-networkd
