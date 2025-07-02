@@ -7,8 +7,8 @@ ansible() {
             --rm \
             --security-opt label=disable \
             -v ~/.ssh:/root/.ssh \
-            -v "${PWD}":/apps \
-            -v ansible-collections:/usr/share/ansible/collections:Z \
+            -v "$PWD:/apps" \
+            -v "$PWD/.ansible:/usr/share/ansible/collections" \
             -w /apps \
             alpine/ansible \
                 ansible "$@"
@@ -20,8 +20,8 @@ ansible-playbook() {
             --rm \
             --security-opt label=disable \
             -v ~/.ssh:/root/.ssh \
-            -v "${PWD}":/apps \
-            -v ansible-collections:/usr/share/ansible/collections:Z \
+            -v "$PWD:/apps" \
+            -v "$PWD/.ansible:/usr/share/ansible/collections" \
             -w /apps \
             alpine/ansible \
                 ansible-playbook "$@"
@@ -33,8 +33,8 @@ ansible-inventory() {
             --rm \
             --security-opt label=disable \
             -v ~/.ssh:/root/.ssh \
-            -v "${PWD}":/apps \
-            -v ansible-collections:/usr/share/ansible/collections:Z \
+            -v "$PWD:/apps" \
+            -v "$PWD/.ansible:/usr/share/ansible/collections" \
             -w /apps \
             alpine/ansible \
                 ansible-inventory "$@"
@@ -46,8 +46,8 @@ ansible-galaxy() {
             --rm \
             --security-opt label=disable \
             -v ~/.ssh:/root/.ssh \
-            -v "${PWD}":/apps \
-            -v ansible-collections:/usr/share/ansible/collections:Z \
+            -v "$PWD:/apps" \
+            -v "$PWD/.ansible:/root/.ansible" \
             -w /apps \
             alpine/ansible \
                 ansible-galaxy "$@"
