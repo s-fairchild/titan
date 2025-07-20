@@ -147,6 +147,21 @@
         - quadlet
         - networks
 
+    - name: Copy kube-agent.network.d/dns.conf podman quadlet file - quadlet_base_dir "{{ quadlet_base_dir }}/"
+      ansible.builtin.copy:
+        content: |
+          [Network]
+          DNSSearch=expresso.lan
+          # kube-agent (podman) dns server on rick.expresso.lan
+          DNS=10.11.254.254
+        dest: "{{ quadlet_base_dir }}/kube-agent.network.d/dns.conf"
+        owner: root
+        group: root
+        mode: '0644'
+      tags:
+        - quadlet
+        - networks
+
     - name: Copy k3s-agent@.container podman quadlet file - quadlet_base_dir "{{ quadlet_base_dir }}/"
       ansible.builtin.copy:
         src: "{{ DIRS_BASE.PODMAN_CONTAINERS }}/k3s-agent@.container"
@@ -263,19 +278,6 @@
         - quadlet
         - containers
 
-    - name: Copy k3s-agent@.container.d/add-hosts.conf - quadlet_base_dir "{{ quadlet_base_dir }}/"
-      ansible.builtin.copy:
-        content: |
-          [Container]
-          AddHost=k3s-apiserverlb-0.rick.expresso.lan:{{ K3S_NETWORK.APISERVER_INTERNAL_LB }}
-        dest: "{{ quadlet_base_dir }}/k3s-agent@.container.d/add-hosts.conf"
-        owner: root
-        group: root
-        mode: '0644'
-      tags:
-        - quadlet
-        - containers
-
     - name: Copy k3s-agent@.container.d/global-debug.conf podman quadlet file - quadlet_base_dir "{{ quadlet_base_dir }}/"
       ansible.builtin.copy:
         content: |
@@ -339,7 +341,7 @@
 
     - name: Delete a podman network {{ PODMAN_NETWORKS.KUBE_AGENT_NETWORK_NAME }}
       containers.podman.podman_network:
-        name: Delete podman network if exists {{ PODMAN_NETWORKS.KUBE_AGENT_NETWORK_NAME }}
+        name: "{{ PODMAN_NETWORKS.KUBE_AGENT_NETWORK_NAME }}"
         state: absent
         force: true
 
