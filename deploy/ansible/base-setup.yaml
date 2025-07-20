@@ -2,6 +2,9 @@
 - name: Base System Setup
   hosts: rpi5-0
   remote_user: root
+  vars:
+    src_etc_containers: ../butane/base/coreos/etc/containers
+    dest_etc_containers_d: /etc/containers/containers.conf.d
   tasks:
     - name: Update all packages (pacman -Syu)
       community.general.pacman:
@@ -25,7 +28,6 @@
         state: present
       tags:
         - packages.install
-        - packages.install.v4l2loopback
 
     - name: Install v4l2loopback-utils
       community.general.pacman:
@@ -33,7 +35,6 @@
         state: present
       tags:
         - packages.install
-        - packages.install.v4l2loopback
 
     - name: Install zram-generator
       community.general.pacman:
@@ -42,7 +43,6 @@
       tags:
         - packages.install
         - zram-generator
-        - packages.install.zram-generator
 
     - name: Install alarm/raspberrypi-utils
       community.general.pacman:
@@ -78,6 +78,7 @@
         name: bash-completion
         state: present
       tags:
+        - packages.install
         - packages.install.optional
 
     - name: Install package vim
@@ -85,6 +86,7 @@
         name: vim
         state: present
       tags:
+        - packages.install
         - packages.install.optional
 
     - name: Install package htop
@@ -92,6 +94,7 @@
         name: htop
         state: present
       tags:
+        - packages.install
         - packages.install.optional
 
     - name: Install package lsusb
@@ -99,9 +102,10 @@
         name: extra/cyme
         state: present
       tags:
+        - packages.install
         - packages.install.optional
 
-    # Will use to export metrics to prometheus
+    # Used for exporting metrics to Prometheus
     - name: Install package extra/pcp-pmda-podman
       community.general.pacman:
         name: extra/pcp-pmda-podman
@@ -245,3 +249,96 @@
       changed_when: systemctl_reload.rc == 0
       tags:
         - systemd-networkd
+
+    - name: Enable podman.socket
+      ansible.builtin.systemd_service:
+        name: podman.socket
+        enabled: true
+      tags:
+        - services
+
+    - name: Delete /etc/containers/containers.d directory
+      ansible.builtin.file:
+        path: /etc/containers/containers.d
+        state: absent
+      tags:
+        - containers.conf
+
+    - name: Create /etc/containers/containers.d directory
+      ansible.builtin.file:
+        path: /etc/containers/containers.d
+        state: directory
+        mode: '0755'
+      tags:
+        - containers.conf
+
+    - name: Copy containers.conf.d/containers-containers.conf
+      ansible.builtin.copy:
+        dest: "{{ dest_etc_containers_d }}/containers-containers.conf"
+        src: "{{ src_etc_containers }}/containers.conf.d/containers-containers.conf"
+        mode: '0644'
+        owner: root
+        group: root
+      tags:
+        - containers.conf
+        - containers.conf.containers
+
+    - name: Copy containers.conf.d/containers-engine.conf
+      ansible.builtin.copy:
+        dest: "{{ dest_etc_containers_d }}/containers-engine.conf"
+        content: |
+          [engine]
+          # https://github.com/containers/common/blob/main/docs/containers.conf.5.md#engine-table
+
+          # Creates a more verbose container-create event which includes a JSON payload with detailed information about the container. Set to false by default.
+          events_container_create_inspect_data = true
+
+          # Selects which logging mechanism to use for container engine events.
+          # Valid values are `journald`, `file` and `none`.
+          #
+          events_logger = "journald"
+
+          # Default OCI runtime
+          #
+          runtime = "runc"
+
+          # List of the OCI runtimes that support --format=json. When json is supported
+          # engine will use it for reporting nicer errors.
+          #
+          runtime_supports_json = ["crun", "runc", "kata", "runsc", "youki", "krun"]
+
+          # List of the OCI runtimes that supports running containers with KVM Separation.
+          #
+          runtime_supports_kvm = ["kata", "krun"]
+
+          # List of the OCI runtimes that supports running containers without cgroups.
+          #
+          runtime_supports_nocgroups = ["crun", "krun"]
+        mode: '0644'
+        owner: root
+        group: root
+      tags:
+        - containers.conf
+        - containers.conf.engine
+
+    - name: Copy containers.conf.d/containers-firewall.conf
+      ansible.builtin.copy:
+        dest: "{{ dest_etc_containers_d }}/containers-firewall.conf"
+        src: "{{ src_etc_containers }}/containers.conf.d/containers-firewall.conf"
+        mode: '0644'
+        owner: root
+        group: root
+      tags:
+        - containers.conf
+        - containers.conf.firewall
+
+    - name: Copy /etc/containers/storage.conf
+      ansible.builtin.copy:
+        dest: /etc/containers/storage.conf
+        src: "{{ src_etc_containers }}/storage.conf"
+        mode: '0644'
+        owner: root
+        group: root
+      tags:
+        - containers.conf
+        - containers.conf.storage
