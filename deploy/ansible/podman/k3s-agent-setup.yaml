@@ -151,7 +151,6 @@
       ansible.builtin.copy:
         content: |
           [Network]
-          DNSSearch=expresso.lan
           # kube-agent (podman) dns server on rick.expresso.lan
           DNS=10.11.254.254
         dest: "{{ quadlet_base_dir }}/kube-agent.network.d/dns.conf"
@@ -241,7 +240,7 @@
           # https://github.com/raspberrypi/linux/pull/6524
           Memory=6g
           PodmanArgs=--cpus=3.5
-        dest: "{{ quadlet_base_dir }}/k3s-agent@{{ K3S_AGENT_INSTANCE }}.container.d/devices.conf"
+        dest: "{{ quadlet_base_dir }}/k3s-agent@{{ K3S_AGENT_INSTANCE }}.container.d/limits.conf"
         owner: root
         group: root
         mode: '0644'

@@ -16,6 +16,7 @@ HostName=${NAME}
 Label=app=k3s
 Label=cluster=${CLUSTER}
 Image=k3s.image
+DNSSearch=${DNS_SEARCH}
 Pull=never
 ShmSize=5g
 Secret=k3s-token,type=env,target=K3S_TOKEN
