@@ -15,10 +15,10 @@ clean:
 kube-manifests-gen-prod:
 	hack/gen_kube_manifests.sh ${kustomize_base_dir} ${manifests_prod_dir} prod
 
-kube-manifests-gen-rpi02w-0:
-	hack/gen_kube_manifests.sh ${kustomize_base_dir} ${manifests_prod_dir} rpi02w-0
+kube-manifests-gen-rpi5-0:
+	hack/gen_kube_manifests.sh ${kustomize_base_dir} ${manifests_prod_dir} rpi5-0
 
-kube-manifests-gen-all: clean kube-manifests-gen-prod kube-manifests-gen-rpi02w-0
+kube-manifests-gen-all: clean kube-manifests-gen-prod kube-manifests-gen-rpi5-0
 
 ignition_dest := "deploy/.ignition"
 ignition-gen-staging: kube-manifests-gen-staging
