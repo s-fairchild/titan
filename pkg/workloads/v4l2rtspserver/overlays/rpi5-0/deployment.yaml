@@ -39,7 +39,6 @@ spec:
           - "8085"
           - -u
           - ""
-          # -G <w>x<h>[x<f>] : V4L2 capture format (default 0x0x25)
           - -G
           - "1280x720x30"
           - -S60
@@ -49,4 +48,4 @@ spec:
           - "1"
           - -a
           - S16_LE
-          - "/dev/video0,/dev/video0"
+          - "/dev/video10,/dev/video0"

@@ -21,19 +21,29 @@ spec:
         app: rtsp0
     spec:
       initContainers:
-        - name: v4l2loopback
-          image: docker.io/mpromonet/v4l2tools:latest
-          restartPolicy: Always
-          args:
-          - -v
-          - -fH264
-          - /dev/video0
-          - /dev/video10
-          volumeMounts:
-          - name: video0
-            mountPath: /dev/video0
-          - name: video1
-            mountPath: /dev/video1
+      # TODO determine what capabilities need added to the sidecar container to allow it to access /dev/video0
+      - name: v4l2compress
+        image: docker.io/mpromonet/v4l2tools:latest
+        restartPolicy: Always
+        args:
+        - -vv
+        - -fH264
+        - /dev/video0
+        - /dev/video10
+        # Capture device
+        volumeMounts:
+        - name: video0
+          mountPath: /dev/video0
+        # v4l2loopback device
+        - name: video10
+          mountPath: /dev/video10
+        resources:
+          requests:
+            memory: "200Mi"
+            cpu: "1000m"
+          limits:
+            memory: "500Mi"
+            cpu: "2000m"
       containers:
       - name: rtsp-0
         livenessProbe:
@@ -53,6 +63,12 @@ spec:
         securityContext:
           privileged: true
         volumeMounts:
+        # Used to find sound capture device for alsa stream
+        - name: video0
+          mountPath: /dev/video0
+        # Compressed video (v4l2loopback) capture device
+        - name: video10
+          mountPath: /dev/video10
         - name: snd0
           mountPath: /dev/snd
         env:
@@ -65,7 +81,7 @@ spec:
         resources:
           requests:
             memory: "200Mi"
-            cpu: "100m"
+            cpu: "1000m"
           limits:
             memory: "500Mi"
             cpu: "2000m"
@@ -74,13 +90,15 @@ spec:
         hostPath:
           path: /dev/snd
           type: Directory
+      # Capture device
       - name: video0
         hostPath: 
           path: /dev/video0
           type: CharDevice
-      - name: video1
+      # v4l2loopback device
+      - name: video10
         hostPath: 
-          path: /dev/video1
+          path: /dev/video10
           type: CharDevice
       dnsPolicy: ClusterFirst
       restartPolicy: Always

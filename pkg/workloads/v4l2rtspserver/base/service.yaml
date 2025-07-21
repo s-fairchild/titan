@@ -10,12 +10,12 @@ spec:
   selector:
     app: rtsp0
   ports:
-  - name: rtsp-tcp
+  - name: rtsp0-tcp
     nodePort: 30556
     port: 8556
     targetPort: rtsp-tcp
     protocol: TCP
-  - name: rtsp-udp
+  - name: rtsp0-udp
     nodePort: 30555
     port: 8555
     targetPort: rtsp-udp
