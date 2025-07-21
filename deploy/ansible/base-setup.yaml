@@ -28,6 +28,7 @@
         state: present
       tags:
         - packages.install
+        - packages.install.v4l2
 
     - name: Install v4l2loopback-utils
       community.general.pacman:
@@ -35,6 +36,15 @@
         state: present
       tags:
         - packages.install
+        - packages.install.v4l2
+
+    - name: Install v4l2loopback-utils
+      community.general.pacman:
+        name: extra/v4l-utils
+        state: present
+      tags:
+        - packages.install
+        - packages.install.v4l2
 
     - name: Install zram-generator
       community.general.pacman:
