@@ -28,7 +28,7 @@
         state: present
       tags:
         - packages.install
-        - packages.install.v4l2
+        - v4l2loopback
 
     - name: Install v4l2loopback-utils
       community.general.pacman:
@@ -36,7 +36,7 @@
         state: present
       tags:
         - packages.install
-        - packages.install.v4l2
+        - v4l2loopback
 
     - name: Install v4l2loopback-utils
       community.general.pacman:
@@ -44,7 +44,7 @@
         state: present
       tags:
         - packages.install
-        - packages.install.v4l2
+        - v4l2loopback
 
     - name: Install zram-generator
       community.general.pacman:
@@ -352,3 +352,25 @@
       tags:
         - containers.conf
         - containers.conf.storage
+
+    - name: Copy /etc/modules-load.d/v4l2loopback.conf
+      ansible.builtin.copy:
+        dest: /etc/modules-load.d/v4l2loopback.conf
+        content: |
+          v4l2loopback
+        mode: '0644'
+        owner: root
+        group: root
+      tags:
+        - v4l2loopback
+
+    - name: Copy /etc/modprobe.d/v4l2loopback.conf
+      ansible.builtin.copy:
+        dest: /etc/modprobe.d/v4l2loopback.conf
+        content: |
+          options v4l2loopback video_nr=10 card_label="v4l2compress0" max_width=1280 max_height=720
+        mode: '0644'
+        owner: root
+        group: root
+      tags:
+        - v4l2loopback

@@ -221,8 +221,9 @@
       ansible.builtin.copy:
         content: |
           [Container]
-          AddDevice=-/dev/v4l/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-video-index0:/dev/video0:rw
-          AddDevice=-/dev/v4l/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-video-index1:/dev/video1:rw
+          AddDevice=-/dev/v4l/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-video-index0:/dev/video0:rwm
+          AddDevice=-/dev/v4l/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-video-index1:/dev/video1:rwm
+          AddDevice=-/dev/video10:/dev/video10:rwm
         dest: "{{ quadlet_base_dir }}/k3s-agent@{{ K3S_AGENT_INSTANCE }}.container.d/devices.conf"
         owner: root
         group: root
