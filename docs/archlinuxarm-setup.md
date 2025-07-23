@@ -44,23 +44,34 @@ sudo sync
 sudo mv /mnt/root/boot/* /mnt/boot/
 ```
 
-### Btrfs subvolume setup
+### Btrfs Subvolume Setup
+
+#### Btrfs Subvolume Flat Layout Creation
+
+1. TODO
+<!-- TODO provide examples for how to create the flat layout subvolumes shown in the example /etc/fstab -->
+
+#### Mounting Subvolumes via /etc/fstab
 
 Example fstab
+
 ```bash
 # Static information about the filesystems.
 # See fstab(5) for details.
 
 # <file system> <dir> <type> <options> <dump> <pass>
-UUID="$BOOT_UUID"  /boot   vfat    defaults        0       0
+UUID="$ROOT_UUID" /boot                 vfat  defaults                                                                                          0 0
 
-UUID="$ROOT_UUID" / btrfs defaults,noatime,autodefrag,compress=zstd,commit=120,subvol=root 0 0
-UUID="$ROOT_UUID" /var btrfs defaults,noatime,autodefrag,compress=zstd,commit=120,subvol=var 0 0
-UUID="$ROOT_UUID" /var btrfs defaults,noatime,autodefrag,compress=zstd,commit=120,subvol=var 0 0/var/lib/containers btrfs defaults,noatime,autodefrag,compress=zstd,commit=120,subvol=var_lib_containers 0 0
-UUID="$ROOT_UUID" /var/cache/pacman/pkg btrfs defaults,noatime,autodefrag,compress=zstd,commit=120,subvol=var_cache_pacman_pkg 0 0
-UUID="$ROOT_UUID" /root btrfs defaults,noatime,autodefrag,compress=zstd,commit=120,subvol=root_home 0 0
-UUID="$ROOT_UUID" /home btrfs defaults,noatime,autodefrag,compress=zstd,commit=120,subvol=home 0 0
-UUID="$ROOT_UUID" /usr/local btrfs defaults,noatime,autodefrag,compress=zstd,commit=120,subvol=usr_local 0 0
+# root filesystem
+UUID="$ROOT_UUID" /                     btrfs subvol=@,defaults,noatime,autodefrag,compress=zstd,x-systemd.device-timeout=0                     0 0
+UUID="$ROOT_UUID" /.snapshots           btrfs subvol=@snapshots,defaults,noatime,autodefrag,compress=zstd,x-systemd.device-timeout=0            0 0
+UUID="$ROOT_UUID" /var                  btrfs subvol=@var,defaults,noatime,autodefrag,compress=zstd,x-systemd.device-timeout=0                  0 0
+UUID="$ROOT_UUID" /var/lib/containers   btrfs subvol=@var_lib_containers,defaults,noatime,autodefrag,compress=zstd,x-systemd.device-timeout=0   0 0
+UUID="$ROOT_UUID" /var/cache/pacman/pkg btrfs subvol=@var_cache_pacman_pkg,defaults,noatime,autodefrag,compress=zstd,x-systemd.device-timeout=0 0 0
+UUID="$ROOT_UUID" /opt                  btrfs subvol=@opt,defaults,noatime,autodefrag,compress=zstd,x-systemd.device-timeout=0                  0 0
+UUID="$ROOT_UUID" /root                 btrfs subvol=@root_home,defaults,noatime,autodefrag,compress=zstd,x-systemd.device-timeout=0            0 0
+UUID="$ROOT_UUID" /home                 btrfs subvol=@home,defaults,noatime,autodefrag,compress=zstd,x-systemd.device-timeout=0                 0 0
+UUID="$ROOT_UUID" /usr/local            btrfs subvol=@usr_local,defaults,noatime,autodefrag,compress=zstd,x-systemd.device-timeout=0            0 0
 ```
 
 ### Arch Linux ARM Pre Boot Setup
