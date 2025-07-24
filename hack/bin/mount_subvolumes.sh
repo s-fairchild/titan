@@ -66,8 +66,7 @@ declare -r utils_lib="hack/lib/util.sh"
 declare -r bsdtar_lib="hack/lib/archlinuxarm/bsdtar.sh"
 declare -r options_lib="hack/lib/archlinuxarm/options.sh"
 declare -r verify_lib="hack/lib/archlinuxarm/verify.sh"
-declare -r btrfs_subvolumes_lib="hack/lib/archlinuxarm/btrfs-subvolumes.sh"
-declare -r mount_lib="hack/lib/archlinuxarm/mount.sh"
+declare -r disks_lib="hack/lib/archlinuxarm/disks.sh"
 declare -r arch_utils_lib="hack/lib/archlinuxarm/utils.sh"
 
 if [ ! -f "$utils_lib" ]; then
@@ -76,10 +75,8 @@ elif [ ! -f "$bsdtar_lib" ]; then
     abort "$bsdtar_lib not found. Are you in the repository root?"
 elif [ ! -f "$options_lib" ]; then
     abort "$options_lib not found. Are you in the repository root?"
-elif [ ! -f "$btrfs_subvolumes_lib" ]; then
-    abort "$btrfs_subvolumes_lib not found. Are you in the repository root?"
-elif [ ! -f "$mount_lib" ]; then
-    abort "$mount_lib not found. Are you in the repository root?"
+elif [ ! -f "$disks_lib" ]; then
+    abort "$disks_lib not found. Are you in the repository root?"
 elif [ ! -f "$arch_utils_lib" ]; then
     abort "$arch_utils_lib not found. Are you in the repository root?"
 fi
@@ -92,10 +89,10 @@ source "$bsdtar_lib"
 source "$options_lib"
 # shellcheck source=../lib/archlinuxarm/verify.sh
 source "$verify_lib"
-# shellcheck source=../lib/archlinuxarm/btrfs-subvolumes.sh
-source "$btrfs_subvolumes_lib"
 # shellcheck source=../lib/archlinuxarm/utils.sh
 source "$arch_utils_lib"
+# shellcheck source=../lib/archlinuxarm/disks.sh
+source "$disks_lib"
 
 # shellcheck disable=SC2034
 declare -a TMP_DATA
