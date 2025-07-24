@@ -21,7 +21,7 @@ main() {
     fi
 
     local -r root_filesystem_target="/mnt/root"
-    local -r boot_mount_target="$root_filesystem_target/boot"
+    local -r boot_mount_target="/mnt/boot"
 
     user_verify_mounts SUBVOLUME_MOUNT_ORDER \
                 SUBVOLUMES \
@@ -46,14 +46,73 @@ main() {
                      "$root_filesystem_target" \
                      "$btrfs_mount_options"
 
-    sudo mkdir "$boot_mount_target"
-    # TODO mount boot under /mnt/boot to copy files to, then mount under the root subvolume afterwards
+    # sudo mkdir "$boot_mount_target"
+    # # TODO mount boot under /mnt/boot to copy files to, then mount under the root subvolume afterwards
+    # mount_partition "${user_options["$BOOT_PARTITION_KEY"]}" \
+                     # "$boot_mount_target"
+    # fstab_write "$root_filesystem_target"
+    # umount_partition "$boot_mount_target"
+
+    local -r boot_target_tmp="/mnt/boot"
     mount_partition "${user_options["$BOOT_PARTITION_KEY"]}" \
-                     "$boot_mount_target"
+                    "$boot_target_tmp"
 
-    fstab_write "$root_filesystem_target"
+    tarball_download_unpack "$root_filesystem_target" "$boot_mount_target" "${user_options["$CONFIG_KEY_TARBALL"]:-"download"}" TMP_DATA
+}
 
-    umount_partition "$boot_mount_target"
+# find_mount_target() {
+    # findmnt --json --nofsroot --target="$1" | jq -r .filesystems[0].target
+# }
+
+tarball_download_unpack() {
+    local root_target="$1"
+    local boot_target="$2"
+    # shellcheck disable=SC2034
+    local tarball_file="$3"
+
+    if findmnt --fstab "$root_target"; then
+        abort "$root_target found in /etc/fstab"
+    elif findmnt --fstab "$boot_target"; then
+        abort "$boot_target found in /etc/fstab"
+    fi
+
+    tarball_download tarball_file "$4"
+    tarball_unpack tarball_file "$root_target"
+
+    log "Moving all files from $root_target/boot/* to $boot_target"
+    sudo mv "$root_target"/boot/* "$boot_target"
+    sync
+
+    umount_partition "$boot_target" "$root_target"
+}
+
+tarball_unpack() {
+    local -n data="$1"
+    local target="$2"
+
+    if [ ! -f "$data" ]; then
+        abort "Tarball file $data not found."
+    fi
+
+    log "Untarring $data to $target"
+    sudo bsdtar -xpf "$data" -C "$target"
+    sync
+}
+
+# tarball_download()
+tarball_download() {
+    local -n out="$1"
+    local -n tmp="$2"
+
+    if [ "$out" != "download" ]; then
+        log "Tarball provided by user, not downloading."
+        return 2
+    fi
+
+    tmp="$(mktemp -d --suffix=-archlinuxarm_unpack.s)"
+    tarball="ArchLinuxARM-rpi-aarch64-latest.tar.gz"
+    out="$tmp/$tarball"
+    wget -O "$out" "http://os.archlinuxarm.org/os/$tarball"
 }
 
 subvolumes_create() {
@@ -86,7 +145,7 @@ mount_partition() {
 }
 
 umount_partition() {
-    sudo umount -vqA "$1"
+    sudo umount -vqA $@
 }
 
 mount_subvolumes() {
@@ -144,6 +203,7 @@ user_verify_mounts() {
         abort
     fi
 
+    # Provide line break for output readability
     echo ""
 }
 
@@ -160,19 +220,22 @@ else
     echo "$utils not found. Are you in the repository root?"; exit 1
 fi
 
-# BOOT_PARTITION_KEY="boot_partition"
+# TODO rename these following the tarball name convention
+# declare -r BOOT_PARTITION_KEY="boot_partition"
 declare -r BOOT_PARTITION_KEY="boot_partition"
-# ROOT_PARTITION_KEY="root_partition"
+# declare -r ROOT_PARTITION_KEY="root_partition"
 declare -r ROOT_PARTITION_KEY="root_partition"
-# USER_ENV_FILE_KEY="user_env_file"
+# declare -r USER_ENV_FILE_KEY="user_env_file"
 declare -r USER_ENV_FILE_KEY="user_env_file"
+# declare -r CONFIG_KEY_TARBALL="tarball_file_name"
+declare -r CONFIG_KEY_TARBALL="tarball_file_name"
 
 collect_user_options() {
     local -n config="$1"
     shift
     log "starting"
 
-    optstring=":e:r:b:t:h"
+    optstring=":f:e:r:b:t:h"
     local OPTIND
     local options
     local user_env_file
@@ -194,6 +257,12 @@ collect_user_options() {
                 boot_partition="${OPTARG}"
                 log "$boot_partition will be used for the boot partition."
                 ;;
+            f)
+                tarball_file_name="${OPTARG}"
+                log "$tarball_file_name will be used for writing the root filesystem data."
+                # optional
+                config["$CONFIG_KEY_TARBALL"]="$tarball_file_name"
+                ;;
             h)
                 usage
                 ;;
@@ -206,11 +275,13 @@ collect_user_options() {
         esac
     done
 
-    config["$BOOT_PARTITION_KEY"]="$boot_partition"
-    config["$ROOT_PARTITION_KEY"]="$root_partition"
-    # shellcheck disable=SC2034
-    config["$USER_ENV_FILE_KEY"]="$user_env_file"
-
+    # required
+    config["$BOOT_PARTITION_KEY"]="${boot_partition:?"-b BOOT_PARTITION_KEY is required"}"
+    config["$ROOT_PARTITION_KEY"]="${root_partition:?"-r ROOT_PARTITION_KEY is required"}"
+    config["$USER_ENV_FILE_KEY"]="${user_env_file:?"-e USER_ENV_FILE_KEY"}"
 }
+
+declare -a TMP_DATA
+trap "cleanup TMP_DATA" 1 2 3 6 EXIT
 
 main "$@"
