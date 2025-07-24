@@ -21,7 +21,7 @@ main() {
     fi
 
     local -r root_filesystem_target="/mnt/root"
-    local -r boot_mount_target="/mnt/boot"
+    local boot_mount_target="/mnt/boot"
 
     user_verify_mounts SUBVOLUME_MOUNT_ORDER \
                 SUBVOLUMES \
@@ -54,8 +54,8 @@ main() {
                             TMP_DATA
 
     umount_partition "$boot_mount_target"
-    local -r boot_target_tmp="/$root_filesystem_target/boot"
-    mount_partition "${user_options["$BOOT_PARTITION_KEY"]}" "$boot_target_tmp"
+    local -r boot_mount_target="/$root_filesystem_target/boot"
+    mount_partition "${user_options["$BOOT_PARTITION_KEY"]}" "$boot_mount_target"
 
     fstab_write "$root_filesystem_target"
 
