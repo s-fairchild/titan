@@ -59,3 +59,9 @@ collect_user_options() {
     config["$CONFIG_KEY_ROOT_PARTITION"]="${root_partition:?"-r CONFIG_KEY_ROOT_PARTITION is required."}"
     config["$CONFIG_KEY_ENV_FILE"]="${user_env_file:?"-e CONFIG_KEY_ENV_FILE is required."}"
 }
+
+usage() {
+    # TODO populate usage message
+    log "usage message"
+    exit 0
+}

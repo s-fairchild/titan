@@ -128,40 +128,10 @@ fstab_write() {
     echo "$fstab" | sudo tee "$fstab_out" > /dev/null
 }
 
-user_verify_mounts() {
-    local -n subvol_order="$1"
-    local -n subvols="$2"
-    local -n opts="$3"
-    local root_target="$4"
-    local boot_target="$5"
-    log "starting"
-
-    log "Device: ${opts["$CONFIG_KEY_ROOT_PARTITION"]} target=$root_target"
-    log "Device: ${opts["$CONFIG_KEY_BOOT_PARTITION"]} target=$boot_target"
-
-    # shellcheck disable=SC2068
-    for subvol in ${subvol_order[@]}; do
-        echo -e "subvolume: $subvol \t\t target=$root_target/${subvols["$subvol"]}"
-    done
-
-    read -n1 -t 60 -p "${FUNCNAME[0]}: Do you want to continue? (y/n): "
-
-    if [[ ! "$REPLY" =~ ^[Yy]$ ]]; then
-        abort
-    fi
-
-    # Provide line break for output readability
-    echo ""
-}
-
-usage() {
-    # TODO populate usage message
-    log "usage message"
-}
-
 declare -r utils="hack/lib/util.sh"
-declare -r bsdtar_lib="hack/lib/archlinuxarm_bsdtar.sh"
+declare -r bsdtar_lib="hack/lib/archlinuxarm/bsdtar.sh"
 declare -r options_lib="hack/lib/archlinuxarm/options.sh"
+declare -r verify_lib="hack/lib/archlinuxarm/verify.sh"
 
 if [ ! -f "$utils" ]; then
     echo "$utils not found. Are you in the repository root?"; exit 1
@@ -173,10 +143,12 @@ fi
 
 # shellcheck source=../lib/util.sh
 source "$utils"
-# shellcheck source=../lib/archlinuxarm_bsdtar.sh
+# shellcheck source=../lib/archlinuxarm/bsdtar.sh
 source "$bsdtar_lib"
 # shellcheck source=../lib/archlinuxarm/options.sh
 source "$options_lib"
+# shellcheck source=../lib/archlinuxarm/verify.sh
+source "$verify_lib"
 
 declare -a TMP_DATA
 trap "cleanup TMP_DATA" 1 2 3 6 EXIT
