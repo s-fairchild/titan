@@ -35,11 +35,12 @@ abort() {
 cleanup() {
     local -n trash="$1"
     log "starting"
+    set -x
 
     # shellcheck disable=SC2068
     for t in ${trash[@]}; do
         if [ -f "$t" ] || [ -d "$t" ]; then
-            log "$t"
+            log "Deleting: $t"
             rm -rf "$t"
         fi
     done

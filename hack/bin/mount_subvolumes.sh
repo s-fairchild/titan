@@ -48,7 +48,10 @@ main() {
 
     mount_partition "${user_options["$BOOT_PARTITION_KEY"]}" "$boot_mount_target"
 
-    tarball_download_unpack "$root_filesystem_target" "$boot_mount_target" "${user_options["$CONFIG_KEY_TARBALL"]:-"download"}" TMP_DATA
+    tarball_download_unpack "$root_filesystem_target" \
+                            "$boot_mount_target" \
+                            "${user_options["$CONFIG_KEY_TARBALL"]:-"$TARBALL_DOWNLOAD"}" \
+                            TMP_DATA
 
     umount_partition "$boot_mount_target"
     local -r boot_target_tmp="/$root_filesystem_target/boot"
@@ -57,55 +60,6 @@ main() {
     fstab_write "$root_filesystem_target"
 
     log "$root_filesystem_target is ready for chroot"
-}
-
-tarball_download_unpack() {
-    local root_target="$1"
-    local boot_target="$2"
-    # shellcheck disable=SC2034
-    local tarball_file="$3"
-
-    if findmnt --fstab "$root_target"; then
-        abort "$root_target found in /etc/fstab"
-    elif findmnt --fstab "$boot_target"; then
-        abort "$boot_target found in /etc/fstab"
-    fi
-
-    tarball_download tarball_file "$4"
-    tarball_unpack tarball_file "$root_target"
-
-    log "Moving all files from $root_target/boot/* to $boot_target"
-    sudo mv "$root_target"/boot/* "$boot_target"
-    sync
-}
-
-tarball_unpack() {
-    local -n data="$1"
-    local target="$2"
-
-    if [ ! -f "$data" ]; then
-        abort "Tarball file $data not found."
-    fi
-
-    log "Untarring $data to $target"
-    sudo bsdtar -xpf "$data" -C "$target"
-    sync
-}
-
-# tarball_download()
-tarball_download() {
-    local -n out="$1"
-    local -n tmp="$2"
-
-    if [ "$out" != "download" ]; then
-        log "Tarball provided by user, not downloading."
-        return
-    fi
-
-    tmp="$(mktemp -d --suffix=-archlinuxarm_unpack.s)"
-    tarball="ArchLinuxARM-rpi-aarch64-latest.tar.gz"
-    out="$tmp/$tarball"
-    wget -O "$out" "http://os.archlinuxarm.org/os/$tarball"
 }
 
 subvolumes_create() {
@@ -205,13 +159,17 @@ usage() {
     log "usage message"
 }
 
-declare utils="hack/lib/util.sh"
-if [ -f "$utils" ]; then
-    # shellcheck source=../lib/util.sh
-    source "$utils"
-else
+declare -r utils="hack/lib/util.sh"
+declare -r bsdtar_lib="hack/lib/archlinuxarm_bsdtar.sh"
+if [ ! -f "$utils" ]; then
     echo "$utils not found. Are you in the repository root?"; exit 1
+elif [ ! -f "$bsdtar_lib" ]; then
+    abort "$bsdtar_lib not found. Are you in the repository root?"
 fi
+# shellcheck source=../lib/util.sh
+source "$utils"
+# shellcheck source=../lib/archlinuxarm_bsdtar.sh
+source "$bsdtar_lib"
 
 # TODO rename these following the tarball name convention
 # declare -r BOOT_PARTITION_KEY="boot_partition"
