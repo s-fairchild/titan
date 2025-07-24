@@ -62,47 +62,13 @@ main() {
     log "$root_filesystem_target is ready for chroot"
 }
 
-mount_partition() {
-    local part="$1"
-    local target="$2"
-    local o="${3:-}"
-    log "starting"
-
-    if [ -n "${3:-}" ]; then
-        local -a o=(
-            "-o"
-            "${o[@]}"
-        )
-    fi
-
-    # shellcheck disable=SC2068
-    sudo mount -v ${o[@]} "$part" "$target"
-}
-
-umount_partition() {
-    sudo umount -vqA $@
-}
-
-fstab_write() {
-    local target="$1"
-    log "starting"
-
-    # TODO include the mount options that are missing from the generated fstab file
-    fstab="$(sudo genfstab -U "$target")"
-    fstab="$(sed -e '/LABEL=zram0/ { N; d; }' <<< "$fstab")"
-    etc="$target/etc"
-    fstab_out="$etc/fstab"
-    sudo mkdir -p "$etc"
-
-    log "Writing fstab to $fstab_out"
-    echo "$fstab" | sudo tee "$fstab_out" > /dev/null
-}
-
 declare -r utils_lib="hack/lib/util.sh"
 declare -r bsdtar_lib="hack/lib/archlinuxarm/bsdtar.sh"
 declare -r options_lib="hack/lib/archlinuxarm/options.sh"
 declare -r verify_lib="hack/lib/archlinuxarm/verify.sh"
 declare -r btrfs_subvolumes_lib="hack/lib/archlinuxarm/btrfs-subvolumes.sh"
+declare -r mount_lib="hack/lib/archlinuxarm/mount.sh"
+declare -r arch_utils_lib="hack/lib/archlinuxarm/utils.sh"
 
 if [ ! -f "$utils_lib" ]; then
     echo "$utils_lib not found. Are you in the repository root?"; exit 1
@@ -112,6 +78,10 @@ elif [ ! -f "$options_lib" ]; then
     abort "$options_lib not found. Are you in the repository root?"
 elif [ ! -f "$btrfs_subvolumes_lib" ]; then
     abort "$btrfs_subvolumes_lib not found. Are you in the repository root?"
+elif [ ! -f "$mount_lib" ]; then
+    abort "$mount_lib not found. Are you in the repository root?"
+elif [ ! -f "$arch_utils_lib" ]; then
+    abort "$arch_utils_lib not found. Are you in the repository root?"
 fi
 
 # shellcheck source=../lib/util.sh
@@ -124,7 +94,10 @@ source "$options_lib"
 source "$verify_lib"
 # shellcheck source=../lib/archlinuxarm/btrfs-subvolumes.sh
 source "$btrfs_subvolumes_lib"
+# shellcheck source=../lib/archlinuxarm/utils.sh
+source "$arch_utils_lib"
 
+# shellcheck disable=SC2034
 declare -a TMP_DATA
 trap "cleanup TMP_DATA" 1 2 3 6 EXIT
 
