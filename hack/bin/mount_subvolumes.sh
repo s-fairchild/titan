@@ -13,7 +13,7 @@ main() {
     local -A user_options
     collect_user_options user_options "$@"
 
-    env_file="${user_options["$USER_ENV_FILE_KEY"]}"
+    env_file="${user_options["$CONFIG_KEY_ENV_FILE"]}"
     if [ -f "$env_file" ]; then
         log "Sourcing the provided environment file $env_file..."
         # shellcheck source=../../docs/examples/archlinuxarm_subvolumes.env
@@ -30,7 +30,7 @@ main() {
                 "$boot_mount_target"
 
     local btrfs_mount_options="defaults,noatime,autodefrag,compress=zstd:3,x-systemd.device-timeout=0"
-    mount_partition "${user_options["$ROOT_PARTITION_KEY"]}" \
+    mount_partition "${user_options["$CONFIG_KEY_ROOT_PARTITION"]}" \
                      "$root_filesystem_target" \
                      "$btrfs_mount_options"
                      
@@ -42,11 +42,11 @@ main() {
 
     mount_subvolumes SUBVOLUMES \
                      SUBVOLUME_MOUNT_ORDER \
-                     "${user_options["$ROOT_PARTITION_KEY"]}" \
+                     "${user_options["$CONFIG_KEY_ROOT_PARTITION"]}" \
                      "$root_filesystem_target" \
                      "$btrfs_mount_options"
 
-    mount_partition "${user_options["$BOOT_PARTITION_KEY"]}" "$boot_mount_target"
+    mount_partition "${user_options["$CONFIG_KEY_BOOT_PARTITION"]}" "$boot_mount_target"
 
     tarball_download_unpack "$root_filesystem_target" \
                             "$boot_mount_target" \
@@ -55,7 +55,7 @@ main() {
 
     umount_partition "$boot_mount_target"
     local -r boot_mount_target="/$root_filesystem_target/boot"
-    mount_partition "${user_options["$BOOT_PARTITION_KEY"]}" "$boot_mount_target"
+    mount_partition "${user_options["$CONFIG_KEY_BOOT_PARTITION"]}" "$boot_mount_target"
 
     fstab_write "$root_filesystem_target"
 
@@ -136,8 +136,8 @@ user_verify_mounts() {
     local boot_target="$5"
     log "starting"
 
-    log "Device: ${opts["$ROOT_PARTITION_KEY"]} target=$root_target"
-    log "Device: ${opts["$BOOT_PARTITION_KEY"]} target=$boot_target"
+    log "Device: ${opts["$CONFIG_KEY_ROOT_PARTITION"]} target=$root_target"
+    log "Device: ${opts["$CONFIG_KEY_BOOT_PARTITION"]} target=$boot_target"
 
     # shellcheck disable=SC2068
     for subvol in ${subvol_order[@]}; do
@@ -161,76 +161,22 @@ usage() {
 
 declare -r utils="hack/lib/util.sh"
 declare -r bsdtar_lib="hack/lib/archlinuxarm_bsdtar.sh"
+declare -r options_lib="hack/lib/archlinuxarm/options.sh"
+
 if [ ! -f "$utils" ]; then
     echo "$utils not found. Are you in the repository root?"; exit 1
 elif [ ! -f "$bsdtar_lib" ]; then
     abort "$bsdtar_lib not found. Are you in the repository root?"
+elif [ ! -f "$options_lib" ]; then
+    abort "$options_lib not found. Are you in the repository root?"
 fi
+
 # shellcheck source=../lib/util.sh
 source "$utils"
 # shellcheck source=../lib/archlinuxarm_bsdtar.sh
 source "$bsdtar_lib"
-
-# TODO rename these following the tarball name convention
-# declare -r BOOT_PARTITION_KEY="boot_partition"
-declare -r BOOT_PARTITION_KEY="boot_partition"
-# declare -r ROOT_PARTITION_KEY="root_partition"
-declare -r ROOT_PARTITION_KEY="root_partition"
-# declare -r USER_ENV_FILE_KEY="user_env_file"
-declare -r USER_ENV_FILE_KEY="user_env_file"
-# declare -r CONFIG_KEY_TARBALL="tarball_file_name"
-declare -r CONFIG_KEY_TARBALL="tarball_file_name"
-
-collect_user_options() {
-    local -n config="$1"
-    shift
-    log "starting"
-
-    optstring=":f:e:r:b:t:h"
-    local OPTIND
-    local options
-    local user_env_file
-    local root_partition
-    local boot_partition
-
-    while getopts ${optstring} options; do
-        case $options in
-            e)
-                user_env_file="$OPTARG"
-                log "environment file $user_env_file will be sourced."
-                ;;
-            r)
-                root_partition="$OPTARG"
-                log "$root_partition will be used for the root filesystem."
-                ;;
-            b)
-                # ${string##*( )}"
-                boot_partition="${OPTARG}"
-                log "$boot_partition will be used for the boot partition."
-                ;;
-            f)
-                tarball_file_name="${OPTARG}"
-                log "$tarball_file_name will be used for writing the root filesystem data."
-                # optional
-                config["$CONFIG_KEY_TARBALL"]="$tarball_file_name"
-                ;;
-            h)
-                usage
-                ;;
-            :)
-                abort "Option -${OPTARG} requires an argument."
-                ;;
-            ?)
-                abort
-                ;;
-        esac
-    done
-
-    # required
-    config["$BOOT_PARTITION_KEY"]="${boot_partition:?"-b BOOT_PARTITION_KEY is required"}"
-    config["$ROOT_PARTITION_KEY"]="${root_partition:?"-r ROOT_PARTITION_KEY is required"}"
-    config["$USER_ENV_FILE_KEY"]="${user_env_file:?"-e USER_ENV_FILE_KEY"}"
-}
+# shellcheck source=../lib/archlinuxarm/options.sh
+source "$options_lib"
 
 declare -a TMP_DATA
 trap "cleanup TMP_DATA" 1 2 3 6 EXIT
