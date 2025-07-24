@@ -46,23 +46,18 @@ main() {
                      "$root_filesystem_target" \
                      "$btrfs_mount_options"
 
-    # sudo mkdir "$boot_mount_target"
-    # # TODO mount boot under /mnt/boot to copy files to, then mount under the root subvolume afterwards
-    # mount_partition "${user_options["$BOOT_PARTITION_KEY"]}" \
-                     # "$boot_mount_target"
-    # fstab_write "$root_filesystem_target"
-    # umount_partition "$boot_mount_target"
-
-    local -r boot_target_tmp="/mnt/boot"
-    mount_partition "${user_options["$BOOT_PARTITION_KEY"]}" \
-                    "$boot_target_tmp"
+    mount_partition "${user_options["$BOOT_PARTITION_KEY"]}" "$boot_mount_target"
 
     tarball_download_unpack "$root_filesystem_target" "$boot_mount_target" "${user_options["$CONFIG_KEY_TARBALL"]:-"download"}" TMP_DATA
-}
 
-# find_mount_target() {
-    # findmnt --json --nofsroot --target="$1" | jq -r .filesystems[0].target
-# }
+    umount_partition "$boot_mount_target"
+    local -r boot_target_tmp="/$root_filesystem_target/boot"
+    mount_partition "${user_options["$BOOT_PARTITION_KEY"]}" "$boot_target_tmp"
+
+    fstab_write "$root_filesystem_target"
+
+    log "$root_filesystem_target is ready for chroot"
+}
 
 tarball_download_unpack() {
     local root_target="$1"
@@ -82,8 +77,6 @@ tarball_download_unpack() {
     log "Moving all files from $root_target/boot/* to $boot_target"
     sudo mv "$root_target"/boot/* "$boot_target"
     sync
-
-    umount_partition "$boot_target" "$root_target"
 }
 
 tarball_unpack() {
@@ -106,7 +99,7 @@ tarball_download() {
 
     if [ "$out" != "download" ]; then
         log "Tarball provided by user, not downloading."
-        return 2
+        return
     fi
 
     tmp="$(mktemp -d --suffix=-archlinuxarm_unpack.s)"
