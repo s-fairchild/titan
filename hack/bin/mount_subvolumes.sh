@@ -40,7 +40,7 @@ main() {
     
     umount_partition "$root_filesystem_target"
 
-    mount_subvolumes SUBVOLUMES \
+    subvolumes_mount SUBVOLUMES \
                      SUBVOLUME_MOUNT_ORDER \
                      "${user_options["$CONFIG_KEY_ROOT_PARTITION"]}" \
                      "$root_filesystem_target" \
@@ -60,18 +60,6 @@ main() {
     fstab_write "$root_filesystem_target"
 
     log "$root_filesystem_target is ready for chroot"
-}
-
-subvolumes_create() {
-    local -n subvol_order="$1"
-    local root_target="$2"
-    log "starting"
-
-    # shellcheck disable=SC2068
-    for subvol in ${subvol_order[@]}; do
-        new_subvol="$root_target/$subvol"
-        sudo btrfs subvolume create "$new_subvol"
-    done
 }
 
 mount_partition() {
@@ -95,24 +83,6 @@ umount_partition() {
     sudo umount -vqA $@
 }
 
-mount_subvolumes() {
-    local -n subvols="$1"
-    local -n subvol_order="$2"
-    local root_part="$3"
-    local root_target="$4"
-    local opts="${5:-}"
-    log "starting"
-
-    # shellcheck disable=SC2068
-    # shellcheck disable=SC2154
-    for subvol in ${subvol_order[@]}; do
-        # shellcheck disable=SC2154
-        target="/mnt/root/${subvols["$subvol"]/'@'/}"
-        sudo mkdir -p "$target"
-        mount_partition "$root_part" "$target" "$opts,subvol=$subvol"
-    done
-}
-
 fstab_write() {
     local target="$1"
     log "starting"
@@ -128,27 +98,32 @@ fstab_write() {
     echo "$fstab" | sudo tee "$fstab_out" > /dev/null
 }
 
-declare -r utils="hack/lib/util.sh"
+declare -r utils_lib="hack/lib/util.sh"
 declare -r bsdtar_lib="hack/lib/archlinuxarm/bsdtar.sh"
 declare -r options_lib="hack/lib/archlinuxarm/options.sh"
 declare -r verify_lib="hack/lib/archlinuxarm/verify.sh"
+declare -r btrfs_subvolumes_lib="hack/lib/archlinuxarm/btrfs-subvolumes.sh"
 
-if [ ! -f "$utils" ]; then
-    echo "$utils not found. Are you in the repository root?"; exit 1
+if [ ! -f "$utils_lib" ]; then
+    echo "$utils_lib not found. Are you in the repository root?"; exit 1
 elif [ ! -f "$bsdtar_lib" ]; then
     abort "$bsdtar_lib not found. Are you in the repository root?"
 elif [ ! -f "$options_lib" ]; then
     abort "$options_lib not found. Are you in the repository root?"
+elif [ ! -f "$btrfs_subvolumes_lib" ]; then
+    abort "$btrfs_subvolumes_lib not found. Are you in the repository root?"
 fi
 
 # shellcheck source=../lib/util.sh
-source "$utils"
+source "$utils_lib"
 # shellcheck source=../lib/archlinuxarm/bsdtar.sh
 source "$bsdtar_lib"
 # shellcheck source=../lib/archlinuxarm/options.sh
 source "$options_lib"
 # shellcheck source=../lib/archlinuxarm/verify.sh
 source "$verify_lib"
+# shellcheck source=../lib/archlinuxarm/btrfs-subvolumes.sh
+source "$btrfs_subvolumes_lib"
 
 declare -a TMP_DATA
 trap "cleanup TMP_DATA" 1 2 3 6 EXIT
