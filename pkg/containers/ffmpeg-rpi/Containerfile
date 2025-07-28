@@ -1,0 +1,17 @@
+ARG IMAGE="localhost/arm64/archlinuxarm"
+ARG IMAGE_TAG="latest"
+FROM --platform=arm64 ${IMAGE}:${IMAGE_TAG} AS stage1
+
+WORKDIR /root
+
+RUN --mount=type=cache,target=/var/cache/pacman/pkg --mount=type=cache,target=/etc/pacman.d/gnupg pacman-key --init \
+                                                                                              && pacman-key --populate archlinuxarm
+
+FROM --platform=arm64 stage1 AS final
+
+RUN --mount=type=cache,target=/var/cache/pacman/pkg --mount=type=cache,target=/etc/pacman.d/gnupg pacman --noconfirm \
+                                                                                                         -S \
+                                                                                                            --disable-sandbox \
+                                                                                                            ffmpeg-rpi-bin
+
+ENTRYPOINT [ "ffmpeg" ]

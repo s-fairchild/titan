@@ -33,7 +33,6 @@ spec:
       - name: rtsp0
         # TODO setup muticast network once motion is deployed
         args:
-          - -v
           - -P
           - "8554"
           - -p
@@ -51,4 +50,4 @@ spec:
           - "1"
           - -a
           - S16_LE
-          - "/dev/video10,/dev/video0"
+          - "/dev/video30,/dev/video0"

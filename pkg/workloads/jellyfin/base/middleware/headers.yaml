@@ -2,19 +2,23 @@
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
-  name: jellyfin-mw
+  name: mw-headers
   namespace: jellyfin
 spec:
   headers:
-    sslRedirect: true
+    entryPoints:
+      - websecure
     customResponseHeaders:
       X-Robots-Tag: noindex,nofollow,nosnippet,noarchive,notranslate,noimageindex
       X-XSS-PROTECTION: "1"
-    customFrameOptionsValue: 'allow-from https://expresso.lan'
+      X-Forwarded-Proto: "https"
     stsSeconds: 315360000
     stsIncludeSubdomains: true
     stsPreload: true
     forceSTSHeader: true
     frameDeny: true
     contentTypeNosniff: true
-    # TODO setup regex to redirect http to https
+    SSLForceHost: true
+    STSIncludeSubdomains: true
+    STSPreload: true
+    browserXssFilter: true

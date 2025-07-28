@@ -1,34 +1,78 @@
 ---
-rpi02ws:
+raspberry_pis:
   hosts:
     rpi5-0:
       ansible_host: 10.50.0.10
-      K3S_INSTANCE_NETWORK:
-        NODE_IP: 10.15.0.10
-        KUBE_AGENT_SUBNET: 10.15.0.0/16
-        KUBE_AGENT_GATEWAY: 10.15.254.254
-      K3S_AGENT_INSTANCE: 1
+      K3S:
+        INSTANCE: 2
+        NETWORK:
+          NODE_IP: 10.15.0.10
+          KUBE_AGENT_SUBNET: 10.15.0.0/16
+          KUBE_AGENT_GATEWAY: 10.15.254.254
       ansible_ssh_private_key_file: ~/.ssh/id_ed25519_rpi5-0
+    rpi4-0:
+      ansible_host: 10.50.0.11
+      K3S:
+        INSTANCE: 1
+        NETWORK:
+          NODE_IP: 10.16.0.11
+          KUBE_AGENT:
+            SUBNET: 10.16.0.0/16
+            GATEWAY: 10.16.254.254
+        NODE_LABELS:
+          RTSP: rtsp=0
+      PODMAN:
+        LIMITS:
+          MEMORY: 1.5g
+          CPU: 3.5
+        DEVICES:
+          CAMERAS:
+            USB:
+              INDEX_0: /dev/v4l/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-video-index0
+              INDEX_1: /dev/v4l/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-video-index1
+      ansible_ssh_private_key_file: ~/.ssh/id_ed25519_rpi4-0
+  # TODO seperate these into env files by role
   vars:
+    COMMON:
+      FILES:
+        PROD:
+          SYSCONFIG:
+            K3S_ENV: ../../butane/overlays/prod/coreos/usr/local/etc/sysconfig/k3s
+            PODMAN_ENV: ../../butane/overlays/prod/coreos/usr/local/etc/sysconfig/podman-options
+        BASE:
+          QUADLET:
+            K3S_AGENT:
+              NETWORK: ../../butane/base/podman/containers/agent/k3s-agent@.container.d/kube-agent-network.conf
+      DIRS:
+        BASE:
+          PODMAN:
+            CONTAINERS: ../../butane/base/podman/containers/agent
+            IMAGES: ../../butane/base/podman/images
+            NETWORKS:
+              KUBE_AGENT: ../../butane/base/podman/networks/kube-agent-network
+        PROD:
+        PKG:
+          KUBELET:
+            AGENT: ../../../pkg/kubelet/agent
+            SERVER: ../../../pkg/kubelet/server
+    RPI4:
+      VC4:
+        # https://www.raspberrypi.com/documentation/computers/camera_software.html#device-nodes-when-using-libcamera
+        ENCODE: /dev/video30
     NETWORK:
-      GATEWAY_IP: 10.50.0.1
-      DNS_IP: 10.50.0.1
-    FILES_PROD:
-      K3S_ENV_SRC: ../../butane/overlays/prod/coreos/usr/local/etc/sysconfig/k3s
-      PODMAN_OPTIONS_SRC: ../../butane/overlays/prod/coreos/usr/local/etc/sysconfig/podman-options
-    DIRS_BASE:
-      KUBE_AGENT_NETWORK: ../../butane/base/podman/networks/kube-agent-network
-      PODMAN_CONTAINERS: ../../butane/base/podman/containers/agent
-      PODMAN_IMAGES: ../../butane/base/podman/images
-    DIRS_KUBELET:
-      AGENT: ../../../pkg/kubelet/agent
-      SERVER: ../../../pkg/kubelet/server
-    PODMAN_NETWORKS:
-      KUBE_AGENT_NETWORK_NAME: kube-agent
-      KUBE_AGENT_NETWORK_SERVICE_NAME: kube-agent-network
-    K3S_NETWORK:
-      K3S_SERVER_SUBNET: 10.10.0.0/16
-      K3S_AGENT_PROD_SUBNET: 10.11.0.0/16
-      KUBE_SERVICE_SUBNET: 10.43.0.0/16
-      APISERVER_EXTERNAL_LB: 10.50.0.2
-      APISERVER_INTERNAL_LB: 10.10.0.1
+      PODMAN:
+        AGENT:
+          NAME: kube-agent
+          SYSTEMD_SERVICE: kube-agent-network
+          DNS_IP: 10.11.254.254
+      K3S:
+        APISERVER_LB:
+          EXTERNAL: 10.50.0.2
+          INTERNAL: 10.10.0.1
+        SUBNETS:
+          SERVER: 10.10.0.0/16
+          AGENT: 10.11.0.0/16
+          SERVICE: 10.43.0.0/16
+      LAN:
+        GATEWAY_IP: 10.50.0.1
+        DNS_IP: 10.50.0.1

@@ -5,11 +5,11 @@ metadata:
   name: traefik
   namespace: kube-system-traefik
 spec:
-  chart: https://%{KUBERNETES_API}%/static/charts/traefik-25.0.3+up25.0.0.tgz
+  chart: https://%{KUBERNETES_API}%/static/charts/traefik-34.2.1+up34.2.0.tgz
   set:
     global.systemDefaultRegistry: ""
   targetNamespace: kube-system-traefik
-  # Reference: https://github.com/traefik/traefik-helm-chart/blob/e03b1287af6a9dfafb2d4203068f40c801e0f9b4/traefik/VALUES.md
+  # https://github.com/k3s-io/k3s-charts/blob/main/charts/traefik/34.2.1%2Bup34.2.0/values.yaml
   valuesContent: |-
     deployment:
       podAnnotations:
@@ -30,7 +30,7 @@ spec:
       svccontroller.k3s.cattle.io/enablelb: "true"
     image:
       repository: "rancher/mirrored-library-traefik"
-      tag: "2.10.7"
+      tag: "3.3.2"
       pullPolicy: IfNotPresent
     tolerations:
     - key: "CriticalAddonsOnly"
@@ -46,27 +46,117 @@ spec:
       values:
         - compute
       effect: "NoSchedule"
+    ports:
+      traefik:
+        port: 9000
+        # -- You SHOULD NOT expose the traefik port on production deployments.
+        # If you want to access it from outside your cluster,
+        # use `kubectl port-forward` or create a secure ingress
+        expose:
+          default: false
+          internal: true
+        exposedPort: 9000
+        protocol: TCP
+      web:
+        port: 8000
+        expose:
+          default: true
+        exposedPort: 80
+        targetPort: web
+        protocol: TCP
+        # Added in 2.2, you can make permanent redirects via entrypoints.
+        # https://docs.traefik.io/routing/entrypoints/#redirection
+        redirections:
+          entryPoint:
+            to: websecure
+            scheme: https
+            permanent: true
+        # Trust forwarded  headers information (X-Forwarded-*).
+        forwardedHeaders:
+          trustedIPs: ["10.50.0.0/24"]
+          insecure: false
+      websecure:
+        ## -- Enable this entrypoint as a default entrypoint. When a service doesn't explicitly set an entrypoint it will only use this entrypoint.
+        asDefault: true
+        port: 8443
+        expose:
+          default: true
+        exposedPort: 443
+        targetPort: websecure
+        protocol: TCP
+        ## -- Specify an application protocol. This may be used as a hint for a Layer 7 load balancer.
+        appProtocol: https
+        #
+        ## -- Enable HTTP/3 on the entrypoint
+        ## Enabling it will also enable http3 experimental feature
+        ## https://doc.traefik.io/traefik/routing/entrypoints/#http3
+        ## There are known limitations when trying to listen on same ports for
+        ## TCP & UDP (Http3). There is a workaround in this chart using dual Service.
+        ## https://github.com/kubernetes/kubernetes/issues/47249#issuecomment-587960741
+        http3:
+          enabled: false
+        ## -- Trust forwarded  headers information (X-Forwarded-*).
+        forwardedHeaders:
+          trustedIPs: ["10.50.0.0/24"]
+          insecure: false
+        #
+        ## Set TLS at the entrypoint
+        ## https://doc.traefik.io/traefik/routing/entrypoints/#tls
+        tls:
+          enabled: true
+      metrics:
+        # -- When using hostNetwork, use another port to avoid conflict with node exporter:
+        # https://github.com/prometheus/prometheus/wiki/Default-port-allocations
+        port: 9100
+        expose:
+          default: false
+        exposedPort: 9100
+        protocol: TCP
     service:
       enabled: true
       single: false
       type: LoadBalancer
       ipFamilyPolicy: "SingleStack"
-      spec: {}
+      spec:
+        externalTrafficPolicy: Cluster
       ipFamilies:
         - IPv4
+      loadBalancerSourceRanges:
+      - 10.50.0.0/24
       ## -- An additional and optional internal Service.
       ## Same parameters as external Service
-      internal:
-        type: ClusterIP
-        enabled: true
-        single: false
-        ipFamilyPolicy: "SingleStack"
-        ipFamilies:
-          - IPv4
+      additionalServices:
+        internal:
+          type: ClusterIP
+          enabled: true
+          spec: {}
+          single: false
+          ipFamilyPolicy: "SingleStack"
+          ipFamilies:
+            - IPv4
+          loadBalancerSourceRanges:
+          - 10.11.0.0/16
+          - 10.10.0.0/16
+          - 10.16.0.0/16
     logs:
       general:
         # format: json
         # -- Alternative logging levels are DEBUG, PANIC, FATAL, ERROR, WARN, and INFO.
-        level: INFO
+        # level: INFO
+        level: DEBUG
       access:
         enabled: true
+        addInternals: false
+        fields:
+          headers:
+            defaultmode: keep
+    rbac:
+      enabled: true
+      # If set to false, installs ClusterRole and ClusterRoleBinding so Traefik can be used across namespaces.
+      # If set to true, installs Role and RoleBinding. Providers will only watch target namespace.
+      namespaced: false
+    # -- The service account the pods will use to interact with the Kubernetes API
+    serviceAccount:
+      # If set, an existing service account is used
+      # If not set, a service account is created automatically using the fullname template
+      name: ""

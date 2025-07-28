@@ -1,6 +1,6 @@
 ---
 - name: Base System Setup
-  hosts: rpi5-0
+  hosts: raspberry_pis
   remote_user: root
   vars:
     src_etc_containers: ../butane/base/coreos/etc/containers
@@ -16,7 +16,7 @@
     - name: Set hostname
       ansible.builtin.copy:
         content: |
-          rpi5-0.expresso.lan
+          {{ inventory_hostname }}.expresso.lan
         dest: /etc/hostname
         owner: root
         group: root
@@ -45,6 +45,20 @@
       tags:
         - packages.install
         - v4l2loopback
+
+    - name: Configure zram-generator
+      ansible.builtin.copy:
+        content: |
+          [zram0]
+          zram-size = min(ram / 2, 4096)
+          compression-algorithm = zstd
+        dest: /etc/systemd/zram-generator.conf
+        owner: root
+        group: root
+        mode: '0644'
+      tags:
+        - zram-generator
+        - zram-generator.configure
 
     - name: Install zram-generator
       community.general.pacman:
@@ -151,20 +165,6 @@
         enabled: true
       tags:
         - packages.install
-
-    - name: Configure zram-generator
-      ansible.builtin.copy:
-        content: |
-          [zram0]
-          zram-size = min(ram / 2, 4096)
-          compression-algorithm = zstd
-        dest: /etc/systemd/zram-generator.conf
-        owner: root
-        group: root
-        mode: '0644'
-      tags:
-        - zram-generator
-        - zram-generator.configure
 
     - name: Enable and Start systemd-zram-setup@zram0.service
       ansible.builtin.systemd_service:
@@ -376,7 +376,7 @@
       ansible.builtin.copy:
         dest: /etc/modprobe.d/v4l2loopback.conf
         content: |
-          options v4l2loopback video_nr=10 card_label="v4l2compress0" max_width=1280 max_height=720
+          options v4l2loopback video_nr=30 card_label="v4l2compress30" max_width=1280 max_height=720
         mode: '0644'
         owner: root
         group: root

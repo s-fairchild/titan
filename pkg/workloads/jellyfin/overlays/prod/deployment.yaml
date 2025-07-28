@@ -28,17 +28,57 @@ spec:
                     - compute
       containers:
       - name: jellyfin
-        livenessProbe:
-          tcpSocket:
-            port: 8096
-          initialDelaySeconds: 120
         env:
+        - name: JELLYFIN_DATA_DIR
+          value: /var/lib/jellyfin
+        - name: JELLYFIN_CACHE_DIR
+          value: /var/cache/jellyfin
+        - name: JELLYFIN_LOG_DIR
+          value: /var/log/jellyfin
+        - name: JELLYFIN_CONFIG_DIR
+          value: /usr/local/etc/jellyfin
         # See for more information: https://jellyfin.org/docs/general/administration/configuration/
         - name: JELLYFIN_PublishedServerUrl
           value: https://jellyfin.app.rick.expresso.lan
+        # Reference: https://github.com/jellyfin/jellyfin-vue/wiki/Configuration#docker-based-setups
+        - name: DEFAULT_SERVERS
+          value: "['jellyfin.app.rick.expresso.lan', 'web-client.jellyfin.svc.cluster.local']"
+        - name: HISTORY_ROUTER_MODE
+          value: "1"
         # References
         #   https://github.com/linuxserver/docker-jellyfin?tab=readme-ov-file#intel
         #   https://jellyfin.org/docs/general/administration/hardware-acceleration/intel
         #   https://github.com/linuxserver/docker-mods/tree/jellyfin-opencl-intel
         - name: DOCKER_MODS
           value: linuxserver/mods:jellyfin-opencl-intel
+        - name: PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: web-password
+              key: web.password.txt
+              optional: false
+        volumeMounts:
+        - name: cache
+          mountPath: /var/cache/jellyfin
+        - name: logs
+          mountPath: /var/log/jellyfin
+        - name: transcodes
+          mountPath: /var/lib/jellyfin
+        - name: media
+          mountPath: /media
+      volumes:
+      - name: media
+        persistentVolumeClaim:
+          claimName: media-pvc
+      - name: transcodes
+        emptyDir:
+          medium: Memory
+          sizeLimit: 20Gi
+      - name: cache
+        emptyDir:
+          medium: Memory
+          sizeLimit: 5Gi
+      - name: logs
+        emptyDir:
+          medium: Memory
+          sizeLimit: 500Mi

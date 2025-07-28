@@ -1,0 +1,78 @@
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: traefik-cluster-role
+  namespace: kube-system-traefik
+spec:
+  chart: https://%{KUBERNETES_API}%/static/charts/traefik-25.0.3+up25.0.0.tgz
+  set:
+    global.systemDefaultRegistry: ""
+  targetNamespace: kube-system-traefik
+  # https://doc.traefik.io/traefik/reference/dynamic-configuration/kubernetes-crd/#rbac
+  valuesContent: |-
+    apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRole
+    metadata:
+      name: traefik-kube-system-traefik
+    rules:
+      - apiGroups:
+          - ""
+        resources:
+          - services
+          - secrets
+          - nodes
+          - configmaps
+        verbs:
+          - get
+          - list
+          - watch
+      # The pods right is needed to inject k8s.pod.uid and k8s.pod.name OTel attributes.
+      # When OTel tracing/logs/metrics are not enabled, this rule is not needed.
+      - apiGroups:
+          - ""
+        resources:
+          - pods
+        verbs:
+            - get
+      - apiGroups:
+          - discovery.k8s.io
+        resources:
+          - endpointslices
+        verbs:
+          - list
+          - watch
+      - apiGroups:
+          - extensions
+          - networking.k8s.io
+        resources:
+          - ingresses
+          - ingressclasses
+        verbs:
+          - get
+          - list
+          - watch
+      - apiGroups:
+          - extensions
+          - networking.k8s.io
+        resources:
+          - ingresses/status
+        verbs:
+          - update
+      - apiGroups:
+          - traefik.io
+        resources:
+          - middlewares
+          - middlewaretcps
+          - ingressroutes
+          - traefikservices
+          - ingressroutetcps
+          - ingressrouteudps
+          - tlsoptions
+          - tlsstores
+          - serverstransports
+          - serverstransporttcps
+        verbs:
+          - get
+          - list
+          - watch

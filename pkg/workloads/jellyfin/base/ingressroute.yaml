@@ -9,9 +9,3 @@ spec:
     - websecure
   routes:
   - match: Host(`jellyfin.expresso.lan`)
-    kind: Rule
-    middlewares:
-    - name: jellyfin-mw
-    services:
-    - name: jellyfin
-  tls: {}

@@ -16,7 +16,7 @@ kube-manifests-gen-prod:
 	hack/gen_kube_manifests.sh ${kustomize_base_dir} ${manifests_prod_dir} prod
 
 kube-manifests-gen-rpi5-0:
-	hack/gen_kube_manifests.sh ${kustomize_base_dir} ${manifests_prod_dir} rpi5-0
+	hack/gen_kube_manifests.sh ${kustomize_base_dir} ${manifests_prod_dir} rpi4-0
 
 kube-manifests-gen-all: clean kube-manifests-gen-prod kube-manifests-gen-rpi5-0
 
@@ -120,3 +120,32 @@ k3s-token-upload:
 	hack/upload_k3s_token.sh "rick-dev" \
 							 ${ssh_id} \
 							 ${vm_ip_address}
+
+### Containerfile Builds ###
+# TODO create targets for pushing these images to docker.io and/or a local registry
+
+container-build-archlinuxarm-base:
+	podman build \
+			-t localhost/arm64/archlinuxarm:latest \
+			--format=docker \
+			-f pkg/containers/armlinuxarm/Containerfile
+
+container-build-ffmpeg-rpi: container-build-archlinuxarm-base
+	podman build \
+			-t localhost/arm64/ffmpeg-rpi:latest \
+			--format=docker \
+			-f pkg/containers/ffmpeg-rpi/Containerfile
+
+container-push-ffmpeg-rpi: container-build-ffmpeg-rpi
+	# podman image exists docker.io/steve51516/ffmpeg-rpi:latest && podman rmi docker.io/steve51516/ffmpeg-rpi:latest
+
+	podman image \
+			tag \
+			localhost/arm64/ffmpeg-rpi:latest \
+			docker.io/steve51516/ffmpeg-rpi:latest
+
+	podman push docker.io/steve51516/ffmpeg-rpi:latest
+
+container-build-rpicam-apps:
+	podman build --format=docker --jobs=$(nproc) -t rpicam-apps:arm64 -f pkg/containers/rpicam-apps/Containerfile
+

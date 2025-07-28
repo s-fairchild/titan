@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# declare -r TARBALL_DOWNLOAD="download"
-declare -r TARBALL_DOWNLOAD="download"
-
 tarball_download_unpack() {
     local root_target="$1"
     local boot_target="$2"
@@ -41,7 +38,7 @@ tarball_download() {
     local -n out="$1"
     local -n tmp="$2"
 
-    if [ "$out" != "$TARBALL_DOWNLOAD" ]; then
+    if [ "$out" != "$BOOL_FALSE" ]; then
         log "Tarball provided by user, not downloading."
         return
     fi

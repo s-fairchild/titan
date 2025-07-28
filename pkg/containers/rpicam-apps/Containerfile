@@ -1,39 +1,55 @@
-FROM debian:bookworm-slim
+ARG IMAGE_TAG=stable-slim
+FROM --platform=linux/arm64 docker.io/debian:${IMAGE_TAG} AS stage1
 
-RUN apt-get update && apt-get install -y libavcodec-dev libepoxy-dev libjpeg-dev libtiff5-dev libpng-dev \
-                        libavdevice-dev libavformat-dev libswresample-dev git python3-pip git python3-jinja2 \
+
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+                        libavcodec-dev libepoxy-dev libjpeg-dev libtiff5-dev libpng-dev \
+                        libavdevice-dev libavformat-dev libswresample-dev python3-pip git python3-jinja2 \
                         cmake libboost-program-options-dev libdrm-dev libexif-dev meson ninja-build \
                         libboost-dev libgnutls28-dev openssl libtiff5-dev pybind11-dev \
                         qtbase5-dev libqt5core5a libqt5gui5 libqt5widgets5 \
-                        meson cmake python3-yaml python3-ply \
-                        libglib2.0-dev libgstreamer-plugins-base1.0-dev
+                        meson cmake python3-yaml python3-ply gcc build-essential \
+                        libglib2.0-dev libgstreamer-plugins-base1.0-dev \
+                        && apt-get clean \
+                        && rm -rf /var/lib/apt/lists/*
 
-# Install fswebcam for usb camera use?
-WORKDIR /build
-RUN git clone https://github.com/raspberrypi/libcamera.git
-WORKDIR libcamera
+ARG LIBCAMERA_VERSION="v0.5.1+rpt20250722"
+ADD https://git@github.com/raspberrypi/libcamera.git#${LIBCAMERA_VERSION} /build/libcamera
+WORKDIR /build/libcamera
 
 RUN meson setup build --buildtype=release -Dpipelines=rpi/vc4,rpi/pisp -Dipas=rpi/vc4,rpi/pisp -Dv4l2=true -Dgstreamer=enabled \
-                        -Dtest=false -Dlc-compliance=disabled -Dcam=disabled -Dqcam=disabled -Ddocumentation=disabled -Dpycamera=enabled && \
-                        ninja -C build && ninja -C build install
+                        -Dtest=false -Dlc-compliance=disabled -Dcam=disabled -Dqcam=disabled -Ddocumentation=disabled -Dpycamera=disabled \
+                        && ninja -C build \
+                        && ninja -C build install
 
-WORKDIR /build
-RUN git clone https://github.com/raspberrypi/rpicam-apps.git
-WORKDIR rpicam-apps
+FROM stage1 AS stage2
+COPY --from=stage1 /usr/local /usr/local
 
-RUN meson setup build -Denable_libav=disabled -Denable_drm=enabled -Denable_egl=disabled -Denable_qt=disabled -Denable_opencv=disabled -Denable_tflite=disabled -Denable_hailo=disabled && \
-    meson install -C build && \
-    ldconfig
+ARG RPICAM_APPS_VERSION="v1.8.1"
+ARG NEON_FLAG="arm64"
+ADD https://git@github.com/raspberrypi/rpicam-apps.git#${RPICAM_APPS_VERSION} /build/rpicam-apps
+WORKDIR /build/rpicam-apps
 
-WORKDIR /root
-RUN rm -rf /build
+# https://www.raspberrypi.com/documentation/computers/camera_software.html#rpicam-apps-meson-flag-reference
+RUN meson setup build -Denable_libav=enabled -Denable_drm=disabled -Denable_egl=disabled -Denable_qt=disabled \
+                      -Denable_opencv=disabled -Denable_tflite=disabled \
+                      -Denable_hailo=disabled -Ddownload_hailo_models=false \
+                      -Dneon_flags=${NEON_FLAG} \
+    && meson install -C build \
+    && ldconfig
 
-RUN apt-get purge -y libavcodec-dev libepoxy-dev libjpeg-dev libtiff5-dev libpng-dev \
-                        libavdevice-dev libavformat-dev libswresample-dev git python3-pip git python3-jinja2 \
-                        cmake libboost-program-options-dev libdrm-dev libexif-dev meson ninja-build \
-                        libboost-dev libgnutls28-dev openssl libtiff5-dev pybind11-dev \
-                        qtbase5-dev libqt5core5a libqt5gui5 libqt5widgets5 \
-                        meson cmake python3-yaml python3-ply \
-                        libglib2.0-dev libgstreamer-plugins-base1.0-dev
+FROM --platform=linux/arm64 docker.io/debian:${IMAGE_TAG}
+COPY --from=stage2 /usr/local /usr/local
 
-ENTRYPOINT rpicam-vid
+WORKDIR /usr/local/bin
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+                                      libboost-program-options1.74.0 libexif12 libjpeg62 libtiff6 libpng16-16 libdw1 libunwind8 \
+                                      && apt-get clean \
+                                      && rm -rf /var/lib/apt/lists/*
+
+# TODO maybe add these packages?
+# x264 x265
+# RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates 
+
+ENTRYPOINT ["rpicam-vid"]

@@ -11,10 +11,18 @@ spec:
   - match: Host(`jellyfin.app.rick.expresso.lan`)
     kind: Rule
     middlewares:
-    - name: jellyfin-mw
+    - name: mw-redirecthttps
+    - name: mw-headers
     services:
-    - name: jellyfin
+    - name: web-client
       namespace: jellyfin
       kind: Service
-      port: jellyfin-web
+      port: web
+      passHostHeader: true
+      responseForwarding:
+        flushInterval: 1ms
+    observability:
+      accesslogs: true
+      tracing: true
+    NativeLB: true
   tls: {}

@@ -50,7 +50,7 @@ main() {
 
     tarball_download_unpack "$root_mount_target" \
                             "$boot_mount_target" \
-                            "${user_options["$CONFIG_KEY_TARBALL"]:-"$TARBALL_DOWNLOAD"}" \
+                            "${user_options["$CONFIG_KEY_TARBALL"]}" \
                             TMP_DATA
 
     umount_partition "$boot_mount_target"
@@ -59,16 +59,25 @@ main() {
 
     fstab_write "$root_mount_target"
 
-    log "$root_mount_target is ready for chroot"
-    chroot_container "${user_options["$CONFIG_KEY_RPI_MODEL"]}"
-
+    # Requires rebuild of initramfs. This occurs after installing btrfs-progs in the chroot.
     cmdline_update "${user_options["$CONFIG_KEY_ROOT_PARTITION"]}" \
                    "$boot_mount_target" \
                    "${SUBVOLUME_MOUNT_ORDER[0]}"
 
-    config_txt_update "$boot_mount_target"
+    log "$root_mount_target is ready for chroot"
+    chroot_container
+
+    config_txt_write "$boot_mount_target"
 
     copy_authorized_keys "${user_options["$CONFIG_KEY_SSH_PUBLIC_KEY"]}" "$root_mount_target"
+
+    # Allow for troubleshooting by leaving filesystems mounted.
+    if ! debug_enabled; then
+        # Boot target must be unmounted before root target.
+        # This is due to boot being mounted underneath root target.
+        umount_partition "$boot_mount_target" "$root_mount_target"
+        log "You can safely remove ${user_options["$CONFIG_KEY_ROOT_PARTITION"]%%[0-9]} now."
+    fi
 }
 
 declare -r utils_lib="hack/lib/util.sh"

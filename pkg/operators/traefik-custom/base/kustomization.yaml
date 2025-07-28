@@ -1,4 +1,4 @@
 resources:
-  - namespace.yaml
-  - traefik-crd.yaml
-  - deployment.yaml
+- namespace.yaml
+- traefik-crd.yaml
+- deployment.yaml

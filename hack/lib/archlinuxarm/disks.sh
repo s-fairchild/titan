@@ -40,6 +40,10 @@ subvolumes_mount() {
     done
 }
 
+
+# subvolumes_create()
+# TODO set root subvolume @ as the default subvolume
+# btrfs subvol set-default @
 subvolumes_create() {
     local -n subvol_order="$1"
     local root_target="$2"

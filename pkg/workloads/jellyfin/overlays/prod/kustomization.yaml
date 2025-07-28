@@ -1,8 +1,10 @@
+---
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
 - ../../base
+- pvc.yaml
 
 secretGenerator:
 - name: web-password
@@ -12,8 +14,7 @@ secretGenerator:
 
 patches:
 - path: deployment.yaml
-- path: pvc.yaml
+- path: middleware/headers.yaml
 
 patchesStrategicMerge:
 - ingressroute.yaml
-- middleware.yaml

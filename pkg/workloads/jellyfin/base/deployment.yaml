@@ -1,3 +1,4 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -29,24 +30,15 @@ spec:
       containers:
       - name: jellyfin
         livenessProbe:
-          tcpSocket:
-            port: 8096
           initialDelaySeconds: 120
+          httpGet: 
+            path: /health
+            port: web
+            scheme: HTTP
+        image: docker.io/jellyfin/jellyfin:10.10.7
         env:
-        # See for more information: https://jellyfin.org/docs/general/administration/configuration/
-        - name: JELLYFIN_PublishedServerUrl
-          value: ""
-        # Places data dir under /config
-        # /config/data
-        - name: JELLYFIN_DATA_DIR
-          value: /data
-        - name: PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: web-password
-              key: web.password.txt
-              optional: false
-        image: docker.io/linuxserver/jellyfin:10.10.7
+        - name: DISABLE_SERVER_SELECTION
+          value: "1"
         ports:
         - name: web
           containerPort: 8096
@@ -60,22 +52,12 @@ spec:
             - CAP_NET_RAW
             - CAP_AUDIT_WRITE
         volumeMounts:
-        - name: media
-          mountPath: /media
-        - name: conf
-          mountPath: /config
-          subPath: config
-        - name: cache
-          mountPath: /config/cache
-          subPath: cache
-        - name: dev-dri
+        - name: data
+          mountPath: /var/lib/jellyfin
+        - name: config
+          mountPath: /etc/jellyfin
+        - name: render
           mountPath: /dev/dri/renderD128
-        - name: logs
-          mountPath: /config/log
-          subPath: log
-        - name: transcodes
-          mountPath: /config/data/transcodes
-          subPath: transcodes
         resources:
           requests:
             memory: "1G"
@@ -84,13 +66,13 @@ spec:
             memory: "15G"
             cpu: "5000m"
       volumes:
-      - name: media
+      - name: data
         persistentVolumeClaim:
-          claimName: media-pvc
-      - name: conf
+          claimName: data-pvc
+      - name: config
         persistentVolumeClaim:
-          claimName: conf-pvc
-      - name: dev-dri
+          claimName: config-pvc
+      - name: render
         hostPath:
           path: /dev/dri/renderD128
           type: CharDevice
@@ -98,17 +80,5 @@ spec:
         hostPath:
           path: /dev/dri/card1
           type: CharDevice
-      - name: cache
-        emptyDir:
-          medium: Memory
-          sizeLimit: 2Gi
-      - name: logs
-        emptyDir:
-          medium: Memory
-          sizeLimit: 500Mi
-      - name: transcodes
-        emptyDir:
-          medium: Memory
-          sizeLimit: 10Gi
       dnsPolicy: ClusterFirst
       restartPolicy: Always

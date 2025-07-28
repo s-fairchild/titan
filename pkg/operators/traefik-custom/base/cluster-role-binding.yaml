@@ -1,0 +1,25 @@
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: traefik-cluster-role-binding
+  namespace: kube-system-traefik
+spec:
+  chart: https://%{KUBERNETES_API}%/static/charts/traefik-25.0.3+up25.0.0.tgz
+  set:
+    global.systemDefaultRegistry: ""
+  targetNamespace: kube-system-traefik
+  # https://doc.traefik.io/traefik/reference/dynamic-configuration/kubernetes-crd/#rbac
+  valuesContent: |-
+    apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRoleBinding
+    metadata:
+      name: traefik-kube-system-traefik
+    roleRef:
+      apiGroup: rbac.authorization.k8s.io
+      kind: ClusterRole
+      name: traefik-kube-system-traefik
+    subjects:
+      - kind: ServiceAccount
+        name: traefik-kube-system-traefik
+        namespace: default

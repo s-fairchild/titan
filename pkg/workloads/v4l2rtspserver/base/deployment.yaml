@@ -21,38 +21,42 @@ spec:
         app: rtsp0
     spec:
       initContainers:
-      # TODO determine what capabilities need added to the sidecar container to allow it to access /dev/video0
-      - name: v4l2compress
-        image: docker.io/mpromonet/v4l2tools:latest
+      - name: ffmpeg
+        image: docker.io/steve51516/ffmpeg-rpi:latest
         securityContext:
+          # TODO limit permissions to only those required
+          # TODO configure seccomp profiles for vc4 device on rpi4
           privileged: true
-          procMount: Unmasked
-          # capabilities:
-            # add:
-            # - CAP_SYS_RAWIO
-            # - CAP_NET_RAW
-            # - CAP_NET_BIND_SERVICE
-            # - CAP_SYS_NICE
         restartPolicy: Always
         args:
-        - -vv
-        - -fH264
+        - -f
+        - v4l2
+        - -framerate
+        - "25"
+        - -video_size
+        - 1280x720
+        - -i
         - /dev/video0
-        - /dev/video10
-        # Capture device
+        - -c:v
+        - h264_v4l2m2m
+        - -preset
+        - medium
+        - -crf
+        - "23"
+        - -c:a
+        - pcm_s16le
+        - -b:a
+        - 128k
+        - -f
+        - v4l2
+        - /dev/video30
         volumeMounts:
-        - name: video0
-          mountPath: /dev/video0
-        # v4l2loopback device
-        - name: video10
-          mountPath: /dev/video10
-        resources:
-          requests:
-            memory: "200Mi"
-            cpu: "1000m"
-          limits:
-            memory: "500Mi"
-            cpu: "2000m"
+          - name: video0
+            mountPath: /dev/video0
+          - name: video30
+            mountPath: /dev/video30
+          - name: snd0
+            mountPath: /dev/snd
       containers:
       - name: rtsp0
         livenessProbe:
@@ -62,7 +66,6 @@ spec:
         image: docker.io/mpromonet/v4l2rtspserver:latest
         securityContext:
           privileged: true
-          procMount: Unmasked
           # TODO configure only required capabilities
           # TODO configure seccomp profiles
           # capabilities:
@@ -85,8 +88,8 @@ spec:
         - name: video0
           mountPath: /dev/video0
         # Compressed video (v4l2loopback) capture device
-        - name: video10
-          mountPath: /dev/video10
+        - name: video30
+          mountPath: /dev/video30
         - name: snd0
           mountPath: /dev/snd
         env:
@@ -119,9 +122,9 @@ spec:
           path: /dev/video0
           type: CharDevice
       # v4l2loopback device
-      - name: video10
+      - name: video30
         hostPath: 
-          path: /dev/video10
+          path: /dev/video30
           type: CharDevice
       dnsPolicy: ClusterFirst
       restartPolicy: Always

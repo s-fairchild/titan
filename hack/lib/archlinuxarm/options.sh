@@ -13,14 +13,6 @@ declare -r CONFIG_KEY_RPI_MODEL="rpi_model"
 # declare -r CONFIG_KEY_SSH_PUBLIC_KEY="ssh_public_key"
 declare -r CONFIG_KEY_SSH_PUBLIC_KEY="ssh_public_key"
 
-# Supported board types
-
-# declare -r RPI_MODEL_4B="rpi4b"
-declare -r RPI_MODEL_4B="rpi4b"
-# declare -r RPI_MODEL_5="rpi5"
-declare -r RPI_MODEL_5="rpi5"
-
-declare -r SUPPORTED_BOARDS="($RPI_MODEL_4B|$RPI_MODEL_5)"
 
 collect_user_options() {
     local -n config="$1"
@@ -49,8 +41,6 @@ collect_user_options() {
             f)
                 tarball_file_name="${OPTARG}"
                 log "$tarball_file_name will be used for writing the root filesystem data."
-                # optional
-                config["$CONFIG_KEY_TARBALL"]="$tarball_file_name"
                 ;;
             m)
                 rpi_model="${OPTARG}"
@@ -83,8 +73,10 @@ collect_user_options() {
     config["$CONFIG_KEY_ROOT_PARTITION"]="${root_partition:?"-r CONFIG_KEY_ROOT_PARTITION is required."}"
     config["$CONFIG_KEY_ENV_FILE"]="${user_env_file:?"-e CONFIG_KEY_ENV_FILE is required."}"
     config["$CONFIG_KEY_RPI_MODEL"]="${rpi_model:?"-m CONFIG_KEY_RPI_MODEL required."}"
-    # shellcheck disable=SC2034
     config["$CONFIG_KEY_SSH_PUBLIC_KEY"]="${key:?"-k CONFIG_KEY_SSH_PUBLIC_KEY is required."}"
+    # shellcheck disable=SC2034
+    # optional
+    config["$CONFIG_KEY_TARBALL"]="${tarball_file_name:-$BOOL_FALSE}"
 }
 
 board_support_list() {

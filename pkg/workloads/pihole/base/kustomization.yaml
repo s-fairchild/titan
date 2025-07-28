@@ -1,9 +1,15 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
 resources:
 - deployment.yaml
 - service.yaml
 - ingress.yaml
 - namespace.yaml
-- config-map.yaml
+- configmaps/custom-local-records.yaml
+- configmaps/dnsmasq-conf-port.yaml
+- configmaps/pihole-cname-records.yaml
 
 secretGenerator:
 - name: web-password

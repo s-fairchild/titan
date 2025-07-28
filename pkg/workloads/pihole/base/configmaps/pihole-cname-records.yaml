@@ -1,0 +1,8 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pihole-cname-records
+  namespace: pihole
+data:
+  05-pihole-custom-cname.conf: |
