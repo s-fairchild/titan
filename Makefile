@@ -1,4 +1,4 @@
-ONESHELL:
+.ONESHELL:
 SHELL = /bin/bash
 
 deploy-manifests-prod:
@@ -126,19 +126,17 @@ k3s-token-upload:
 
 container-build-archlinuxarm-base:
 	podman build \
-			-t localhost/arm64/archlinuxarm:latest \
 			--format=docker \
+			-t arm64/archlinuxarm:latest \
 			-f pkg/containers/armlinuxarm/Containerfile
 
 container-build-ffmpeg-rpi: container-build-archlinuxarm-base
 	podman build \
-			-t localhost/arm64/ffmpeg-rpi:latest \
 			--format=docker \
+			-t arm64/ffmpeg-rpi:latest \
 			-f pkg/containers/ffmpeg-rpi/Containerfile
 
 container-push-ffmpeg-rpi: container-build-ffmpeg-rpi
-	# podman image exists docker.io/steve51516/ffmpeg-rpi:latest && podman rmi docker.io/steve51516/ffmpeg-rpi:latest
-
 	podman image \
 			tag \
 			localhost/arm64/ffmpeg-rpi:latest \
@@ -147,5 +145,29 @@ container-push-ffmpeg-rpi: container-build-ffmpeg-rpi
 	podman push docker.io/steve51516/ffmpeg-rpi:latest
 
 container-build-rpicam-apps:
-	podman build --format=docker --jobs=$(nproc) -t rpicam-apps:arm64 -f pkg/containers/rpicam-apps/Containerfile
+	podman build \
+			--format=docker \
+			-t rpicam-apps:arm64 \
+			-f pkg/containers/rpicam-apps/Containerfile
 
+container-build-motion:
+	podman build \
+			--format=docker \
+			-t motion:v${MOTION_VERSION} \
+			--build-arg=MOTION_VERSION=${MOTION_VERSION} \
+			-f pkg/containers/motion/Containerfile
+
+motion_version := "v${MOTION_VERSION}"
+container-push-motion:
+	podman image \
+			tag \
+			localhost/motion:${motion_version} \
+			docker.io/steve51516/motion:${motion_version}
+
+	podman image \
+			tag \
+			localhost/motion:${motion_version} \
+			docker.io/steve51516/motion:latest
+	
+	podman push docker.io/steve51516/motion:${motion_version}
+	podman push docker.io/steve51516/motion:latest

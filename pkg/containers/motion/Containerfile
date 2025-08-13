@@ -1,0 +1,29 @@
+ARG OS_RELEASE_VERSION="bookworm"
+ARG IMAGE_TAG="${OS_RELEASE_VERSION}-slim"
+FROM docker.io/debian:${IMAGE_TAG} AS stage1
+
+RUN --mount=type=cache,target=/var/cache/apt \
+    --mount=type=cache,target=/var/lib/apt \
+      DEBIAN_FRONTEND=noninteractive apt-get update \
+      && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y libavcodec59 libavdevice59 libavformat59 libavutil57 \
+                                              libc6 libjpeg62-turbo libjpeg62-turbo libmariadb3 libmicrohttpd12 \
+                                              libpq5 libsqlite3-0 libswscale6 libwebp7 libwebpmux3
+
+FROM stage1 AS stage2
+ARG OS_RELEASE_VERSION="bookworm"
+ARG MOTION_VERSION="4.7.0"
+ENV PKG_NAME="${OS_RELEASE_VERSION}_motion_${MOTION_VERSION}-1_amd64.deb"
+
+# WORKDIR /root
+ADD https://github.com/Motion-Project/motion/releases/download/release-${MOTION_VERSION}/${PKG_NAME} /tmp
+
+RUN --mount=type=cache,target=/var/cache/apt \
+    --mount=type=cache,target=/var/lib/apt \
+    --mount=type=tmpfs,target=/usr/local/lib \
+      DEBIAN_FRONTEND=noninteractive apt-get install -y /tmp/${PKG_NAME} \
+      && DEBIAN_FRONTEND=noninteractive apt-get clean \
+      && rm -rf /var/lib/apt/lists/* \
+      && rm -rf /tmp/${PKG_NAME}
+
+ENTRYPOINT [ "motion" ]
+# ENTRYPOINT [ "/bin/bash" ]
