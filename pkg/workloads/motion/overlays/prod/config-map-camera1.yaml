@@ -16,7 +16,11 @@ data:
     camera_id 1
 
     # The full URL of the network camera stream.
-    netcam_url rtsp://rtsp0.v4l2rtspserver:8556
+    # _<port-name>._<protocol>.<service-name>.<namespace>.svc.<cluster-domain.example>
+    # netcam_url rtsp://rtsp0-udp.udp.rtsp0.v4l2rtspserver.svc.cluster.local:8555
+    netcam_url rtsp://rtsp0-tcp.tcp.rtsp0.v4l2rtspserver.svc.cluster.local:8556
+
+    netcam_url rtsp://rtsp0.v4l2rtspserver.svc.cluster.local:8555
 
     # https://motion-project.github.io/motion_config.html#netcam_url
     netcap_params capture_rate=4
