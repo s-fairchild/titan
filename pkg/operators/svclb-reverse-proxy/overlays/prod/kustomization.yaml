@@ -6,6 +6,6 @@ resources:
 
 configMapGenerator:
   - name: reverse-proxy-config
-    namespace: kube-system-traefik
+    namespace: traefik-system
     files:
       - assets/nginx.conf

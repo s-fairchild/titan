@@ -5,7 +5,8 @@
 set -o nounset \
     -o errexit
 
-if [ -n "${DEBUG:-}" ]; then
+DEBUG="${DEBUG:-"false"}"
+if [ "$DEBUG" == "true" ]; then
     set -x
 fi
 

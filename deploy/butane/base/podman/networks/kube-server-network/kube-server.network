@@ -8,7 +8,7 @@ Description=Podman Network kube-server. Each K3S host (physical machine, VM) wil
 NetworkName=kube-server
 Label=cluster=${CLUSTER}
 Label=app=k3s
-Options=com.docker.network.bridge.name=kube-server
+Options=com.docker.network.bridge.name=server0
 
 [Install]
 WantedBy=default.target

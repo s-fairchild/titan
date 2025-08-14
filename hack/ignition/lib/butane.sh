@@ -106,3 +106,12 @@ butane() {
         "$image" \
         "$@"
 }
+
+# included to provide definitions for shellcheck
+yq_lib="hack/lib/yq.sh"
+if [ ! -f "$yq_lib" ]; then
+    echo "$yq_lib not found. Are you in the repository root?"
+    exit 1
+fi
+# shellcheck source=../../lib/yq.sh
+source "$yq_lib"

@@ -8,7 +8,7 @@ Description=Podman Network kube-agent. Each K3S host (physical machine, VM) will
 NetworkName=kube-agent
 Label=cluster=${CLUSTER}
 Label=app=k3s
-Options=com.docker.network.bridge.name=kube-agent
+Options=com.docker.network.bridge.name=agent0
 
 [Install]
 WantedBy=default.target

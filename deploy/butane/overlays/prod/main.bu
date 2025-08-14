@@ -11,6 +11,7 @@ ignition:
       - inline: deploy/butane/base/podman/images/k3s/k3s.bu
       - inline: deploy/butane/base/podman/images/nginx/nginx.bu
       - inline: deploy/butane/base/podman/networks/kube-service-network/kube-service-network.bu
+      - inline: deploy/butane/base/podman/networks/kube-svclb-external-network/kube-svclb-external-network.bu
       - inline: deploy/butane/base/podman/networks/kube-server-network/kube-server-network.bu
       - inline: deploy/butane/base/podman/networks/kube-agent-network/kube-agent-network.bu
       - inline: deploy/butane/base/podman/volumes/local-path-default/local-path-default.bu
@@ -22,14 +23,14 @@ ignition:
       - inline: deploy/butane/base/coreos/etc/firewalld/firewalld.bu
       - inline: deploy/butane/base/coreos/etc/sysctl.d/systctl.bu
       - inline: deploy/butane/base/coreos/usr/local/lib/lib.bu
-      - inline: deploy/butane/overlays/prod/coreos/users.bu
-      - inline: deploy/butane/overlays/prod/coreos/usr/local/etc/etc.bu
-      - inline: deploy/butane/overlays/prod/coreos/storage/disk.bu
-      - inline: deploy/butane/overlays/prod/coreos/storage/luks.bu
-      - inline: deploy/butane/overlays/prod/coreos/storage/filesystem/filesystem.bu
-      - inline: deploy/butane/overlays/prod/coreos/storage/filesystem/btrfsmaintenance.bu
-      - inline: deploy/butane/overlays/prod/coreos/etc/hostname.bu
-      - inline: deploy/butane/overlays/prod/coreos/etc/NetworkManager/NetworkManager.bu
+      - inline: deploy/butane/overlays/prod/storage/disks/disks.bu
+      - inline: deploy/butane/overlays/prod/storage/luks/luks.bu
+      - inline: deploy/butane/overlays/prod/storage/filesystems/filesystems.bu
+      - inline: deploy/butane/overlays/prod/etc/etc.bu
+      - inline: deploy/butane/overlays/prod/etc/passwd.bu
+      - inline: deploy/butane/overlays/prod/etc/sysconfig/sysconfig.bu
+      - inline: deploy/butane/overlays/prod/usr/local/lib.bu
+      - inline: deploy/butane/overlays/prod/usr/local/etc.bu
       - inline: deploy/butane/overlays/prod/podman/volumes/local-path-appdata/local-path-appdata.bu
       - inline: deploy/butane/overlays/prod/podman/volumes/local-path-cctv/local-path-cctv.bu
       - inline: deploy/butane/overlays/prod/podman/volumes/local-path-nvme/local-path-nvme.bu

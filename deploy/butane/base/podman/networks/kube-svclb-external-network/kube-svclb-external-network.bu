@@ -1,0 +1,17 @@
+---
+variant: fcos
+version: 1.5.0
+storage:
+  directories:
+    - path: /etc/containers/systemd/kube-svclb-external.network.d
+      overwrite: true
+
+  trees:
+    - path: /etc/containers/systemd/kube-svclb-external.network.d
+      local: butane/base/podman/networks/kube-svclb-external-network/kube-svclb-external.network.d
+
+  files:
+    - path: /etc/containers/systemd/kube-svclb-external.network
+      overwrite: true
+      contents:
+        local: butane/base/podman/networks/kube-svclb-external-network/kube-svclb-external.network

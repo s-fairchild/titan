@@ -1,8 +1,29 @@
+---
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
 - ../../base
 
-patches:
-- path: deployment.yaml
+replacements:
+- source:
+    kind: ConfigMap
+    version: v1
+    name: values
+    namespace: traefik-system
+    fieldPath: .data.values
+  targets:
+  - select:
+      kind: HelmChart
+      name: traefik
+      namespace: traefik-system
+    fieldPaths:
+    - spec.valuesContent
+
+configMapGenerator:
+- name: values
+  namespace: traefik-system
+  files:
+  - values=values.yaml
+  options:
+    disableNameSuffixHash: true

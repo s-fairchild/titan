@@ -7,7 +7,7 @@ RestartSec=30
 ExecStartPre=modprobe iptable_filter
 ExecStartPre=modprobe iptable_nat
 ExecStartPre=/usr/bin/podman secret exists k3s-token
-Environment="NAME=k3s-svc-lb-%i"
+Environment="NAME=k3s-svclb-%i"
 EnvironmentFile=/usr/local/etc/sysconfig/podman-options
 
 [Container]
@@ -18,8 +18,6 @@ Label=role=loadbalancer
 Label=cluster=${CLUSTER}
 Image=k3s.image
 DNSSearch=${DNS_SEARCH}
-PublishPort=${NODE_EXTERNAL_IP}:80:80
-PublishPort=${NODE_EXTERNAL_IP}:443:443
 Pull=never
 ShmSize=5g
 Secret=k3s-token,type=env,target=K3S_TOKEN
@@ -29,6 +27,9 @@ EnvironmentFile=/usr/local/etc/sysconfig/k3s
 Volume=/etc/machine-id:/etc/machine-id:ro
 Volume=${NAME}-data:/var/lib/rancher/k3s
 Volume=${NAME}-rancher:/etc/rancher
+Volume=${NAME}-kubelet:/var/lib/kubelet:Z
+Volume=${NAME}-pod-logs:/var/log/pods:Z
+Volume=${NAME}-data:/var/lib/rancher/k3s:Z
 PodmanArgs=--oom-score-adj=1000 --privileged
 
 [Install]

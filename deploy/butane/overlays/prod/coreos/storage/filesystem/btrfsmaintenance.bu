@@ -1,8 +1,0 @@
-variant: fcos
-version: 1.5.0
-storage:
-  files:
-    - path: /usr/local/etc/sysconfig/btrfsmaintenance
-      overwrite: true
-      contents:
-        local: butane/overlays/prod/coreos/storage/filesystem/sysconfig.btrfsmaintenance

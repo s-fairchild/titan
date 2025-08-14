@@ -1,4 +1,4 @@
 resources:
 - namespace.yaml
-- traefik-crd.yaml
-- deployment.yaml
+- helmcharts/traefik-crd.yaml
+- helmcharts/traefik.yaml

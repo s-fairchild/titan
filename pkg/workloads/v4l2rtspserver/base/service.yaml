@@ -4,6 +4,8 @@ kind: Service
 metadata:
   name: rtsp0
   namespace: v4l2rtspserver
+  annotations:
+    metallb.io/address-pool: pool-external
   labels:
     app: rtsp0
 spec:
@@ -27,6 +29,8 @@ kind: Service
 metadata:
   name: rtsp0-hls
   namespace: v4l2rtspserver
+  annotations:
+    metallb.io/address-pool: pool-internal
   labels:
     app: rtsp0
 spec:

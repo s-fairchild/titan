@@ -1,9 +1,0 @@
----
-apiVersion: helm.cattle.io/v1
-kind: HelmChart
-metadata:
-  name: traefik-crd
-  namespace: kube-system-traefik
-spec:
-  targetNamespace: kube-system-traefik
-  chart: https://%{KUBERNETES_API}%/static/charts/traefik-crd-34.2.1+up34.2.0.tgz

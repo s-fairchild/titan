@@ -3,7 +3,8 @@
 set -o nounset \
     -o errexit
 
-if [ -n "${DEBUG:-}" ]; then
+DEBUG="${DEBUG:-"false"}"
+if [ "$DEBUG" == "true" ]; then
     set -x
 fi
 
@@ -34,10 +35,16 @@ generate_kube_manifests() {
     for k in ${kustomize[@]}; do
         app_name="$(get_app_name "$k")"
         app_manifest="$app_name.yaml"
-        if is_disabled "$app_name" \
-                       "$disabled_pkgs"; then
+
+        if is_disabled "$app_name" "$disabled_pkgs"; then
+            kustomize_out="$dest/$app_manifest"
+
             log "Generating $app_manifest from $k"
-            kubectl kustomize "$k" > "$dest/$app_manifest"
+            if kubectl kustomize \
+                    --enable-helm=true \
+                    "$k" > "$kustomize_out"; then
+                log "Successfully created manifest file: $kustomize_out"
+            fi
         fi
     done
 }
@@ -54,6 +61,7 @@ is_disabled() {
     local -r app="$1"
     local -r disabled="$2"
     if [[ $app =~ ${disabled[*]} ]]; then
+        log "$app is disabled."
         return 1
     fi
 

@@ -3,12 +3,12 @@ apiVersion: helm.cattle.io/v1
 kind: HelmChart
 metadata:
   name: traefik
-  namespace: kube-system-traefik
+  namespace: traefik-system
 spec:
   chart: https://%{KUBERNETES_API}%/static/charts/traefik-25.0.3+up25.0.0.tgz
   set:
     global.systemDefaultRegistry: ""
-  targetNamespace: kube-system-traefik
+  targetnamespace: traefik-system
   # Reference: https://github.com/traefik/traefik-helm-chart/blob/e03b1287af6a9dfafb2d4203068f40c801e0f9b4/traefik/VALUES.md
   valuesContent: |-
     deployment:

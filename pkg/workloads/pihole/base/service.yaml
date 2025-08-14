@@ -4,6 +4,8 @@ kind: Service
 metadata:
   name: pihole-dns
   namespace: pihole
+  annotations:
+    metallb.io/address-pool: pool-external
   labels:
     app: pihole
 spec:
@@ -22,6 +24,8 @@ kind: Service
 metadata:
   name: pihole-www
   namespace: pihole
+  annotations:
+    metallb.io/address-pool: pool-internal
   labels:
     app: pihole
 spec:

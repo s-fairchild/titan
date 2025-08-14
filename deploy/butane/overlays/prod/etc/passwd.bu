@@ -1,0 +1,25 @@
+---
+variant: fcos
+version: 1.5.0
+passwd:
+  users:
+    - name: core
+      ssh_authorized_keys_local:
+        - keys/id_ed25519_rick.pub
+    - name: root
+      ssh_authorized_keys_local:
+        - keys/id_ed25519_rick.pub
+    - name: kleenex
+      gecos: User Data Backups
+      ssh_authorized_keys_local:
+        - keys/id_ed25519_rick_kleenex.pub
+    - name: abc
+      no_user_group: true
+      system: true
+      gecos: Jellyfin App Web User
+      primary_group: jellyfinmedia
+      uid: 911
+  groups:
+    - name: jellyfinmedia
+      system: true
+      gid: 911

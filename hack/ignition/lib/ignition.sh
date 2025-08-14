@@ -20,7 +20,7 @@ gen_all_ignitions() {
 # args:
 # 1) $1 - string; butane file to process
 gen_ignition() {
-    butane -s --files-dir=deploy "$1"
+    butane -srp --files-dir=deploy "$1"
 }
 
 # gen_main_ignition()
@@ -37,10 +37,10 @@ gen_main_ignition() {
     local relative_tmp_butane_file
     gen_main_butane "$main" "$2" relative_tmp_butane_file
 
-    echo "$relative_tmp_butane_file"
+    log "$relative_tmp_butane_file"
 
     # shellcheck disable=SC2034
-    if ! ign_out=$(gen_ignition "$relative_tmp_butane_file"); then
+    if ! ign_out="$(gen_ignition "$relative_tmp_butane_file")"; then
         abort "failed to generate ignition from deploy/${relative_tmp_butane_file}"
     fi
 }

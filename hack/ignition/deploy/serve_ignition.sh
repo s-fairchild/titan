@@ -4,7 +4,6 @@ set -o nounset \
     -o errexit
 
 DEBUG="${DEBUG:-"false"}"
-
 if [ "$DEBUG" == "true" ]; then
     set -x
 fi
@@ -31,12 +30,13 @@ serve() {
 
     # shellcheck disable=SC2034
     local -r nc_args=(
-        -v
-        -p
+        --verbose
+        --send-only
+        --source-port
         80
-        -e
+        --exec
         "/${nc_handle_sh}"
-        -l
+        --listen
     )
 
     nc-ctr "$1" \
@@ -59,7 +59,7 @@ nc-ctr() {
     image="docker.io/steve51516/nc:fedora41"
 
     podman run \
-        --name "${ctr:-"$default_ctr_name"}" \
+        --name "$default_ctr_name" \
         --security-opt label=disable \
         -i \
         --rm \
@@ -69,7 +69,6 @@ nc-ctr() {
         -v "${PWD}/hack/ignition/deploy/${handler}":/nc_handle.sh \
         -w /data \
         -p 8080:80/tcp \
-        --network=slirp4netns:allow_host_loopback=true \
         "$image" \
         bash -c "nc ${args[*]}"
 }
@@ -82,6 +81,7 @@ kill_nc_ctr() {
     podman container exists "$c" && podman container kill "$c"
 }
 
+declare -r default_ctr_name="ign-server"
 trap 'kill_nc_ctr default_ctr_name' 1 2 3 6 15 EXIT
 
 # included to provide definitions for shellcheck
@@ -93,7 +93,5 @@ else
     echo "$utils not found. Are you in the repository root?"
     exit 1
 fi
-
-declare -r default_ctr_name="ign-server"
 
 main "$@"

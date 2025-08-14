@@ -5,20 +5,28 @@ deploy-manifests-prod:
 	hack/deploy_manifests.sh deploy/butane/base/coreos/files/k3s/manifests
 
 kustomize_base_dir := "pkg"
-kube-manifests-gen-staging:
-	hack/gen_kube_manifests.sh ${kustomize_base_dir} deploy/butane/overlays/staging/coreos/files/k3s/manifests staging
+manifests_prod_dir := "deploy/butane/overlays/prod/usr/local/lib/rancher/k3s/server/manifests"
+manifests_base_dir := "deploy/butane/base/usr/local/lib/rancher/k3s/server/manifests"
+manifests_staging_dir := "deploy/butane/base/usr/local/lib/rancher/k3s/server/manifests"
 
-manifests_prod_dir := "deploy/butane/overlays/prod/coreos/usr/local/etc/k3s/server/manifests"
 clean:
-	rm -rf ${manifests_prod_dir}/*.yaml
+	rm -rf ${manifests_prod_dir}/*
+	rm -rf ${manifests_base_dir}/*
+	rm -rf ${manifests_staging_dir}/*
+
+kube-manifests-gen-base:
+	hack/gen_kube_manifests.sh ${kustomize_base_dir} ${manifests_base_dir} base
 
 kube-manifests-gen-prod:
 	hack/gen_kube_manifests.sh ${kustomize_base_dir} ${manifests_prod_dir} prod
 
-kube-manifests-gen-rpi5-0:
+kube-manifests-gen-staging:
+	hack/gen_kube_manifests.sh ${kustomize_base_dir} ${manifests_staging_dir} staging
+
+kube-manifests-gen-rpi4-0:
 	hack/gen_kube_manifests.sh ${kustomize_base_dir} ${manifests_prod_dir} rpi4-0
 
-kube-manifests-gen-all: clean kube-manifests-gen-prod kube-manifests-gen-rpi5-0
+kube-manifests-gen-all: clean kube-manifests-gen-prod kube-manifests-gen-rpi4-0
 
 ignition_dest := "deploy/.ignition"
 ignition-gen-staging: kube-manifests-gen-staging
@@ -65,12 +73,12 @@ installer-download-live-baremetal:
 				-f iso
 
 # TODO get the latest iso file from deploy/isos to use here
-unmodified_iso := "fedora-coreos-42.20250512.3.0-live-iso.x86_64.iso"
+unmodified_iso := "fedora-coreos-42.20250803.3.0-live-iso.x86_64.iso"
 output_iso := "baremetal_fetch_remote_ignition.iso"
 # Example of writing this image to a drive:
 # Replace this with the correct drive!
 # iso_dest_drive="/dev/sdc"
-# sudo dd if=deploy/iso/custom/cluster_custom_installer.iso of="$iso_dest_drive" status=progress && sudo sync
+# sudo dd if=deploy/iso/custom/baremetal_fetch_remote_ignition.iso of="$iso_dest_drive" status=progress && sudo sync
 installer-customize-embed-ign:
 	podman --remote=false run \
 			--security-opt label=disable \

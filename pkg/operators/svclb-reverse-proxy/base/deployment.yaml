@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: svclb-reverse-proxy
-  namespace: kube-system-traefik
+  namespace: traefik-system
   labels:
     app: svclb-reverse-proxy
 spec:
@@ -14,7 +14,7 @@ spec:
   template:
     metadata:
       name: svclb-reverse-proxy
-      namespace: kube-system-traefik
+      namespace: traefik-system
       labels:
         app: svclb-reverse-proxy
     spec:

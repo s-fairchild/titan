@@ -8,7 +8,7 @@ Description=Podman Network kube-service
 NetworkName=kube-service
 Label=cluster=${CLUSTER}
 Label=app=k3s
-Options=com.docker.network.bridge.name=kube-service
+Options=com.docker.network.bridge.name=service0
 
 [Install]
 WantedBy=default.target

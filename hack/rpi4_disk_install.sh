@@ -4,6 +4,11 @@
 set -o nounset \
     -o errexit
 
+DEBUG="${DEBUG:-"false"}"
+if [ "$DEBUG" == "true" ]; then
+    set -x
+fi
+
 main () {
     coreos_download_exit "$1" "$STREAM"
 

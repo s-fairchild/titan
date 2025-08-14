@@ -1,0 +1,14 @@
+[Service]
+EnvironmentFile=/usr/local/etc/sysconfig/podman-options
+
+[Unit]
+Description=Create Podman Network kube-svclb-external
+
+[Network]
+NetworkName=kube-svclb-external
+IPv6=false
+Label=cluster=${CLUSTER}
+Label=app=k3s
+
+[Install]
+WantedBy=default.target

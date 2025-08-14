@@ -4,11 +4,9 @@
 set -o nounset \
     -o errexit
 
-if [ -n "${DEBUG:-}" ]; then
+DEBUG="${DEBUG:-"false"}"
+if [ "$DEBUG" == "true" ]; then
     set -x
-else
-    # Leave temporary butane file for review
-    trap "cleanup TEMP_DATA" 1 2 3 6 EXIT
 fi
 
 main() {
@@ -37,7 +35,7 @@ main() {
 # 
 # args:
 # 1) ign - nameref; output ignition file
-# 2) out_file - string; optional, path to write ignition file to
+# 2) out_file - string; path to write ignition file to. Pass "" for stdout
 output_ignition() {
     local -n ign="$1"
     local -r out_file="$2"
@@ -50,15 +48,29 @@ output_ignition() {
     fi
 }
 
-declare lib_sh="hack/ignition/lib/lib.sh"
-if [ -f "$lib_sh" ]; then
-    # shellcheck source=lib/lib.sh
-    source "$lib_sh"
-else
-    echo "$lib_sh not found. Are you in the repository root?"; exit 1
+declare lib_sh="hack/ignition/lib/ignition.sh"
+if [ ! -f "$lib_sh" ]; then
+    echo "$lib_sh not found. Are you in the repository root?"
+    exit 1
+fi
+# shellcheck source=lib/ignition.sh
+if ! source "$lib_sh"; then
+    echo "Sourcing $lib_sh failed."
+    exit 1
 fi
 
 # shellcheck disable=SC2034
+# cleanup directory passed to trap
 declare -a TEMP_DATA
+
+# included to provide definitions for shellcheck
+ignition_lib="hack/ignition/lib/ignition.sh"
+if [ -f "$ignition_lib" ]; then
+    # shellcheck source=lib/ignition.sh
+    source "$ignition_lib"
+else
+    echo "$ignition_lib not found. Are you in the repository root?"
+    exit 1
+fi
 
 main "$@"

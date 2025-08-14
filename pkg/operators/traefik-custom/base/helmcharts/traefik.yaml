@@ -1,0 +1,13 @@
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: traefik
+  namespace: traefik-system
+spec:
+  chart: https://%{KUBERNETES_API}%/static/charts/traefik-34.2.1+up34.2.0.tgz
+  set:
+    global.systemDefaultRegistry: ""
+  targetnamespace: traefik-system
+  # https://github.com/k3s-io/k3s-charts/blob/main/charts/traefik/34.2.1%2Bup34.2.0/values.yaml
+  valuesContent: |-

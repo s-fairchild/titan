@@ -1,11 +1,6 @@
 # shellcheck disable=SC2148
 # Utilies to be sourced for use in other scripts
 
-# declare -r BOOL_TRUE="true"
-declare -r BOOL_TRUE="true"
-# declare -r BOOL_FALSE="false"
-declare -r BOOL_FALSE="false"
-
 # log()
 # log is a wrapper for echo that includes the function name
 # Args

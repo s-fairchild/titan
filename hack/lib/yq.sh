@@ -10,7 +10,6 @@ yq() {
 
            # -v yq_out:/workdir/out:z \
     podman run \
-           --name yq \
            --security-opt label=disable \
            -i \
            --rm \

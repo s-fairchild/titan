@@ -1,0 +1,11 @@
+---
+variant: fcos
+version: 1.5.0
+storage:
+  directories:
+    - path: /usr/local/etc
+      overwrite: true
+
+  trees:
+    - path: /usr/local/etc
+      local: butane/overlays/prod/usr/local/etc
