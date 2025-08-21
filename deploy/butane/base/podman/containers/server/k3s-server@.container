@@ -23,9 +23,12 @@ Pull=never
 SeccompProfile=unconfined
 SecurityLabelDisable=true
 ShmSize=5g
-Secret=k3s-token,type=env,target=K3S_TOKEN
 Timezone=UTC
 LogDriver=journald
+# Environment=K3S_AGENT_TOKEN_FILE=/run/secrets/k3s-agent-token
+Environment=K3S_TOKEN_FILE=/run/secrets/k3s-token
+# Secret=k3s-agent-token,mode=0400
+Secret=k3s-token,mode=0400
 Volume=/etc/machine-id:/etc/machine-id:ro
 Volume=${NAME}-kubelet:/var/lib/kubelet:Z
 Volume=${NAME}-data:/var/lib/rancher/k3s:Z

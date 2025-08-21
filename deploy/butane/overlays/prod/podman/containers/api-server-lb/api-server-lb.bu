@@ -6,21 +6,11 @@ storage:
     - path: /etc/containers/systemd/k3s-apiserverlb@0.container
       target: /etc/containers/systemd/k3s-apiserverlb@.container
       overwrite: true
-  files:
-    - path: /etc/containers/systemd/k3s-apiserverlb@0.container.d/dependencies.conf
-      contents:
-        inline: |
-          [Unit]
-          Upholds=k3s-server@1.service
-          Upholds=k3s-server@2.service
-          Before=k3s-server@1.service
-          Before=k3s-server@2.service
-    # Systemd environment
-    - path: /etc/containers/systemd/k3s-apiserverlb@0.container.d/env.conf
+
+  directories:
+    - path: /etc/containers/systemd/k3s-apiserverlb@.container
       overwrite: true
-      contents:
-        inline: |
-          [Service]
-          Environment=NODE_IP="10.10.0.1"
-          Environment=NODE_IP_AGENT="10.11.0.1"
-          Environment=NODE_EXTERNAL_IP="10.50.0.2"
+
+  trees:
+    - path: /etc/containers/systemd/k3s-apiserverlb@.container
+      local: butane/overlays/prod/podman/containers/api-server-lb/k3s-apiserverlb@0.container.d

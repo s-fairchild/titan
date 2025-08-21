@@ -15,7 +15,7 @@ dns-search=expresso.lan;
 gateway=10.50.0.1
 may-fail=false
 method=manual
-route1=10.15.0.0/16,10.50.0.13
+route1=10.16.0.0/16,10.50.0.11
 
 [ipv6]
 addr-gen-mode=default

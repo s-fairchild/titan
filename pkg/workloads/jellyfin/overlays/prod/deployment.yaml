@@ -28,15 +28,21 @@ spec:
                     - compute
       containers:
       - name: jellyfin
+        # args:
+          # - --configdir
+          # - /usr/local/etc/jellyfin
+          # - --logdir
+          # - /usr/local/lib/log/jellyfin
+          # - --cachedir
+          # - /usr/local/lib/cache/jellyfin
+          # - --datadir
+          # - /usr/local/lib/jellyfin
         env:
-        - name: JELLYFIN_DATA_DIR
-          value: /var/lib/jellyfin
-        - name: JELLYFIN_CACHE_DIR
-          value: /var/cache/jellyfin
-        - name: JELLYFIN_LOG_DIR
-          value: /var/log/jellyfin
-        - name: JELLYFIN_CONFIG_DIR
-          value: /usr/local/etc/jellyfin
+        # For some reason (a bug?), these variables are not respected by linuxserver/jellyfin.
+        # Config defaults to /config, and all other paths below it.
+        # Oddly, JELLYFIN_PublishedServerUrl is used.
+        # https://jellyfin.org/docs/general/administration/configuration/#server-paths
+        #
         # See for more information: https://jellyfin.org/docs/general/administration/configuration/
         - name: JELLYFIN_PublishedServerUrl
           value: https://jellyfin.app.rick.expresso.lan
@@ -46,9 +52,9 @@ spec:
         - name: HISTORY_ROUTER_MODE
           value: "1"
         # References
-        #   https://github.com/linuxserver/docker-jellyfin?tab=readme-ov-file#intel
-        #   https://jellyfin.org/docs/general/administration/hardware-acceleration/intel
-        #   https://github.com/linuxserver/docker-mods/tree/jellyfin-opencl-intel
+        #   - https://github.com/linuxserver/docker-jellyfin?tab=readme-ov-file#intel
+        #   - https://jellyfin.org/docs/general/administration/hardware-acceleration/intel
+        #   - https://github.com/linuxserver/docker-mods/tree/jellyfin-opencl-intel
         - name: DOCKER_MODS
           value: linuxserver/mods:jellyfin-opencl-intel
         - name: PASSWORD
@@ -59,21 +65,18 @@ spec:
               optional: false
         volumeMounts:
         - name: cache
-          mountPath: /var/cache/jellyfin
+          mountPath: /config/cache
         - name: logs
-          mountPath: /var/log/jellyfin
+          mountPath: /config/logs
         - name: transcodes
-          mountPath: /var/lib/jellyfin
+          mountPath: /config/data/transcodes
         - name: media
           mountPath: /media
+        - name: config
+          mountPath: /config
+        - name: data
+          mountPath: /config/data
       volumes:
-      - name: media
-        persistentVolumeClaim:
-          claimName: media-pvc
-      - name: transcodes
-        emptyDir:
-          medium: Memory
-          sizeLimit: 20Gi
       - name: cache
         emptyDir:
           medium: Memory
@@ -82,3 +85,16 @@ spec:
         emptyDir:
           medium: Memory
           sizeLimit: 500Mi
+      - name: transcodes
+        emptyDir:
+          medium: Memory
+          sizeLimit: 20Gi
+      - name: media
+        persistentVolumeClaim:
+          claimName: media-pvc
+      - name: config
+        persistentVolumeClaim:
+          claimName: config-pvc
+      - name: data
+        persistentVolumeClaim:
+          claimName: data-pvc

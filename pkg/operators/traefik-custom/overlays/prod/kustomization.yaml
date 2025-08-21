@@ -4,6 +4,8 @@ kind: Kustomization
 
 resources:
 - ../../base
+- certificates/jellyfin.yaml
+- issuer.yaml
 
 replacements:
 - source:

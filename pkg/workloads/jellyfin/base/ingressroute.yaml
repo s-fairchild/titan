@@ -9,3 +9,10 @@ spec:
     - websecure
   routes:
   - match: Host(`jellyfin.expresso.lan`)
+  tls:
+    secretName: domain-tls-jellyfin
+    # domains:
+      # - main: "jellyfin.expresso.lan"
+    # options:
+      # name: jellyfin
+      # namespace: jellyfin

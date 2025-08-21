@@ -1,0 +1,44 @@
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: ingressroute-rtsp0-hls
+  namespace: v4l2rtspserver
+spec:
+  entryPoints:
+    - websecure
+  routes:
+  - match: Host(`rtsp0-hls.app.rick.expresso.lan`)
+    kind: Rule
+    priority: 30
+    # middlewares:
+    # - name: middleware1
+      # namespace: default
+    observability:
+      accesslogs: true
+      metrics: true
+      tracing: true
+    services:
+    - kind: Service
+      name: rtsp0-hls-svc
+      namespace: v4l2rtspserver
+      passHostHeader: true
+      port: rtsp-hls-web
+      responseForwarding:
+        flushInterval: 1ms
+      scheme: http
+      healthCheck:
+        path: /health
+        interval: 15s
+      sticky:
+        cookie:
+          httpOnly: true
+          name: cookie
+          secure: true
+          sameSite: none
+          maxAge: 42  
+          path: /foo
+      strategy: RoundRobin
+      weight: 40
+      nativeLB: true
+  tls: {}

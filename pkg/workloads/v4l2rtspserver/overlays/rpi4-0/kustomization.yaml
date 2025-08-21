@@ -1,6 +1,10 @@
 ---
 resources:
 - ../../base
+- servers_transport/servers-transport-tcp.yaml
+- ingressroutes/ingressroute-rtsp-hls.yaml
+- ingressroutes/ingressroute-rtsp-tcp.yaml
+- ingressroutes/ingressroute-rtsp-udp.yaml
 
 patches:
   - path: deployment.yaml
@@ -10,3 +14,5 @@ secretGenerator:
   namespace: v4l2rtspserver
   files:
   - rtsp0.password.txt
+  options:
+    disableNameSuffixHash: true

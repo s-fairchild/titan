@@ -1,13 +1,6 @@
 ---
 resources:
-- deployment.yaml
-- service.yaml
 - namespace.yaml
-- ingress.yaml
-
-# TODO Add this configmap to the deployment
-configMapGenerator:
-- name: rtsp-entrypoint-script
-  namespace: v4l2rtspserver
-  files:
-    - config-maps/rtsp-entrypoint-script.sh
+- deployment.yaml
+- services/rtsp0-hls-svc.yaml
+- services/rtsp0-svc.yaml

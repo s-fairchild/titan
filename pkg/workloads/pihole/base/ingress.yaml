@@ -1,4 +1,5 @@
 ---
+# TODO Convert this to Traefik IngressRoute
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -7,17 +8,16 @@ metadata:
   labels:
     app: pihole
   annotations:
-    ingress.kubernetes.io/ssl-redirect: "true"
     traefik.frontend.rule.type: PathPrefix
 spec:
   rules:
   - host: pihole.app.rick.expresso.lan
     http:
       paths:
-      - path: /
+      - path: /admin
         pathType: Prefix
         backend:
           service:
-            name: pihole
+            name: pihole-web-svc
             port:
-              name: www
+              name: web

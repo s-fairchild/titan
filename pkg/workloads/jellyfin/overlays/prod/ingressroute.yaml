@@ -25,4 +25,8 @@ spec:
       accesslogs: true
       tracing: true
     NativeLB: true
-  tls: {}
+  tls:
+    domains:
+      - main: "jellyfin.app.rick.expresso.lan"
+        sans:
+          - "jellyfin.rick.expresso.lan"

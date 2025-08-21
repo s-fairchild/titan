@@ -17,10 +17,9 @@ providers:
     allowEmptyServices: true
   kubernetesIngress:
     enabled: true
-hostNetwork: false
 priorityClassName: "system-cluster-critical"
 nodeSelector:
-  node-role.kubernetes.io/master: "true"
+  node-role.kubernetes.io/control-plane: "true"
 image:
   repository: "rancher/mirrored-library-traefik"
   tag: "3.3.2"
@@ -34,12 +33,31 @@ tolerations:
 - key: "node-role.kubernetes.io/master"
   operator: "Exists"
   effect: "NoSchedule"
-- key: "app"
-  operator: "Equal"
-  values:
-    - compute
-  effect: "NoSchedule"
 ports:
+  stream:
+    ipFamilyPolicy: "SingleStack"
+    ipFamilies:
+      - IPv4
+    address: '10.50.0.24:8554/udp'
+    udp:
+      timeout: 10s
+    expose:
+      default: true
+    port: 5554
+    exposedPort: 8554
+    targetPort: stream
+    protocol: UDP
+  streamtcp:
+    ipFamilyPolicy: "SingleStack"
+    ipFamilies:
+      - IPv4
+    address: '10.50.0.24:8555/tcp'
+    expose:
+      default: true
+    port: 5555
+    exposedPort: 8555
+    targetPort: streamtcp
+    protocol: TCP
   traefik:
     port: 9000
     # -- You SHOULD NOT expose the traefik port on production deployments.
@@ -51,7 +69,7 @@ ports:
     exposedPort: 9000
     protocol: TCP
   web:
-    port: 8000
+    port: 80
     expose:
       default: true
     exposedPort: 80
@@ -59,11 +77,11 @@ ports:
     protocol: TCP
     # Added in 2.2, you can make permanent redirects via entrypoints.
     # https://docs.traefik.io/routing/entrypoints/#redirection
-    redirections:
-      entryPoint:
-        to: websecure
-        scheme: https
-        permanent: true
+    # redirections:
+      # entryPoint:
+        # to: websecure
+        # scheme: https
+        # permanent: true
     # Trust forwarded  headers information (X-Forwarded-*).
     forwardedHeaders:
       trustedIPs: ["10.50.0.0/24"]
@@ -71,7 +89,7 @@ ports:
   websecure:
     ## -- Enable this entrypoint as a default entrypoint. When a service doesn't explicitly set an entrypoint it will only use this entrypoint.
     asDefault: true
-    port: 8443
+    port: 443
     expose:
       default: true
     exposedPort: 443
@@ -119,14 +137,14 @@ service:
     - IPv4
   loadBalancerSourceRanges:
   - 10.50.0.0/24
-  # externalIPs:
-  # - 10.50.0.24
   ## -- An additional and optional internal Service.
   ## Same parameters as external Service
   additionalServices:
     internal:
       type: ClusterIP
       enabled: true
+      labels: {}
+      annotations: {}
       spec: {}
       single: false
       ipFamilyPolicy: "SingleStack"
@@ -149,6 +167,30 @@ logs:
     fields:
       headers:
         defaultmode: keep
+persistence:
+  # -- Enable persistence using Persistent Volume Claims
+  # ref: http://kubernetes.io/docs/user-guide/persistent-volumes/.
+  # It can be used to store TLS certificates along with `certificatesResolvers.<name>.acme.storage`  option
+  enabled: true
+  name: data
+  existingClaim: ""
+  accessMode: ReadWriteOnce
+  size: 128Mi
+  storageClass: "local-path-default"
+  volumeName: ""
+  path: /data
+  annotations: {}
+  # -- Only mount a subpath of the Volume into the pod
+  subPath: ""
+certificatesResolvers:
+  myresolver:
+    acme:
+      email: "steve51516@gmail.com"
+      storage: "/data/acme.json"
+      httpChallenge:
+        # Entry point to use during the ACME HTTP-01 challenge.
+        entryPoint: "web"
+hostNetwork: false
 rbac:
   enabled: true
   # If set to false, installs ClusterRole and ClusterRoleBinding so Traefik can be used across namespaces.

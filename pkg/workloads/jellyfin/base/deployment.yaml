@@ -35,7 +35,7 @@ spec:
             path: /health
             port: web
             scheme: HTTP
-        image: docker.io/jellyfin/jellyfin:10.10.7
+        image: docker.io/linuxserver/jellyfin:10.10.7
         env:
         - name: DISABLE_SERVER_SELECTION
           value: "1"
@@ -52,10 +52,6 @@ spec:
             - CAP_NET_RAW
             - CAP_AUDIT_WRITE
         volumeMounts:
-        - name: data
-          mountPath: /var/lib/jellyfin
-        - name: config
-          mountPath: /etc/jellyfin
         - name: render
           mountPath: /dev/dri/renderD128
         resources:

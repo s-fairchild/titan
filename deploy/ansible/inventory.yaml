@@ -14,9 +14,9 @@ raspberry_pis:
       ansible_host: 10.50.0.11
       K3S:
         INSTANCE: 1
-        NETWORK:
+        NETWORKS:
           NODE_IP: 10.16.0.11
-          KUBE_AGENT:
+          AGENT:
             SUBNET: 10.16.0.0/16
             GATEWAY: 10.16.254.254
         NODE_LABELS:
@@ -25,54 +25,149 @@ raspberry_pis:
         LIMITS:
           MEMORY: 1.5g
           CPU: 3.5
-        DEVICES:
-          CAMERAS:
-            USB:
-              INDEX_0: /dev/v4l/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-video-index0
-              INDEX_1: /dev/v4l/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-video-index1
       ansible_ssh_private_key_file: ~/.ssh/id_ed25519_rpi4-0
   # TODO seperate these into env files by role
   vars:
-    COMMON:
-      FILES:
-        PROD:
-          SYSCONFIG:
-            K3S_ENV: ../../butane/overlays/prod/coreos/usr/local/etc/sysconfig/k3s
-            PODMAN_ENV: ../../butane/overlays/prod/coreos/usr/local/etc/sysconfig/podman-options
-        BASE:
+    REMOTE:
+      DEVICE:
+        PATH: /device
+        FILES:
+          # https://www.raspberrypi.com/documentation/computers/camera_software.html#device-nodes-when-using-libcamera
+          VIDEO_0: /dev/video0
+          VIDEO_1: /dev/video0
+          VIDEO_11: /dev/video11
+          VIDEO_30: /dev/video30
+        V4L:
+          PATH: /dev/v4l/by-id/
+          FILES:
+            VIDEO_0: /dev/v4l/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-video-index0
+            VIDEO_1: /dev/v4l/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-video-index1
+      USR:
+        PATH: /usr
+        LOCAL:
+          PATH: /usr/local
+          ETC:
+            PATH: /usr/local/etc
+            SYSCONFIG:
+              PATH: /usr/local/etc/sysconfig
+      SERVICES:
+        kube-agent-network
+      ETC:
+        PATH: /etc
+        SYSTEMD:
+          PATH: /etc/systemd
+          NETWORK:
+            PATH: /etc/systemd/network
+            END0:
+              PATH: /etc/systemd/network/end0.network.d
+              FILES:
+                ROUTES: /etc/systemd/network/end0.network.d/routes.conf
+        SYSCONFIG:
+          PATH: /etc/sysconfig
+          FILES:
+            BTRFS_MAINTENANCE: /etc/sysconfig/btrfsmaintenance
+        QUADLET:
+          PATH: /etc/containers/systemd
+          NETWORKS:
+            AGENT:
+              SERVICE_NAMES:
+                PODMAN: kube-agent
+                SYSTEMD: kube-agent-network.service
+              FILES:
+                NETWORK: /etc/containers/systemd/kube-agent.network
+              DROP_INS:
+                PATH: /etc/containers/systemd/kube-agent.network.d
+                FILES:
+                  SUBNET: /etc/containers/systemd/kube-agent.network.d/subnet.conf
+                  DNS: /etc/containers/systemd/kube-agent.network.d/dns.conf
+          IMAGES:
+            K3S:
+              FILES:
+                IMAGE: /etc/containers/systemd/k3s.image
+              DROP_INS:
+                PATH: /etc/containers/systemd/k3s.image.d
+          CONTAINERS:
+            AGENT:
+              FILES:
+                CONTAINER: /etc/containers/systemd/k3s-agent@.container
+              DROP_INS:
+                PATH: /etc/containers/systemd/k3s-agent@.container.d
+                FILES:
+                  AGENT_NETWORK: /etc/containers/systemd/k3s-agent@.container.d/kube-agent-network.conf
+                  LIMITS: /etc/containers/systemd/k3s-agent@.container.d/limits.conf
+    LOCAL:
+      BASE:
+        PATH: ../butane/base
+        ETC:
           QUADLET:
-            K3S_AGENT:
-              NETWORK: ../../butane/base/podman/containers/agent/k3s-agent@.container.d/kube-agent-network.conf
-      DIRS:
-        BASE:
-          PODMAN:
-            CONTAINERS: ../../butane/base/podman/containers/agent
-            IMAGES: ../../butane/base/podman/images
+            PATH: ../butane/base/podman
             NETWORKS:
-              KUBE_AGENT: ../../butane/base/podman/networks/kube-agent-network
+              PATH: ../deploy/butane/base/podman/networks
+              AGENT:
+                PATH: ../butane/base/podman/networks/kube-agent-network
+                FILES:
+                  NETWORK: ../butane/base/podman/networks/kube-agent-network/kube-agent.network
+                DROP_INS:
+                  PATH: ../butane/base/podman/networks/kube-agent-network/kube-agent.network.d
+            IMAGES:
+              PATH: ../butane/base/podman/images
+              K3S:
+                PATH: ../butane/base/podman/images/k3s
+                FILES:
+                  IMAGE: ../butane/base/podman/images/k3s/k3s.image
+            CONTAINERS:
+              AGENT:
+                PATH: ../butane/base/podman/containers/agent
+                FILES:
+                  CONTAINER: ../butane/base/podman/containers/agent/k3s-agent@.container
+                DROP_INS:
+                  PATH:  ../butane/base/podman/containers/agent/k3s-agent@.container.d
+                  FILES:
+                    AGENT_NETWORK: ../butane/base/podman/containers/agent/k3s-agent@.container.d/kube-agent-network.conf
+                    K3S_TOKEN: ../butane/base/podman/containers/agent/k3s-agent@.container.d/k3s-token.conf
+                    EXEC: ../butane/base/podman/containers/agent/k3s-agent@.container.d/exec.conf
+      OVERLAYS:
+        PATH: ../butane/overlays
         PROD:
-        PKG:
-          KUBELET:
-            AGENT: ../../../pkg/kubelet/agent
-            SERVER: ../../../pkg/kubelet/server
-    RPI4:
-      VC4:
-        # https://www.raspberrypi.com/documentation/computers/camera_software.html#device-nodes-when-using-libcamera
-        ENCODE: /dev/video30
-    NETWORK:
-      PODMAN:
+          PATH: ../butane/overlays/prod
+          ETC:
+            PATH: ../butane/overlays/prod/usr/local/etc
+            QUADLET:
+              PATH: ../deploy/butane/overlays/prod/podman
+
+            SYSCONFIG:
+              PATH: ../butane/overlays/prod/usr/local/etc/sysconfig
+              FILES:
+                BTRFS_MAINTENANCE: ../butane/overlays/prod/etc/sysconfig/btrfsmaintenance
+          USR:
+            PATH: ../butane/overlays/prod/usr
+            LOCAL:
+              PATH: ../butane/overlays/prod/usr/local
+              ETC:
+                PATH: ../butane/overlays/prod/usr/local/etc
+                SYSCONFIG:
+                  PATH: ../butane/overlays/prod/usr/local/etc/sysconfig
+                  FILES:
+                    K3S: ../butane/overlays/prod/usr/local/etc/sysconfig/k3s
+                    PODMAN_OPTIONS: ../butane/overlays/prod/usr/local/etc/sysconfig/podman-options
+    NETWORKS:
+      # TODO Change this to QUADLET
+      QUADLET:
         AGENT:
           NAME: kube-agent
           SYSTEMD_SERVICE: kube-agent-network
-          DNS_IP: 10.11.254.254
-      K3S:
+      CLUSTER:
         APISERVER_LB:
           EXTERNAL: 10.50.0.2
           INTERNAL: 10.10.0.1
         SUBNETS:
-          SERVER: 10.10.0.0/16
-          AGENT: 10.11.0.0/16
+          SERVER:
+            SUBNET: 10.10.0.0/16
+          AGENT:
+            SUBNET: 10.11.0.0/16
+            DNS: 10.11.254.254
           SERVICE: 10.43.0.0/16
-      LAN:
-        GATEWAY_IP: 10.50.0.1
-        DNS_IP: 10.50.0.1
+        LAN:
+          GATEWAY:
+            SUBNET: 10.50.0.1
+            DNS: 10.50.0.1

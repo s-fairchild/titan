@@ -16,6 +16,6 @@ spec:
       protocol: TCP
       port: 8085
       targetPort: web
-  type: LoadBalancer
+  type: ClusterIP
   sessionAffinity: ClientIP
   internalTrafficPolicy: Local

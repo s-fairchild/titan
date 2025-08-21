@@ -1,0 +1,13 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: jellyfin
+  namespace: traefik-system
+spec:
+  secretName: domain-tls-jellyfin
+  dnsNames:
+    - "jellyfin.app.rick.expresso.lan"
+  issuerRef:
+    name: acme
+    kind: Issuer

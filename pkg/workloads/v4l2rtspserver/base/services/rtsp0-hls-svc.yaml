@@ -1,0 +1,16 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rtsp0-hls-svc
+  namespace: v4l2rtspserver
+  labels:
+    app: rtsp0
+spec:
+  selector:
+    app: rtsp0
+  ports:
+  - name: rtsp-hls-web
+    port: 8086
+    targetPort: rtsp-hls
+  type: ClusterIP

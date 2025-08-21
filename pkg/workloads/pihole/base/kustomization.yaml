@@ -16,3 +16,5 @@ secretGenerator:
   namespace: pihole
   files:
   - web.password.txt
+  options:
+    disableNameSuffixHash: true

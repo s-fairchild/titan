@@ -37,6 +37,13 @@ main() {
     create_secret secret remote_alias token
 }
 
+generate_token() {
+    local -n tok="$1"
+    # Reference: https://github.com/alexellis/k3sup#create-a-multi-master-ha-setup-with-external-sql
+    log "Generating k3s token now"
+    tok="$(openssl rand -base64 64)"
+}
+
 add_connection() {
     local -n key="$1"
     local -n host="$2"
