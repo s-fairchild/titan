@@ -336,7 +336,6 @@
       tags:
         - quadlet
         - quadlet.secrets
-        - k3s
         - k3s.token
 
     - name: (Re)Start "k3s-agent@<K3S.INSTANCE>.service"- K3S.INSTANCE - "{{ K3S.INSTANCE }}"

@@ -4,27 +4,12 @@ kind: Kustomization
 
 resources:
 - ../../base
-- certificates/jellyfin.yaml
-- issuer.yaml
+- tls-store.yaml
+- certificate.yaml
 
-replacements:
-- source:
-    kind: ConfigMap
-    version: v1
-    name: values
-    namespace: traefik-system
-    fieldPath: .data.values
-  targets:
-  - select:
-      kind: HelmChart
-      name: traefik
-      namespace: traefik-system
-    fieldPaths:
-    - spec.valuesContent
-
-configMapGenerator:
-- name: values
-  namespace: traefik-system
+secretGenerator:
+- name: traefik-values
+  namespace: kube-system
   files:
   - values=values.yaml
   options:

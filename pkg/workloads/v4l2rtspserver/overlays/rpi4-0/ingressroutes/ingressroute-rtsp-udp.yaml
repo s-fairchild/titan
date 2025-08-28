@@ -2,15 +2,13 @@
 apiVersion: traefik.io/v1alpha1
 kind: IngressRouteUDP
 metadata:
-  name: ingressroute-rtsp0-udp
+  name: rtsp0-udp-ir
   namespace: v4l2rtspserver
 spec:
   entryPoints:
-    - udp
+    - rtspudp
   routes:
-  - match: ClientIP(`10.50.0.0/24`)
-    priority: 10
-    services:
+  - services:
     - name: rtsp0-svc
       port: rtsp-svc-udp
       weight: 10

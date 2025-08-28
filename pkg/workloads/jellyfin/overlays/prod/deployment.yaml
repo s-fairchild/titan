@@ -74,6 +74,8 @@ spec:
           mountPath: /media
         - name: config
           mountPath: /config
+        - name: config-plugins
+          mountPath: /config/data/plugins
         - name: data
           mountPath: /config/data
       volumes:

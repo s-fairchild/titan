@@ -8,3 +8,5 @@ spec:
   dialTimeout: 42s
   dialKeepAlive: 42s
   terminationDelay: 42s
+  serverName: rtsp0-tcp.app.rick.expresso.lan
+  insecureSkipVerify: true

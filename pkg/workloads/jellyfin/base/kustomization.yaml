@@ -6,7 +6,7 @@ resources:
 - deployment.yaml
 - service.yaml
 - namespace.yaml
-- pvc.yaml
-- ingressroute.yaml
-- middleware/redirect-scheme.yaml
 - middleware/headers.yaml
+- persistentvolumeclaims/data-pvc.yaml
+- persistentvolumeclaims/config-pvc.yaml
+- persistentvolumeclaims/config-plugins-pvc.yaml

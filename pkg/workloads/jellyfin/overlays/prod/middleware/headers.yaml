@@ -7,4 +7,3 @@ metadata:
 spec:
   headers:
     customFrameOptionsValue: 'allow-from https://app.jellyfin.expresso.lan'
-    SSLHost: jellyfin.app.rick.expresso.lan

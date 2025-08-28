@@ -25,7 +25,6 @@ SecurityLabelDisable=true
 ShmSize=5g
 Timezone=UTC
 LogDriver=journald
-# Environment=K3S_AGENT_TOKEN_FILE=/run/secrets/k3s-agent-token
 Environment=K3S_TOKEN_FILE=/run/secrets/k3s-token
 # Secret=k3s-agent-token,mode=0400
 Secret=k3s-token,mode=0400
@@ -36,7 +35,7 @@ Volume=${NAME}-rancher:/etc/rancher:Z
 Volume=${NAME}-storage:/var/lib/rancher/k3s/storage:Z
 Volume=${NAME}-log:/var/log/pod:Z
 Volume=${NAME}-containers:/var/lib/containers:Z
-Volume=/usr/local/lib/rancher/k3s/server/static/charts/extra:/var/lib/rancher/k3s/server/static/charts/extra:z,ro
+Volume=k3s-server-static-charts:/var/lib/rancher/k3s/server/static/charts/extra:z,rw
 Volume=/usr/local/lib/rancher/k3s/server/manifests:/var/lib/rancher/k3s/server/manifests/compute:z
 AddDevice=/dev/fuse:/dev/fuse
 PodmanArgs=--oom-score-adj=1000 --privileged

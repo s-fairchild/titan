@@ -4,7 +4,9 @@ kind: Kustomization
 
 resources:
 - ../../base
-- pvc.yaml
+- persistentvolumeclaims/media-pvc.yaml
+- ingressroute.yaml
+- certificate.yaml
 
 secretGenerator:
 - name: web-password

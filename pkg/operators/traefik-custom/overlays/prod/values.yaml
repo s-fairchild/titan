@@ -17,10 +17,21 @@ providers:
     allowEmptyServices: true
   kubernetesIngress:
     enabled: true
+    allowExternalNameServices: true
+    allowEmptyServices: true
+    # IP used for Kubernetes Ingress endpoints
+    publishedService:
+      # -- Enable [publishedService](https://doc.traefik.io/traefik/providers/kubernetes-ingress/#publishedservice)
+      enabled: true
+    # -- Defines whether to use Native Kubernetes load-balancing mode by default.
+    nativeLBByDefault: true
+    # -- Defines whether to make prefix matching strictly comply with the Kubernetes Ingress specification.
+    strictPrefixMatching: false
 priorityClassName: "system-cluster-critical"
 nodeSelector:
   node-role.kubernetes.io/control-plane: "true"
 image:
+  registry: docker.io
   repository: "rancher/mirrored-library-traefik"
   tag: "3.3.2"
   pullPolicy: IfNotPresent
@@ -33,30 +44,85 @@ tolerations:
 - key: "node-role.kubernetes.io/master"
   operator: "Exists"
   effect: "NoSchedule"
+# udp:
+  # services:
+    # udp:
+      # loadbalancer:
+        # servers:
+          # - address: "10.50.0.24:8554/udp" # Replace with your actual service IP and port
+    # stream:
+      # loadbalancer:
+        # servers:
+          # - address: "10.50.0.24:8554" # Replace with your actual service IP and port
+  # routers:
+    # udp:
+      # entrypoints:
+        # - "udp"
+      # service: "udp"
+    # stream:
+      # entrypoints:
+        # - "stream"
+      # service: "stream"
 ports:
-  stream:
+  rtspudp:
+    transport:
+      lifeCycle:
+        requestAcceptGraceTimeout: 42
+        graceTimeOut: 42
+      respondingTimeouts:
+        readTimeout: 42
+        writeTimeout: 42
+        idleTimeout: 42
+    proxyProtocol:
+      insecure: true
+      trustedIPs:
+        - "127.0.0.1"
+        - "10.50.0.0/24"
+    forwardedHeaders:
+      insecure: true
+      trustedIPs:
+        - "127.0.0.1"
+        - "10.50.0.0/24"
     ipFamilyPolicy: "SingleStack"
     ipFamilies:
       - IPv4
     address: '10.50.0.24:8554/udp'
     udp:
-      timeout: 10s
+      timeout: 30s
     expose:
       default: true
-    port: 5554
+    port: 8554
     exposedPort: 8554
-    targetPort: stream
+    targetPort: rtspudp
     protocol: UDP
-  streamtcp:
+  rtsptcp:
+    transport:
+      lifeCycle:
+        requestAcceptGraceTimeout: 42
+        graceTimeOut: 42
+      respondingTimeouts:
+        readTimeout: 42
+        writeTimeout: 42
+        idleTimeout: 42
+    proxyProtocol:
+      insecure: true
+      trustedIPs:
+        - "127.0.0.1"
+        - "10.50.0.0/24"
+    forwardedHeaders:
+      insecure: true
+      trustedIPs:
+        - "127.0.0.1"
+        - "10.50.0.0/24"
     ipFamilyPolicy: "SingleStack"
     ipFamilies:
       - IPv4
-    address: '10.50.0.24:8555/tcp'
+    address: '10.50.0.24:8554/tcp'
     expose:
       default: true
-    port: 5555
+    port: 8555
     exposedPort: 8555
-    targetPort: streamtcp
+    targetPort: rtsptcp
     protocol: TCP
   traefik:
     port: 9000
@@ -77,11 +143,11 @@ ports:
     protocol: TCP
     # Added in 2.2, you can make permanent redirects via entrypoints.
     # https://docs.traefik.io/routing/entrypoints/#redirection
-    # redirections:
-      # entryPoint:
-        # to: websecure
-        # scheme: https
-        # permanent: true
+    redirections:
+      entryPoint:
+        to: websecure
+        scheme: https
+        permanent: false
     # Trust forwarded  headers information (X-Forwarded-*).
     forwardedHeaders:
       trustedIPs: ["10.50.0.0/24"]
@@ -110,11 +176,6 @@ ports:
     forwardedHeaders:
       trustedIPs: ["10.50.0.0/24"]
       insecure: false
-    #
-    ## Set TLS at the entrypoint
-    ## https://doc.traefik.io/traefik/routing/entrypoints/#tls
-    tls:
-      enabled: true
   metrics:
     # -- When using hostNetwork, use another port to avoid conflict with node exporter:
     # https://github.com/prometheus/prometheus/wiki/Default-port-allocations
@@ -167,29 +228,29 @@ logs:
     fields:
       headers:
         defaultmode: keep
-persistence:
-  # -- Enable persistence using Persistent Volume Claims
-  # ref: http://kubernetes.io/docs/user-guide/persistent-volumes/.
-  # It can be used to store TLS certificates along with `certificatesResolvers.<name>.acme.storage`  option
-  enabled: true
-  name: data
-  existingClaim: ""
-  accessMode: ReadWriteOnce
-  size: 128Mi
-  storageClass: "local-path-default"
-  volumeName: ""
-  path: /data
-  annotations: {}
-  # -- Only mount a subpath of the Volume into the pod
-  subPath: ""
-certificatesResolvers:
-  myresolver:
-    acme:
-      email: "steve51516@gmail.com"
-      storage: "/data/acme.json"
-      httpChallenge:
-        # Entry point to use during the ACME HTTP-01 challenge.
-        entryPoint: "web"
+# persistence:
+  # # -- Enable persistence using Persistent Volume Claims
+  # # ref: http://kubernetes.io/docs/user-guide/persistent-volumes/.
+  # # It can be used to store TLS certificates along with `certificatesResolvers.<name>.acme.storage`  option
+  # enabled: true
+  # name: data
+  # existingClaim: ""
+  # accessMode: ReadWriteOnce
+  # size: 128Mi
+  # storageClass: "local-path-default"
+  # volumeName: ""
+  # path: /data
+  # annotations: {}
+  # # -- Only mount a subpath of the Volume into the pod
+  # subPath: ""
+# certificatesResolvers:
+  # traefik:
+    # acme:
+      # email: "steve51516@gmail.com"
+      # storage: "/data/acme.json"
+      # httpChallenge:
+        # # Entry point to use during the ACME HTTP-01 challenge.
+        # entryPoint: "web"
 hostNetwork: false
 rbac:
   enabled: true

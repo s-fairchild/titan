@@ -11,7 +11,6 @@ spec:
   - match: Host(`jellyfin.app.rick.expresso.lan`)
     kind: Rule
     middlewares:
-    - name: mw-redirecthttps
     - name: mw-headers
     services:
     - name: web-client
@@ -21,12 +20,14 @@ spec:
       passHostHeader: true
       responseForwarding:
         flushInterval: 1ms
-    observability:
-      accesslogs: true
-      tracing: true
-    NativeLB: true
+      sticky:
+        cookie:
+          httpOnly: true
+          name: cookie
+          secure: true
+          sameSite: none
+          maxAge: 42  
   tls:
     domains:
-      - main: "jellyfin.app.rick.expresso.lan"
-        sans:
-          - "jellyfin.rick.expresso.lan"
+    - main: jellyfin.app.rick.expresso.lan
+    secretName: default

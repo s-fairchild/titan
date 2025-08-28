@@ -1,0 +1,40 @@
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: cert-manager
+  namespace: kube-system
+spec:
+  # repo: oci://quay.io/jetstack/charts/cert-manager
+  # repo: quay.io/jetstack/charts/cert-manager:v1.18.2
+  chart: https://%{KUBERNETES_API}%/static/charts/cert-manager-v1.18.2.tgz
+  targetNamespace: cert-manager
+  set:
+    # yaml-language-server:  https://raw.githubusercontent.com/cert-manager/cert-manager/refs/tags/v1.18.2/deploy/charts/cert-manager/values.schema.json
+    # Human readable: https://github.com/cert-manager/cert-manager/blob/v1.18.2/deploy/charts/cert-manager/values.schema.json
+    #
+    # Values: https://github.com/cert-manager/cert-manager/blob/v1.18.2/deploy/charts/cert-manager/values.yaml
+    global.rbac.create: "true"
+    # Aggregate ClusterRoles to Kubernetes default user-facing roles. For more information, see [User-facing roles](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#user-facing-roles)
+    global.rbac.aggregateClusterRoles: "true"
+    serviceAccount.create: "true"
+    serviceAccount.automountServiceAccountToken: "true"
+    enableCertificateOwnerRef: "true"
+    # nodeSelector.node-role.kubernetes.io/master: ""
+    crds.enabled: "true"
+    crds.keep: "true"
+    # https://quay.io/repository/jetstack/cert-manager-controller?tab=tags&tag=latest
+    image.repository: quay.io/jetstack/cert-manager-controller
+    # https://quay.io/repository/jetstack/cert-manager-controller/manifest/sha256:058a3ee5b133f964acefbd5926a08ace1fb7c0775b92d3bc11e4c7a33de71e25?tab=vulnerabilities
+    image.digest: sha256:81316365dc0b713eddddfbf9b8907b2939676e6c0e12beec0f9625f202a36d16
+    image.pullPolicy: IfNotPresent
+    tolerations[0].key: "node-role.kubernetes.io/control-plane"
+    tolerations[0].operator: "Exists"
+    tolerations[0].effect: "NoSchedule"
+    tolerations[1].key: "CriticalAddonsOnly"
+    tolerations[1].operator: "Exists"
+    tolerations[1].effect: "NoExecute"
+    tolerations[2].key: "node-role.kubernetes.io/master"
+    tolerations[2].operator: "Exists"
+    tolerations[2].effect: "NoExecute"
+    livenessProbe.enabled: "true"

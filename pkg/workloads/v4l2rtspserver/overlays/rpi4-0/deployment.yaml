@@ -34,7 +34,7 @@ spec:
         # TODO setup muticast network once motion is deployed
         args:
           - -P
-          - "8554"
+          - "554"
           - -p
           - "8085"
           - -u

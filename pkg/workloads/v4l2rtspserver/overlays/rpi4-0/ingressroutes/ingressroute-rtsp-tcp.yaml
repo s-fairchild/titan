@@ -2,21 +2,17 @@
 apiVersion: traefik.io/v1alpha1
 kind: IngressRouteTCP
 metadata:
-  name: ingressroute-rtsp0-tcp
+  name: rtsp0-tcp-ir
   namespace: v4l2rtspserver
 spec:
   entryPoints:
-    - tcp
+    - rtsptcp
   routes:
   - match: ClientIP(`10.50.0.0/24`)
-    priority: 10
-    # middlewares:
-    # - name: middleware1
-      # namespace: default
+    priority: 20
     services:
     - name: rtsp0-svc
       port: rtsp-svc-tcp
-      weight: 20
-      # serversTransport: transport-rtsp-tcp
+      serversTransport: transport-rtsp-tcp
       nativeLB: true
       tls: false

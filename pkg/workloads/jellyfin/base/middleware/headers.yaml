@@ -6,8 +6,6 @@ metadata:
   namespace: jellyfin
 spec:
   headers:
-    entryPoints:
-      - websecure
     customResponseHeaders:
       X-Robots-Tag: noindex,nofollow,nosnippet,noarchive,notranslate,noimageindex
       X-XSS-PROTECTION: "1"
@@ -18,7 +16,4 @@ spec:
     forceSTSHeader: true
     frameDeny: true
     contentTypeNosniff: true
-    SSLForceHost: true
-    STSIncludeSubdomains: true
-    STSPreload: true
     browserXssFilter: true

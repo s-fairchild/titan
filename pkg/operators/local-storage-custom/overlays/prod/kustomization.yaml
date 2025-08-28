@@ -3,3 +3,11 @@ kind: Kustomization
 
 resources:
 - ../../base
+
+secretGenerator:
+- name: local-path-storage-values
+  namespace: kube-system
+  files:
+  - values=values.yaml
+  options:
+    disableNameSuffixHash: true

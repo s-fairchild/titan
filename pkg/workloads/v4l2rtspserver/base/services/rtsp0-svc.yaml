@@ -10,12 +10,12 @@ spec:
   selector:
     app: rtsp0
   ports:
-  - name: rtsp-svc-tcp
-    port: 8555
+  - name: rtsp-tcp-svc
+    port: 555
     targetPort: rtsp-tcp
     protocol: TCP
-  - name: rtsp-svc-udp
-    port: 8554
+  - name: rtsp-udp-svc
+    port: 554
     targetPort: rtsp-udp
     protocol: UDP
   type: ClusterIP

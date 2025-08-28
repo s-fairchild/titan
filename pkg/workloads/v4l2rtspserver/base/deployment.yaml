@@ -75,10 +75,10 @@ spec:
             # - CAP_NET_BIND_SERVICE
             # - CAP_SYS_NICE
         ports:
-        - containerPort: 8554
+        - containerPort: 554
           name: rtsp-tcp
           protocol: TCP
-        - containerPort: 8554
+        - containerPort: 554
           name: rtsp-udp
           protocol: UDP
         - containerPort: 8085
