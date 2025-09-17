@@ -35,7 +35,7 @@ Volume=${NAME}-rancher:/etc/rancher:Z
 Volume=${NAME}-storage:/var/lib/rancher/k3s/storage:Z
 Volume=${NAME}-log:/var/log/pod:Z
 Volume=${NAME}-containers:/var/lib/containers:Z
-Volume=k3s-server-static-charts:/var/lib/rancher/k3s/server/static/charts/extra:z,rw
+Volume=/usr/local/lib/rancher/k3s/server/static/charts:/var/lib/rancher/k3s/server/static/charts/extra:z,rw
 Volume=/usr/local/lib/rancher/k3s/server/manifests:/var/lib/rancher/k3s/server/manifests/compute:z
 AddDevice=/dev/fuse:/dev/fuse
 PodmanArgs=--oom-score-adj=1000 --privileged

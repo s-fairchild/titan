@@ -1,0 +1,19 @@
+---
+# TODO move this to role/common
+- name: Delete all quadlet configurations in {{ REMOTE.ETC.QUADLET.PATH }}
+  ansible.builtin.file:
+    path: "{{ REMOTE.ETC.QUADLET.PATH }}"
+    state: absent
+    mode: '0755'
+  tags:
+    - quadlet
+    - containers
+
+- name: Create quadlet configurations search path "{{ REMOTE.ETC.QUADLET.PATH }}"
+  ansible.builtin.file:
+    path: "{{ REMOTE.ETC.QUADLET.PATH }}"
+    state: directory
+    mode: '0755'
+  tags:
+    - quadlet
+    - containers

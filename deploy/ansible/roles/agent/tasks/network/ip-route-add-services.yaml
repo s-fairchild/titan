@@ -1,0 +1,84 @@
+---
+### Copy Systemd Drop-In Environment File ###
+- name: Copy ip-route-add@service.service.d/default.conf - "{{ REMOTE.ETC.SYSTEMD.SYSTEM.IP_ROUTE_ADD_SERVICE_D.FILES.OVERRIDE_CONF }}"
+  ansible.builtin.copy:
+    src: "{{ LOCAL.ANSIBLE.ROLES.AGENT.FILES.SYSTEMD.SYSTEM.IP_ROUTE_ADD_SERVICE.FILES.DEFAULT_CONF }}"
+    dest: "{{ REMOTE.ETC.SYSTEMD.SYSTEM.IP_ROUTE_ADD_SERVICE_D.FILES.DEFAULT_CONF }}"
+    owner: root
+    group: root
+    mode: '0644'
+  tags:
+    systemd.services
+    systemd.services.ip-route-add
+    systemd.services.ip-route-add.service
+    systemd.services.ip-route-add.service.drop-ins
+    systemd.services.ip-route-add.service.drop-ins.default
+
+- name: Copy ip-route-add@server.service.d/override.conf - "{{ REMOTE.ETC.SYSTEMD.SYSTEM.IP_ROUTE_ADD_SERVER_D.FILES.OVERRIDE_CONF }}"
+  ansible.builtin.copy:
+    src: "{{ LOCAL.ANSIBLE.ROLES.AGENT.FILES.SYSTEMD.SYSTEM.IP_ROUTE_ADD_SERVER.FILES.OVERRIDE_CONF }}"
+    dest: "{{ REMOTE.ETC.SYSTEMD.SYSTEM.IP_ROUTE_ADD_SERVER_D.FILES.OVERRIDE_CONF }}"
+    owner: root
+    group: root
+    mode: '0644'
+  tags:
+    systemd.services
+    systemd.services.ip-route-add
+    systemd.services.ip-route-add.server
+    systemd.services.ip-route-add.server.drop-ins
+    systemd.services.ip-route-add.server.drop-ins.override
+
+- name: Copy ip-route-add@agent-remote.service.d/override.conf - "{{ REMOTE.ETC.SYSTEMD.SYSTEM.IP_ROUTE_ADD_AGENT_REMOTE_D.FILES.OVERRIDE_CONF }}"
+  ansible.builtin.copy:
+    src: "{{ LOCAL.ANSIBLE.ROLES.AGENT.FILES.SYSTEMD.SYSTEM.IP_ROUTE_ADD_AGENT_REMOTE.FILES.OVERRIDE_CONF }}"
+    dest: "{{ REMOTE.ETC.SYSTEMD.SYSTEM.IP_ROUTE_ADD_AGENT_REMOTE_D.FILES.OVERRIDE_CONF }}"
+    owner: root
+    group: root
+    mode: '0644'
+  tags:
+    systemd.services
+    systemd.services.ip-route-add
+    systemd.services.ip-route-add.agent-remote
+    systemd.services.ip-route-add.agent-remote.drop-ins
+    systemd.services.ip-route-add.agent-remote.drop-ins.override
+
+- name: Copy ip-route-add@cluster.service.d/override.conf - "{{ REMOTE.ETC.SYSTEMD.SYSTEM.IP_ROUTE_ADD_CLUSTER_D.FILES.OVERRIDE_CONF }}"
+  ansible.builtin.copy:
+    src: "{{ LOCAL.ANSIBLE.ROLES.AGENT.FILES.SYSTEMD.SYSTEM.IP_ROUTE_ADD_CLUSTER.FILES.OVERRIDE_CONF }}"
+    dest: "{{ REMOTE.ETC.SYSTEMD.SYSTEM.IP_ROUTE_ADD_CLUSTER_D.FILES.OVERRIDE_CONF }}"
+    owner: root
+    group: root
+    mode: '0644'
+  tags:
+    systemd.services
+    systemd.services.ip-route-add
+    systemd.services.ip-route-add.cluster
+    systemd.services.ip-route-add.cluster.drop-ins
+    systemd.services.ip-route-add.cluster.drop-ins.override
+
+- name: Copy ip-route-add@vrf10.service.d/override.conf - "{{ REMOTE.ETC.SYSTEMD.SYSTEM.IP_ROUTE_ADD_VRF10_D.FILES.OVERRIDE_CONF }}"
+  ansible.builtin.copy:
+    src: "{{ LOCAL.ANSIBLE.ROLES.AGENT.FILES.SYSTEMD.SYSTEM.IP_ROUTE_ADD_VRF10.FILES.OVERRIDE_CONF }}"
+    dest: "{{ REMOTE.ETC.SYSTEMD.SYSTEM.IP_ROUTE_ADD_VRF10_D.FILES.OVERRIDE_CONF }}"
+    owner: root
+    group: root
+    mode: '0644'
+  tags:
+    systemd.services
+    systemd.services.ip-route-add
+    systemd.services.ip-route-add.vrf10
+    systemd.services.ip-route-add.vrf10.drop-ins
+    systemd.services.ip-route-add.vrf10.drop-ins.override
+
+- name: Copy ip-route-add@end0.service.d/override.conf - "{{ REMOTE.ETC.SYSTEMD.SYSTEM.IP_ROUTE_ADD_END0_D.FILES.OVERRIDE_CONF }}"
+  ansible.builtin.copy:
+    src: "{{ LOCAL.ANSIBLE.ROLES.AGENT.FILES.SYSTEMD.SYSTEM.IP_ROUTE_ADD_END0.FILES.OVERRIDE_CONF }}"
+    dest: "{{ REMOTE.ETC.SYSTEMD.SYSTEM.IP_ROUTE_ADD_END0_D.FILES.OVERRIDE_CONF }}"
+    owner: root
+    group: root
+    mode: '0644'
+  tags:
+    systemd.services
+    systemd.services.ip-route-add
+    systemd.services.ip-route-add.vrf10.drop-ins
+    systemd.services.ip-route-add.vrf10.drop-ins.override

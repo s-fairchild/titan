@@ -1,0 +1,36 @@
+---
+- name: Standup K3S Agent Nodes
+  hosts: raspberry_pis
+  remote_user: root
+  tasks:
+    - name: Cleanup existing quadlet configurations
+      ansible.builtin.import_tasks:
+        file: roles/agent/tasks/quadlet/cleanup-quadlet-config.yaml
+
+    - name: Copy image configurations
+      ansible.builtin.import_tasks:
+        file: roles/agent/tasks/quadlet/image.yaml
+
+    - name: Copy network configurations
+      ansible.builtin.import_tasks:
+        file: roles/agent/tasks/quadlet/network.yaml
+
+    - name: Copy volume configurations
+      ansible.builtin.import_tasks:
+        file: roles/agent/tasks/quadlet/volume.yaml
+
+    - name: Copy container configurations
+      ansible.builtin.import_tasks:
+        file: roles/agent/tasks/quadlet/container.yaml
+
+    - name: Run quadlet systemd unit generator
+      ansible.builtin.import_tasks:
+        file: roles/agent/tasks/quadlet/generator.yaml
+
+    - name: Copy k3s-token secret (Only if K3S_TOKEN env variable is set)
+      ansible.builtin.import_tasks:
+        file: roles/agent/tasks/quadlet/secret.yaml
+
+    - name: Restart all quadlet related services
+      ansible.builtin.import_tasks:
+        file: roles/agent/tasks/quadlet/systemd-services.yaml

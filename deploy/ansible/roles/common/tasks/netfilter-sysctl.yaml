@@ -1,0 +1,25 @@
+---
+- name: Copy 90-nf-conntrack.conf into "{{ REMOTE.ETC.SYSCTL.PATH }}"
+  ansible.builtin.copy:
+    content: |
+      net.netfilter.nf_conntrack_tcp_timeout_close_wait = 3600
+      net.netfilter.nf_conntrack_tcp_timeout_established = 86400
+      net.netfilter.nf_conntrack_max = 196608
+    dest: "{{ REMOTE.ETC.SYSCTL.FILES.NF_CONNTRACK }}"
+    owner: root
+    group: root
+    mode: '0644'
+  tags:
+    - sysctl
+    - sysctl.net.bridge
+    - sysctl.net.netfilter
+
+- name: Reload sysctls via systemd
+  ansible.builtin.systemd_service:
+    name: systemd-sysctl
+    state: restarted
+  tags:
+    - sysctl
+    - sysctl.reload
+    - sysctl.net.bridge
+    - sysctl.net.netfilter

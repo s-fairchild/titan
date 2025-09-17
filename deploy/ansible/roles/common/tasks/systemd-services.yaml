@@ -1,0 +1,22 @@
+---
+- name: Copy ip-route-add.service
+  ansible.builtin.copy:
+    src: "{{ LOCAL.ANSIBLE.ROLES.COMMON.FILES.IP_ROUTE_ADD }}"
+    dest: "{{ REMOTE.SERVICES.FILES.IP_ROUTE_ADD }}"
+    owner: root
+    group: root
+    mode: '0644'
+  tags:
+    - systemd-networkd.services
+    - systemd-networkd.services.ip-route-add
+
+- name: Copy ip-route-add.sh
+  ansible.builtin.copy:
+    src: "{{ LOCAL.ANSIBLE.ROLES.COMMON.FILES.SCRIPTS.FILES.IP_ROUTE_ADD }}"
+    dest: "{{ REMOTE.USR.LOCAL.BIN.FILES.IP_ROUTE_ADD }}"
+    owner: root
+    group: root
+    mode: '0744'
+  tags:
+    - systemd-networkd.services
+    - systemd-networkd.services.ip-route-add

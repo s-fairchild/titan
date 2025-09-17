@@ -8,9 +8,9 @@ storage:
       overwrite: true
 
   directories:
-    - path: /etc/containers/systemd/k3s-apiserverlb@.container
+    - path: /etc/containers/systemd/k3s-apiserverlb@0.container.d
       overwrite: true
 
   trees:
-    - path: /etc/containers/systemd/k3s-apiserverlb@.container
+    - path: /etc/containers/systemd/k3s-apiserverlb@0.container.d
       local: butane/overlays/prod/podman/containers/api-server-lb/k3s-apiserverlb@0.container.d

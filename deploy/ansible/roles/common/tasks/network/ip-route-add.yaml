@@ -1,0 +1,40 @@
+---
+### Copy Script Files ###
+- name: Copy /usr/local/sbin/ip-route-add.sh
+  ansible.builtin.copy:
+    src: "{{ LOCAL.ANSIBLE.ROLES.COMMON.FILES.USR.LOCAL.SBIN.FILES.IP_ROUTE_ADD }}"
+    dest: "{{ REMOTE.USR.LOCAL.SBIN.FILES.IP_ROUTE_ADD }}"
+    owner: root
+    group: root
+    mode: '0744'
+  tags:
+    systemd.services
+    systemd.services.ip-route-add
+    systemd.services.ip-route-add.script
+
+### Copy Script Environment Files ###
+- name: Copy /usr/local/etc/sysconfig/ip-route-add
+  ansible.builtin.copy:
+    src: "{{ LOCAL.ANSIBLE.ROLES.COMMON.FILES.USR.LOCAL.ETC.SYSCONFIG.FILES.IP_ROUTE_ADD }}"
+    dest: "{{ REMOTE.USR.LOCAL.ETC.SYSCONFIG.FILES.IP_ROUTE_ADD }}"
+    owner: root
+    group: root
+    mode: '0644'
+  tags:
+    systemd.services
+    systemd.services.ip-route-add
+    systemd.services.ip-route-add.vrf10
+    systemd.services.ip-route-add.vrf10.env
+
+### Copy Systemd Service Files ###
+- name: Copy ip-route-add@.service - "{{ REMOTE.USR.LIB.SYSTEMD.SYSTEM.FILES.IP_ROUTE_ADD_SERVICE }}"
+  ansible.builtin.copy:
+    src: "{{ LOCAL.ANSIBLE.ROLES.COMMON.SYSTEMD.SYSTEM.FILES.IP_ROUTE_ADD_SERVICE }}"
+    dest: "{{ REMOTE.USR.LIB.SYSTEMD.SYSTEM.FILES.IP_ROUTE_ADD_SERVICE }}"
+    owner: root
+    group: root
+    mode: '0644'
+  tags:
+    systemd.services
+    systemd.services.ip-route-add
+    systemd.services.ip-route-add.service

@@ -1,0 +1,26 @@
+# TODO Create ExecStop= script to delete the previously created route
+# This is because the route to the bridge no longer exists
+# The system may remove the route once the link disappears, I will have to check
+
+[Unit]
+Description=Add ip routes to routing tables
+Documentation=man:ip-route
+# Shell script used by ExecStart=
+ConditionPathExists=/usr/local/sbin/%p.sh
+ConditionFileNotEmpty=/usr/local/sbin/%p.sh
+ConditionFileIsExecutable=/usr/local/sbin/%p.sh
+
+# Shell libraries used by main shell script
+ConditionPathExists=/usr/local/lib/utils.sh
+ConditionPathExists=/usr/local/lib/utils-network.sh
+ConditionFileNotEmpty=/usr/local/lib/utils.sh
+ConditionFileNotEmpty=/usr/local/lib/utils-network.sh
+
+[Service]
+EnvironmentFile=-/usr/local/etc/sysconfig/%p
+EnvironmentFile=-/usr/local/etc/sysconfig/%N
+Type=oneshot
+RemainAfterExit=true
+ExecStart=/usr/local/sbin/%p.sh ${DESTINATION_SUBNET} \
+                                ${GATEWAY} \
+                                ${VRF}

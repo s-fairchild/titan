@@ -1,0 +1,6 @@
+# shellcheck disable=SC2148
+#
+# Global environment variables to be used by instances of ip-route-add@*
+# This env file is read by systemd (not a shell)
+# shellcheck disable=SC2034
+DEBUG="false"

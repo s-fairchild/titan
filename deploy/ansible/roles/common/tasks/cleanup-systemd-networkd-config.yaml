@@ -1,0 +1,17 @@
+---
+- name: Delete Directory /etc/systemd/network
+  ansible.builtin.file:
+    path: "{{ REMOTE.ETC.SYSTEMD.NETWORK.PATH }}"
+    state: absent
+  tags:
+    - systemd-networkd
+
+- name: Create Directory /etc/systemd/network
+  ansible.builtin.file:
+    path: "{{ REMOTE.ETC.SYSTEMD.NETWORK.PATH }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  tags:
+    - systemd-networkd

@@ -1,0 +1,153 @@
+---
+- name: Copy k3s-agent@.container quadlet file into {{ REMOTE.ETC.QUADLET.PATH }}
+  ansible.builtin.copy:
+    src: "{{ LOCAL.BASE.ETC.QUADLET.CONTAINERS.AGENT.FILES.CONTAINER }}"
+    dest: "{{ REMOTE.ETC.QUADLET.CONTAINERS.AGENT.FILES.CONTAINER }}"
+    owner: root
+    group: root
+    mode: '0644'
+  tags:
+    - quadlet
+    - quadlet.containers
+    - quadlet.containers.agent
+
+- name: Create drop-ins directory k3s-agent@<K3S.INSTANCE>.container.d/ - K3S.INSTANCE - {{ K3S.INSTANCE }}
+  ansible.builtin.file:
+    path: "{{ REMOTE.ETC.QUADLET.PATH }}/k3s-agent@{{ K3S.INSTANCE }}.container.d"
+    state: directory
+    mode: '0755'
+  tags:
+    - quadlet
+    - quadlet.containers
+    - quadlet.containers.agent
+
+- name: Copy base template drop-in k3s-agent@<K3S.INSTANCE>.container.d/exec.conf - K3S.INSTANCE - {{ K3S.INSTANCE }}
+  ansible.builtin.copy:
+    src: "{{ LOCAL.BASE.ETC.QUADLET.CONTAINERS.AGENT.DROP_INS.FILES.EXEC }}"
+    dest: "{{ REMOTE.ETC.QUADLET.PATH }}/k3s-agent@{{ K3S.INSTANCE }}.container.d/exec.conf"
+    owner: root
+    group: root
+    mode: '0644'
+  tags:
+    - quadlet
+    - quadlet.containers
+    - quadlet.containers.agent
+    - quadlet.containers.agent.conf.exec
+
+- name: Copy k3s-agent@<K3S.INSTANCE>.container.d/exec-extra-args.conf - K3S.INSTANCE - {{ K3S.INSTANCE }}
+  ansible.builtin.copy:
+    content: |
+      [Service]
+      # https://docs.k3s.io/cli/agent#node-labels-and-taints-for-agents
+      Environment=AGENT_EXTRA_ARGS=--node-label={{ K3S.NODE_LABELS.RTSP }}
+    dest: "{{ REMOTE.ETC.QUADLET.PATH }}/k3s-agent@{{ K3S.INSTANCE }}.container.d/exec-extra-args.conf"
+    owner: root
+    group: root
+    mode: '0644'
+  tags:
+    - quadlet
+    - quadlet.containers
+    - quadlet.containers.agent
+    - quadlet.containers.agent.conf.agent-extra-args
+
+- name: Copy k3s-agent@<K3S.INSTANCE>.container.d/node-ip.conf - K3S.INSTANCE - {{ K3S.INSTANCE }}
+  ansible.builtin.copy:
+    content: |
+      [Service]
+      Environment=NODE_IP={{ K3S.NETWORKS.VRF10.AGENT.NODE_IP }}
+    dest: "{{ REMOTE.ETC.QUADLET.PATH }}/k3s-agent@{{ K3S.INSTANCE }}.container.d/node-ip.conf"
+    owner: root
+    group: root
+    mode: '0644'
+  tags:
+    - quadlet
+    - quadlet.containers
+    - quadlet.containers.agent
+    - quadlet.containers.agent.conf.node-ip
+
+- name: Copy k3s-agent@<K3S.INSTANCE>.container.d/devices.conf - K3S.INSTANCE - {{ K3S.INSTANCE }}
+  ansible.builtin.copy:
+    content: |
+      [Container]
+      # https://www.raspberrypi.com/documentation/computers/camera_software.html#device-nodes-when-using-libcamera
+      AddDevice=-{{ REMOTE.DEVICE.V4L.FILES.VIDEO_0 }}:{{ REMOTE.DEVICE.FILES.VIDEO_0 }}:rwm
+      AddDevice=-{{ REMOTE.DEVICE.V4L.FILES.VIDEO_1 }}:{{ REMOTE.DEVICE.FILES.VIDEO_1 }}:rwm
+      AddDevice=-{{ REMOTE.DEVICE.FILES.VIDEO_11 }}:{{ REMOTE.DEVICE.FILES.VIDEO_11 }}:rwm
+      AddDevice=-{{ REMOTE.DEVICE.FILES.VIDEO_30 }}:{{ REMOTE.DEVICE.FILES.VIDEO_30 }}:rwm
+    dest: "{{ REMOTE.ETC.QUADLET.PATH }}/k3s-agent@{{ K3S.INSTANCE }}.container.d/devices.conf"
+    owner: root
+    group: root
+    mode: '0644'
+  tags:
+    - quadlet
+    - quadlet.containers
+    - quadlet.containers.agent
+    - quadlet.containers.agent.conf.devices
+
+- name: Copy k3s-agent@<K3S.INSTANCE>.container.d/override.conf - K3S.INSTANCE - {{ K3S.INSTANCE }}
+  ansible.builtin.copy:
+    content: |
+      [Service]
+    dest: "{{ REMOTE.ETC.QUADLET.PATH }}/k3s-agent@{{ K3S.INSTANCE }}.container.d/devices.conf"
+    owner: root
+    group: root
+    mode: '0644'
+  tags:
+    - quadlet
+    - quadlet.containers
+    - quadlet.containers.agent
+    - quadlet.containers.agent.conf.override
+
+- name: Create directory k3s-agent@.container.d - "{{ REMOTE.ETC.QUADLET.CONTAINERS.AGENT.DROP_INS.PATH }}"
+  ansible.builtin.file:
+    path: "{{ REMOTE.ETC.QUADLET.CONTAINERS.AGENT.DROP_INS.PATH }}"
+    state: directory
+    mode: '0755'
+  tags:
+    - quadlet
+    - quadlet.containers
+    - quadlet.containers.agent
+
+- name: Copy add-hosts.conf into {{ REMOTE.ETC.QUADLET.PATH }}
+  ansible.builtin.copy:
+    content: |
+      [Container]
+      AddHost=k3s-apiserverlb-0:10.11.0.1
+    dest: "{{ REMOTE.ETC.QUADLET.CONTAINERS.AGENT.DROP_INS.FILES.ADD_HOSTS }}"
+    owner: root
+    group: root
+    mode: '0644'
+  tags:
+    - quadlet
+    - quadlet.containers.agent
+    - quadlet.containers.agent.add-hosts
+
+- name: Copy k3s-agent@.container.d/limits.conf - K3S.INSTANCE - "{{ K3S.INSTANCE }}"
+  ansible.builtin.copy:
+    content: |
+      [Container]
+      # memory cgroup controller must be enabled by adding cgroup_enable=memory to /boot/cmdline.txt
+      # https://archlinuxarm.org/forum/viewtopic.php?f=23&t=17131#p73138
+      # https://github.com/raspberrypi/linux/pull/6524
+      Memory={{ PODMAN.LIMITS.MEMORY }}
+      PodmanArgs=--cpus={{ PODMAN.LIMITS.CPU }}
+    dest: "{{ REMOTE.ETC.QUADLET.CONTAINERS.AGENT.DROP_INS.FILES.LIMITS }}"
+    owner: root
+    group: root
+    mode: '0644'
+  tags:
+    - quadlet
+    - quadlet.containers
+    - quadlet.containers.agent
+    - quadlet.containers.agent.conf.limits
+
+- name: Create symlink k3s-agent@<K3S.INSTANCE>.container - K3S.INSTANCE - {{ K3S.INSTANCE }}
+  ansible.builtin.file:
+    src: "{{ REMOTE.ETC.QUADLET.CONTAINERS.AGENT.FILES.CONTAINER }}"
+    dest: "{{ REMOTE.ETC.QUADLET.PATH }}/k3s-agent@{{ K3S.INSTANCE }}.container"
+    owner: root
+    group: root
+    state: link
+  tags:
+    - quadlet
+    - quadlet.containers.agent

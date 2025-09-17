@@ -8,17 +8,18 @@ raspberry_pis:
         NETWORK:
           NODE_IP: 10.15.0.10
           KUBE_AGENT_SUBNET: 10.15.0.0/16
-          KUBE_AGENT_GATEWAY: 10.15.254.254
+          KUBE_AGENT_GATEWAY: 10.15.0.1
       ansible_ssh_private_key_file: ~/.ssh/id_ed25519_rpi5-0
     rpi4-0:
       ansible_host: 10.50.0.11
       K3S:
         INSTANCE: 1
         NETWORKS:
-          NODE_IP: 10.16.0.11
-          AGENT:
-            SUBNET: 10.16.0.0/16
-            GATEWAY: 10.16.254.254
+          VRF10:
+            AGENT:
+              SUBNET: 10.16.0.0/16
+              NODE_IP: 10.16.0.11
+              GATEWAY: 10.16.0.1
         NODE_LABELS:
           RTSP: rtsp=0
       PODMAN:
@@ -42,6 +43,7 @@ raspberry_pis:
           FILES:
             VIDEO_0: /dev/v4l/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-video-index0
             VIDEO_1: /dev/v4l/by-id/usb-HD_Camera_Manufacturer_HD_USB_Camera_2020101401-video-index1
+
       USR:
         PATH: /usr
         LOCAL:
@@ -50,22 +52,107 @@ raspberry_pis:
             PATH: /usr/local/etc
             SYSCONFIG:
               PATH: /usr/local/etc/sysconfig
-      SERVICES:
-        kube-agent-network
+              FILES:
+                IP_ROUTE_ADD: /usr/local/etc/sysconfig/ip-route-add
+          LIB:
+            PATH: /usr/local/lib
+            FILES:
+              SHELL_UTILS: /usr/local/lib/utils.sh
+              SHELL_UTILS_NETWORK: /usr/local/lib/utils-network.sh
+          SBIN:
+            PATH: /usr/local/sbin
+            FILES:
+              IP_ROUTE_ADD: /usr/local/sbin/ip-route-add.sh
+        LIB:
+          PATH: /usr/lib
+          SYSTEMD:
+            PATH: /usr/lib/systemd
+            SYSTEM:
+              PATH: /usr/lib/systemd/system
+              FILES:
+                IP_ROUTE_ADD_SERVICE: /usr/lib/systemd/system/ip-route-add@.service
+              NAMES:
+                KUBE_AGENT: kube-agent-network
+
       ETC:
         PATH: /etc
         SYSTEMD:
           PATH: /etc/systemd
+          SYSTEM:
+            PATH: /etc/systemd/system
+            FILES:
+              LINKS:
+                IP_ROUTE_ADD_SERVER:
+                  SERVICE: /etc/systemd/system/ip-route-add@server.service
+                  REQUIRES: /etc/systemd/system/ip-route-add@server.service.requires/ip-route-add@vrf10.service
+                IP_ROUTE_ADD_AGENT_REMOTE:
+                  SERVICE: /etc/systemd/system/ip-route-add@agent-remote.service
+                  REQUIRES: /etc/systemd/system/ip-route-add@agent-remote.service.requires/ip-route-add@vrf10.service
+                IP_ROUTE_ADD_CLUSTER:
+                  SERVICE: /etc/systemd/system/ip-route-add@cluster.service
+                  REQUIRES: /etc/systemd/system/ip-route-add@cluster.service.requires/ip-route-add@vrf10.service
+                IP_ROUTE_ADD_VRF10:
+                  SERVICE: /etc/systemd/system/ip-route-add@vrf10.service
+                IP_ROUTE_ADD_END0:
+                  SERVICE: /etc/systemd/system/ip-route-add@end0.service
+
+            # TODO remove _D suffix
+            IP_ROUTE_ADD_SERVER_D_REQUIRES:
+              PATH: /etc/systemd/system/ip-route-add@server.service.requires
+            IP_ROUTE_ADD_AGENT_REMOTE_D_REQUIRES:
+              PATH: /etc/systemd/system/ip-route-add@agent-remote.service.requires
+            IP_ROUTE_ADD_CLUSTER_D_REQUIRES:
+              PATH: /etc/systemd/system/ip-route-add@cluster.service.requires
+
+            IP_ROUTE_ADD_SERVICE_D:
+              PATH: /etc/systemd/system/ip-route-add@.service.d
+              FILES:
+                DEFAULT_CONF: /etc/systemd/system/ip-route-add@.service.d/default.conf
+            IP_ROUTE_ADD_AGENT_REMOTE_D:
+              PATH: /etc/systemd/system/ip-route-add@agent-remote.service.d
+              FILES:
+                OVERRIDE_CONF: /etc/systemd/system/ip-route-add@agent-remote.service.d/override.conf
+            IP_ROUTE_ADD_SERVER_D:
+              PATH: /etc/systemd/system/ip-route-add@server.service.d
+              FILES:
+                OVERRIDE_CONF: /etc/systemd/system/ip-route-add@server.service.d/override.conf
+            IP_ROUTE_ADD_CLUSTER_D:
+              PATH: /etc/systemd/system/ip-route-add@cluster.service.d
+              FILES:
+                OVERRIDE_CONF: /etc/systemd/system/ip-route-add@cluster.service.d/override.conf
+            IP_ROUTE_ADD_VRF10_D:
+              PATH: /etc/systemd/system/ip-route-add@vrf10.service.d
+              FILES:
+                OVERRIDE_CONF: /etc/systemd/system/ip-route-add@vrf10.service.d/override.conf
+            IP_ROUTE_ADD_END0_D:
+              PATH: /etc/systemd/system/ip-route-add@end0.service.d
+              FILES:
+                OVERRIDE_CONF: /etc/systemd/system/ip-route-add@end0.service.d/override.conf
+
           NETWORK:
             PATH: /etc/systemd/network
+            FILES:
+              VRF10_NETDEV: /etc/systemd/network/10-vrf10.netdev
+              VRF10_NETWORK: /etc/systemd/network/20-vrf10.network
+              AGENT0_NETDEV: /etc/systemd/network/30-agent0.netdev
+              AGENT0_NETWORK: /etc/systemd/network/40-agent0.network
+            VRF10:
+              PATH: /etc/systemd/network/20-vrf10.network.d
             END0:
               PATH: /etc/systemd/network/end0.network.d
               FILES:
                 ROUTES: /etc/systemd/network/end0.network.d/routes.conf
+
         SYSCONFIG:
           PATH: /etc/sysconfig
           FILES:
             BTRFS_MAINTENANCE: /etc/sysconfig/btrfsmaintenance
+
+        SYSCTL:
+          PATH: /etc/sysctl.d
+          FILES:
+            NF_CONNTRACK: /etc/sysctl.d/90-nf-conntrack.conf
+
         QUADLET:
           PATH: /etc/containers/systemd
           NETWORKS:
@@ -79,13 +166,17 @@ raspberry_pis:
                 PATH: /etc/containers/systemd/kube-agent.network.d
                 FILES:
                   SUBNET: /etc/containers/systemd/kube-agent.network.d/subnet.conf
-                  DNS: /etc/containers/systemd/kube-agent.network.d/dns.conf
+                  DRIVER_OPTIONS: /etc/containers/systemd/kube-agent.network.d/driver-options.conf
+                  ROUTES: /etc/containers/systemd/kube-agent.network.d/routes.conf
+
           IMAGES:
             K3S:
+              PATH: /etc/containers/systemd/k3s-image.d
               FILES:
                 IMAGE: /etc/containers/systemd/k3s.image
               DROP_INS:
                 PATH: /etc/containers/systemd/k3s.image.d
+                FILES: 
           CONTAINERS:
             AGENT:
               FILES:
@@ -93,9 +184,90 @@ raspberry_pis:
               DROP_INS:
                 PATH: /etc/containers/systemd/k3s-agent@.container.d
                 FILES:
-                  AGENT_NETWORK: /etc/containers/systemd/k3s-agent@.container.d/kube-agent-network.conf
-                  LIMITS: /etc/containers/systemd/k3s-agent@.container.d/limits.conf
+                  OVERRIDES_CONF: /etc/containers/systemd/k3s-agent@.container.d/override.conf
+                  EXEC_CONF: /etc/containers/systemd/k3s-agent@.container.d/exec.conf
+                  EXEC_EXTRA_ARGS_CONF: /etc/containers/systemd/k3s-agent@.container.d/exec-extra-args.conf
+            AGENT_1:
+              PATH: /etc/containers/systemd/k3s-agent@1.container.d
+              FILES:
+                OVERRIDES_CONF: /etc/containers/systemd/k3s-agent@1.container.d/override.conf
+
     LOCAL:
+      SHELL_UTILS:
+        PATH: ../../shell-utils
+        USR:
+          PATH: ../../shell-utils/usr
+          LOCAL:
+            PATH: ../../shell-utils/usr/local
+            LIB:
+              PATH: ../../shell-utils/usr/local/lib
+              FILES:
+                UTILS: ../../shell-utils/usr/local/lib/utils.sh
+                UTILS_NETWORK: ../../shell-utils/usr/local/lib/utils-network.sh
+      ANSIBLE:
+        PATH: ../ansible
+        ROLES:
+          PATH: ../ansible/roles
+          COMMON:
+            PATH: ../ansible/roles/common
+            FILES:
+              PATH: ../ansible/roles/common/files
+              USR:
+                PATH: ../ansible/roles/common/files/usr
+                LOCAL:
+                  PATH: ../ansible/roles/common/files/usr/local
+                  ETC:
+                    PATH: ../ansible/roles/common/files/usr/local/etc
+                    SYSCONFIG:
+                      PATH: ../ansible/roles/common/files/usr/local/etc/sysconfig
+                      FILES:
+                        IP_ROUTE_ADD: ../ansible/roles/common/files/usr/local/etc/sysconfig/ip-route-add
+                  SBIN:
+                    PATH: ../ansible/roles/common/files/usr/local
+                    FILES:
+                      IP_ROUTE_ADD: ../ansible/roles/common/files/usr/local/sbin/ip-route-add.sh
+            SYSTEMD:
+              PATH: ../ansible/roles/common/files/systemd
+              SYSTEM:
+                PATH: ../ansible/roles/common/files/systemd/system
+                IP_ROUTE_ADD_SERVICE:
+                  PATH: ../ansible/roles/common/files/systemd/system/ip-route-add@.service.d
+                FILES:
+                  IP_ROUTE_ADD_SERVICE: ../ansible/roles/common/files/systemd/system/ip-route-add@.service
+
+          AGENT:
+            PATH: ../ansible/roles/agent
+            FILES:
+              PATH: ../ansible/roles/agent/files
+              SYSTEMD:
+                PATH: ../ansible/roles/agent/files/systemd
+                SYSTEM:
+                  PATH: ../ansible/roles/agent/files/systemd/system
+                  IP_ROUTE_ADD_SERVICE:
+                    PATH: ../ansible/roles/agent/files/systemd/system/ip-route-add@.service.d
+                    FILES: 
+                      DEFAULT_CONF: ../ansible/roles/agent/files/systemd/system/ip-route-add@.service.d/default.conf
+                  IP_ROUTE_ADD_SERVER:
+                    PATH: ../ansible/roles/agent/files/systemd/system/ip-route-add@server.service.d
+                    FILES: 
+                      OVERRIDE_CONF: ../ansible/roles/agent/files/systemd/system/ip-route-add@server.service.d/override.conf
+                  IP_ROUTE_ADD_AGENT_REMOTE:
+                    PATH: ../ansible/roles/agent/files/systemd/system/ip-route-add@agent-remote.service.d
+                    FILES:
+                      OVERRIDE_CONF: ../ansible/roles/agent/files/systemd/system/ip-route-add@agent-remote.service.d/override.conf
+                  IP_ROUTE_ADD_CLUSTER:
+                    PATH: ../ansible/roles/agent/files/systemd/system/ip-route-add@cluster.service.d
+                    FILES:
+                      OVERRIDE_CONF: ../ansible/roles/agent/files/systemd/system/ip-route-add@cluster.service.d/override.conf
+                  IP_ROUTE_ADD_VRF10:
+                    PATH: ../ansible/roles/agent/files/systemd/system/ip-route-add@vrf10.service.d
+                    FILES:
+                      OVERRIDE_CONF: ../ansible/roles/agent/files/systemd/system/ip-route-add@vrf10.service.d/override.conf
+                  IP_ROUTE_ADD_END0:
+                    PATH: ../ansible/roles/agent/files/systemd/system/ip-route-add@end0.service.d
+                    FILES:
+                      OVERRIDE_CONF: ../ansible/roles/agent/files/systemd/system/ip-route-add@end0.service.d/override.conf
+
       BASE:
         PATH: ../butane/base
         ETC:
@@ -109,6 +281,12 @@ raspberry_pis:
                   NETWORK: ../butane/base/podman/networks/kube-agent-network/kube-agent.network
                 DROP_INS:
                   PATH: ../butane/base/podman/networks/kube-agent-network/kube-agent.network.d
+              AGENT_EXTERNAL:
+                PATH: ../butane/base/podman/networks/kube-svclb-external-network
+                FILES:
+                  NETWORK: ../butane/base/podman/networks/kube-svclb-external-network/kube-svclb-external.network
+                DROP_INS:
+                  PATH: ../butane/base/podman/networks/kube-svclb-external-network/kube-svclb-external.network.d
             IMAGES:
               PATH: ../butane/base/podman/images
               K3S:
@@ -123,9 +301,10 @@ raspberry_pis:
                 DROP_INS:
                   PATH:  ../butane/base/podman/containers/agent/k3s-agent@.container.d
                   FILES:
-                    AGENT_NETWORK: ../butane/base/podman/containers/agent/k3s-agent@.container.d/kube-agent-network.conf
+                    # AGENT_NETWORK: ../butane/base/podman/containers/agent/k3s-agent@.container.d/kube-agent-network.conf
                     K3S_TOKEN: ../butane/base/podman/containers/agent/k3s-agent@.container.d/k3s-token.conf
                     EXEC: ../butane/base/podman/containers/agent/k3s-agent@.container.d/exec.conf
+
       OVERLAYS:
         PATH: ../butane/overlays
         PROD:
@@ -150,24 +329,34 @@ raspberry_pis:
                   FILES:
                     K3S: ../butane/overlays/prod/usr/local/etc/sysconfig/k3s
                     PODMAN_OPTIONS: ../butane/overlays/prod/usr/local/etc/sysconfig/podman-options
+
     NETWORKS:
-      # TODO Change this to QUADLET
       QUADLET:
         AGENT:
           NAME: kube-agent
           SYSTEMD_SERVICE: kube-agent-network
+
       CLUSTER:
-        APISERVER_LB:
-          EXTERNAL: 10.50.0.2
-          INTERNAL: 10.10.0.1
         SUBNETS:
           SERVER:
             SUBNET: 10.10.0.0/16
+            GATEWAY: 10.10.254.254
+            DNS: 10.10.254.254
+            # k3s-apiserverlb-0 address on server network
+            APISERVER_LB: 10.10.0.1
+
           AGENT:
             SUBNET: 10.11.0.0/16
+            GATEWAY: 10.11.254.254
             DNS: 10.11.254.254
-          SERVICE: 10.43.0.0/16
-        LAN:
-          GATEWAY:
-            SUBNET: 10.50.0.1
+            # k3s-apiserverlb-0 address on agent network
+            APISERVER_LB: 10.11.0.1
+
+          SERVICE:
+            SUBNET: 10.43.0.0/16
+
+          LAN:
+            SUBNET: 10.50.0.0/24
+            GATEWAY: 10.50.0.1
             DNS: 10.50.0.1
+            APISERVER_LB: 10.50.0.2

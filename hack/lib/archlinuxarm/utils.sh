@@ -36,6 +36,7 @@ cmdline_txt_get() {
             "console=serial0,115200"
             "console=tty1"
             "fsck.repair=yes"
+            "plymouth.ignore-serial-consoles"
         )
     fi
 }
@@ -93,6 +94,7 @@ config_txt_write() {
     local -r boot_target="$1"
     log "starting"
 
+        # TODO Update config.txt to reflect latest testing on WIP RPI4 node
         config_txt_contents="# For more options and information see:
 # https://www.raspberrypi.com/documentation/computers/config_txt.html
 
@@ -109,13 +111,15 @@ initramfs initramfs-linux.img followkernel
 # /boot/overlays/README
 
 # Automatically load overlays for detected cameras
-camera_auto_detect=0
+camera_auto_detect=1
 
 # Automatically load overlays for detected DSI displays
 display_auto_detect=1
 
 # Enable DRM VC4 V3D driver
-dtoverlay=vc4-kms-v3d,noaudio
+# Is audio needed to read usb PCMs?
+# dtoverlay=vc4-kms-v3d,noaudio
+dtoverlay=vc4-kms-v3d
 max_framebuffers=2
 
 # Don't have the firmware create an initial video= setting in cmdline.txt.
@@ -125,16 +129,9 @@ disable_fw_kms_setup=1
 # Disable compensation for displays with overscan
 disable_overscan=1
 
-# Uncomment if hdmi display is not detected and composite is being output
-#hdmi_force_hotplug=1
-
 # Uncomment if you want to disable wifi or bluetooth respectively
 dtoverlay=disable-wifi
 dtoverlay=disable-bt
-
-# Uncomment this to enable infrared communication.
-#dtoverlay=gpio-ir,gpio_pin=17
-#dtoverlay=gpio-ir-tx,gpio_pin=18
 
 # Run as fast as firmware / board allows
 arm_boost=1
@@ -156,8 +153,6 @@ force_turbo=1
 
 # https://www.raspberrypi.com/documentation/computers/camera_software.html#configuration
 dtoverlay=imx708
-
-dtoverlay=rpivid-v4l2
 
 [rpi5]
 dtoverlay=dwc2,dr_mode=host

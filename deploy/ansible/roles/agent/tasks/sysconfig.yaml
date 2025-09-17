@@ -1,0 +1,13 @@
+---
+- name: Copy /usr/local/etc/sysconfig directory contents from {{ LOCAL.OVERLAYS.PROD.USR.LOCAL.ETC.SYSCONFIG.PATH }}
+  ansible.builtin.copy:
+    src: "{{ LOCAL.OVERLAYS.PROD.USR.LOCAL.ETC.SYSCONFIG.PATH }}/"
+    dest: "{{ REMOTE.USR.LOCAL.ETC.SYSCONFIG.PATH }}"
+    owner: root
+    group: root
+    mode: '0644'
+  tags:
+    - k3s
+    - quadlet
+    - directories
+    - directories.sysconfig

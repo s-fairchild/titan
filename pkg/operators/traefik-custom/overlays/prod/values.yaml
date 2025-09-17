@@ -44,86 +44,7 @@ tolerations:
 - key: "node-role.kubernetes.io/master"
   operator: "Exists"
   effect: "NoSchedule"
-# udp:
-  # services:
-    # udp:
-      # loadbalancer:
-        # servers:
-          # - address: "10.50.0.24:8554/udp" # Replace with your actual service IP and port
-    # stream:
-      # loadbalancer:
-        # servers:
-          # - address: "10.50.0.24:8554" # Replace with your actual service IP and port
-  # routers:
-    # udp:
-      # entrypoints:
-        # - "udp"
-      # service: "udp"
-    # stream:
-      # entrypoints:
-        # - "stream"
-      # service: "stream"
 ports:
-  rtspudp:
-    transport:
-      lifeCycle:
-        requestAcceptGraceTimeout: 42
-        graceTimeOut: 42
-      respondingTimeouts:
-        readTimeout: 42
-        writeTimeout: 42
-        idleTimeout: 42
-    proxyProtocol:
-      insecure: true
-      trustedIPs:
-        - "127.0.0.1"
-        - "10.50.0.0/24"
-    forwardedHeaders:
-      insecure: true
-      trustedIPs:
-        - "127.0.0.1"
-        - "10.50.0.0/24"
-    ipFamilyPolicy: "SingleStack"
-    ipFamilies:
-      - IPv4
-    address: '10.50.0.24:8554/udp'
-    udp:
-      timeout: 30s
-    expose:
-      default: true
-    port: 8554
-    exposedPort: 8554
-    targetPort: rtspudp
-    protocol: UDP
-  rtsptcp:
-    transport:
-      lifeCycle:
-        requestAcceptGraceTimeout: 42
-        graceTimeOut: 42
-      respondingTimeouts:
-        readTimeout: 42
-        writeTimeout: 42
-        idleTimeout: 42
-    proxyProtocol:
-      insecure: true
-      trustedIPs:
-        - "127.0.0.1"
-        - "10.50.0.0/24"
-    forwardedHeaders:
-      insecure: true
-      trustedIPs:
-        - "127.0.0.1"
-        - "10.50.0.0/24"
-    ipFamilyPolicy: "SingleStack"
-    ipFamilies:
-      - IPv4
-    address: '10.50.0.24:8554/tcp'
-    expose:
-      default: true
-    port: 8555
-    exposedPort: 8555
-    targetPort: rtsptcp
-    protocol: TCP
   traefik:
     port: 9000
     # -- You SHOULD NOT expose the traefik port on production deployments.
@@ -220,37 +141,13 @@ logs:
   general:
     # format: json
     # -- Alternative logging levels are DEBUG, PANIC, FATAL, ERROR, WARN, and INFO.
-    # level: INFO
-    level: DEBUG
+    level: INFO
   access:
     enabled: true
     addInternals: false
     fields:
       headers:
         defaultmode: keep
-# persistence:
-  # # -- Enable persistence using Persistent Volume Claims
-  # # ref: http://kubernetes.io/docs/user-guide/persistent-volumes/.
-  # # It can be used to store TLS certificates along with `certificatesResolvers.<name>.acme.storage`  option
-  # enabled: true
-  # name: data
-  # existingClaim: ""
-  # accessMode: ReadWriteOnce
-  # size: 128Mi
-  # storageClass: "local-path-default"
-  # volumeName: ""
-  # path: /data
-  # annotations: {}
-  # # -- Only mount a subpath of the Volume into the pod
-  # subPath: ""
-# certificatesResolvers:
-  # traefik:
-    # acme:
-      # email: "steve51516@gmail.com"
-      # storage: "/data/acme.json"
-      # httpChallenge:
-        # # Entry point to use during the ACME HTTP-01 challenge.
-        # entryPoint: "web"
 hostNetwork: false
 rbac:
   enabled: true

@@ -1,0 +1,75 @@
+---
+- name: Create directory kube-agent.network.d "{{ REMOTE.ETC.QUADLET.NETWORKS.AGENT.DROP_INS.PATH }}"
+  ansible.builtin.file:
+    path: "{{ REMOTE.ETC.QUADLET.NETWORKS.AGENT.DROP_INS.PATH }}"
+    state: directory
+    mode: '0755'
+  tags:
+    - quadlet
+    - quadlet.networks
+    - quadlet.networks.kube-agent
+
+- name: Copy kube-agent.network quadlet config
+  ansible.builtin.copy:
+    src: "{{ LOCAL.BASE.ETC.QUADLET.NETWORKS.AGENT.FILES.NETWORK }}"
+    dest: "{{ REMOTE.ETC.QUADLET.NETWORKS.AGENT.FILES.NETWORK }}"
+    owner: root
+    group: root
+    mode: '0644'
+  tags:
+    - quadlet
+    - quadlet.networks
+    - quadlet.networks.kube-agent
+
+- name: Copy kube-agent.network.d/subnet.conf
+  ansible.builtin.copy:
+    content: |
+      [Network]
+      Subnet={{ K3S.NETWORKS.VRF10.AGENT.SUBNET }}
+      Gateway={{ K3S.NETWORKS.VRF10.AGENT.GATEWAY }}
+
+      # dns port binding fails upon bridge creation if dns is not disabled
+      # most likely due to the dns configuration options used by the container startup
+      DisableDNS=true
+    dest: "{{ REMOTE.ETC.QUADLET.NETWORKS.AGENT.DROP_INS.FILES.SUBNET }}"
+    owner: root
+    group: root
+    mode: '0644'
+  tags:
+    - quadlet
+    - quadlet.networks
+    - quadlet.networks.kube-agent
+    - quadlet.networks.kube-agent.subnet
+
+- name: Copy kube-agent.network.d/driver-options.conf into {{ REMOTE.ETC.QUADLET.PATH }}
+  ansible.builtin.copy:
+    content: |
+      [Network]
+      Options=vrf=vrf10
+    dest: "{{ REMOTE.ETC.QUADLET.NETWORKS.AGENT.DROP_INS.FILES.DRIVER_OPTIONS }}"
+    owner: root
+    group: root
+    mode: '0644'
+  tags:
+    - quadlet
+    - quadlet.networks
+    - quadlet.networks.kube-agent
+    - quadlet.networks.kube-agent.driver-options
+
+# - name: Copy kube-agent.network.d/routes.conf into {{ REMOTE.ETC.QUADLET.PATH }}
+  # ansible.builtin.copy:
+    # content: |
+      # [Network]
+      # PodmanArgs=--route {{ NETWORKS.CLUSTER.SUBNETS.AGENT.SUBNET }},127.0.0.1,200
+      # PodmanArgs=--route {{ NETWORKS.CLUSTER.SUBNETS.SERVER.SUBNET }},127.0.0.1,300
+      # PodmanArgs=--route {{ NETWORKS.CLUSTER.SUBNETS.SERVICE.SUBNET }},127.0.0.1,300
+      # PodmanArgs=--route {{ NETWORKS.CLUSTER.SUBNETS.LAN.SUBNET }},127.0.0.1
+    # dest: "{{ REMOTE.ETC.QUADLET.NETWORKS.AGENT.DROP_INS.FILES.ROUTES }}"
+    # owner: root
+    # group: root
+    # mode: '0644'
+  # tags:
+    # - quadlet
+    # - quadlet.networks
+    # - quadlet.networks.kube-agent
+    # - quadlet.networks.kube-agent.routes

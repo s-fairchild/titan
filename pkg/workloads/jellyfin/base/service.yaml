@@ -4,8 +4,6 @@ kind: Service
 metadata:
   name: web-client
   namespace: jellyfin
-  annotations:
-    metallb.io/address-pool: pool-internal
   labels:
     app: jellyfin
 spec:

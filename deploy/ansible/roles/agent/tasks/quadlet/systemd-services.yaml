@@ -1,0 +1,55 @@
+---
+- name: Stop and mask k3s-agent@{{ K3S.INSTANCE }}
+  ansible.builtin.systemd_service:
+    name: k3s-agent@{{ K3S.INSTANCE }}
+    state: stopped
+    masked: true
+  tags:
+    - quadlet
+    - quadlet.containers
+    - quadlet.networks
+    - quadlet.generator
+
+- name: Delete podman network {{ REMOTE.ETC.QUADLET.NETWORKS.AGENT.SERVICE_NAMES.PODMAN }}
+  containers.podman.podman_network:
+    name: "{{ REMOTE.ETC.QUADLET.NETWORKS.AGENT.SERVICE_NAMES.PODMAN }}"
+    state: absent
+    force: true
+  tags:
+    - quadlet
+    - quadlet.networks
+    - quadlet.networks.kube-agent
+
+- name: (Re)start service kube-agent-network
+  ansible.builtin.systemd_service:
+    name: "{{ REMOTE.ETC.QUADLET.NETWORKS.AGENT.SERVICE_NAMES.SYSTEMD }}"
+    enabled: true
+    state: restarted
+    daemon_reload: true
+  tags:
+    - quadlet
+    - quadlet.networks
+    - quadlet.networks.kube-agent
+
+- name: (Re)Start k3s-image.service
+  ansible.builtin.systemd_service:
+    name: k3s-image
+    enabled: true
+    state: restarted
+    daemon_reload: true
+  tags:
+    - quadlet
+    - quadlet.generator
+
+- name: (Re)start "k3s-agent@<K3S.INSTANCE>.service"- K3S.INSTANCE - "{{ K3S.INSTANCE }}"
+  ansible.builtin.systemd_service:
+    name: "k3s-agent@{{ K3S.INSTANCE }}.service"
+    enabled: true
+    state: restarted
+    daemon_reload: true
+    masked: false
+  tags:
+    - quadlet
+    - quadlet.containers
+    - quadlet.networks
+    - quadlet.generator

@@ -8,8 +8,9 @@ ansible() {
             --security-opt label=disable \
             -v ~/.ssh:/root/.ssh \
             -v "$PWD:/apps" \
-            -v "$PWD/.ansible:/usr/share/ansible/collections" \
+            -v "$PWD/deploy/ansible/collections/:/usr/share/ansible/collections" \
             -w /apps \
+            --env 'ANSIBLE_CONFIG=/apps/deploy/ansible/ansible.cfg' \
             alpine/ansible \
                 ansible "$@"
 }
@@ -21,8 +22,9 @@ ansible-playbook() {
             --security-opt label=disable \
             -v ~/.ssh:/root/.ssh \
             -v "$PWD:/apps" \
-            -v "$PWD/.ansible:/usr/share/ansible/collections" \
+            -v "$PWD/deploy/ansible/collections/:/usr/share/ansible/collections" \
             -w /apps \
+            --env 'ANSIBLE_CONFIG=/apps/deploy/ansible/ansible.cfg' \
             alpine/ansible \
                 ansible-playbook "$@"
 }
@@ -34,8 +36,9 @@ ansible-inventory() {
             --security-opt label=disable \
             -v ~/.ssh:/root/.ssh \
             -v "$PWD:/apps" \
-            -v "$PWD/.ansible:/usr/share/ansible/collections" \
+            -v "$PWD/deploy/ansible/collections/:/usr/share/ansible/collections" \
             -w /apps \
+            --env 'ANSIBLE_CONFIG=/apps/deploy/ansible/ansible.cfg' \
             alpine/ansible \
                 ansible-inventory "$@"
 }
@@ -47,8 +50,23 @@ ansible-galaxy() {
             --security-opt label=disable \
             -v ~/.ssh:/root/.ssh \
             -v "$PWD:/apps" \
-            -v "$PWD/.ansible:/root/.ansible" \
+            -v "$PWD/deploy/ansible/collections/:/usr/share/ansible/collections" \
             -w /apps \
+            --env 'ANSIBLE_CONFIG=/apps/deploy/ansible/ansible.cfg' \
             alpine/ansible \
                 ansible-galaxy "$@"
+}
+
+ansible-config() {
+    podman run \
+            -ti \
+            --rm \
+            --security-opt label=disable \
+            -v ~/.ssh:/root/.ssh \
+            -v "$PWD:/apps" \
+            -v "$PWD/deploy/ansible/collections/:/usr/share/ansible/collections" \
+            -w /apps \
+            --env 'ANSIBLE_CONFIG=/apps/deploy/ansible/ansible.cfg' \
+            alpine/ansible \
+                ansible-config "$@"
 }

@@ -1,0 +1,10 @@
+---
+- name: Copy env file {{ LOCAL.OVERLAYS.PROD.ETC.SYSCONFIG.FILES.BTRFS_MAINTENANCE }}
+  ansible.builtin.copy:
+    src: "{{ LOCAL.OVERLAYS.PROD.ETC.SYSCONFIG.FILES.BTRFS_MAINTENANCE }}"
+    dest: "{{ REMOTE.ETC.SYSCONFIG.PATH }}/"
+    mode: '0755'
+  tags:
+    - k3s
+    - k3s.env
+    - directories

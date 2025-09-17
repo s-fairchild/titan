@@ -1,0 +1,40 @@
+---
+- name: Copy vrf10.netdev into {{ REMOTE.ETC.SYSTEMD.NETWORK.PATH }}
+  ansible.builtin.copy:
+    content: |
+      [NetDev]
+      Name=vrf10
+      Kind=vrf
+
+      [VRF]
+      Table=1000
+    dest: "{{ REMOTE.ETC.SYSTEMD.NETWORK.FILES.VRF10_NETDEV }}"
+    owner: root
+    group: root
+    mode: '0644'
+  tags:
+    - systemd-networkd
+    - systemd-networkd.vrf10
+    - systemd-networkd.vrf10.netdev
+
+- name: Copy vrf10.network into {{ REMOTE.ETC.SYSTEMD.NETWORK.PATH }}
+  ansible.builtin.copy:
+    content: |
+      [Match]
+      Name=vrf10
+
+      [Network]
+      IPv4Forwarding=true
+      IPMasquerade=false
+
+      [Link]
+      ActivationPolicy=up
+      RequiredForOnline=no
+    dest: "{{ REMOTE.ETC.SYSTEMD.NETWORK.FILES.VRF10_NETWORK }}"
+    owner: root
+    group: root
+    mode: '0644'
+  tags:
+    - systemd-networkd
+    - systemd-networkd.vrf10
+    - systemd-networkd.vrf10.network

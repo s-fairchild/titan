@@ -24,6 +24,7 @@ LogDriver=journald
 EnvironmentFile=/usr/local/etc/sysconfig/k3s
 Environment=K3S_TOKEN_FILE=/run/secrets/k3s-token
 Secret=k3s-token,mode=0400
+Network=kube-agent.network:ip=${NODE_IP},interface_name=agent0
 Volume=/etc/machine-id:/etc/machine-id:ro
 Volume=${NAME}-kubelet:/var/lib/kubelet:Z
 Volume=${NAME}-pod-logs:/var/log/pods:Z

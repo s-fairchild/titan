@@ -1,0 +1,119 @@
+---
+### Create Drop-in Directories ###
+- name: Create Directory ip-route-add@.service.d - "{{ REMOTE.ETC.SYSTEMD.SYSTEM.IP_ROUTE_ADD_SERVICE_D.PATH }}"
+  ansible.builtin.file:
+    path: "{{ REMOTE.ETC.SYSTEMD.SYSTEM.IP_ROUTE_ADD_SERVICE_D.PATH }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  tags:
+    systemd.services
+    systemd.services.ip-route-add
+    systemd.services.ip-route-add.service
+    systemd.services.ip-route-add.service-d
+
+- name: Create Directory ip-route-add@server.service.d - "{{ REMOTE.ETC.SYSTEMD.SYSTEM.IP_ROUTE_ADD_SERVER_D.PATH }}"
+  ansible.builtin.file:
+    path: "{{ REMOTE.ETC.SYSTEMD.SYSTEM.IP_ROUTE_ADD_SERVER_D.PATH }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  tags:
+    systemd.services
+    systemd.services.ip-route-add
+    systemd.services.ip-route-add.server
+    systemd.services.ip-route-add.server-d
+
+- name: Create Directory ip-route-add@agent-remote.service.d - "{{ REMOTE.ETC.SYSTEMD.SYSTEM.IP_ROUTE_ADD_AGENT_REMOTE_D.PATH }}"
+  ansible.builtin.file:
+    path: "{{ REMOTE.ETC.SYSTEMD.SYSTEM.IP_ROUTE_ADD_AGENT_REMOTE_D.PATH }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  tags:
+    systemd.services
+    systemd.services.ip-route-add
+    systemd.services.ip-route-add.agent-remote
+    systemd.services.ip-route-add.agent-remote-d
+
+- name: Create Directory ip-route-add@cluster.service.d - "{{ REMOTE.ETC.SYSTEMD.SYSTEM.IP_ROUTE_ADD_CLUSTER_D.PATH }}"
+  ansible.builtin.file:
+    path: "{{ REMOTE.ETC.SYSTEMD.SYSTEM.IP_ROUTE_ADD_CLUSTER_D.PATH }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  tags:
+    systemd.services
+    systemd.services.ip-route-add
+    systemd.services.ip-route-add.cluster
+    systemd.services.ip-route-add.cluster-d
+
+- name: Create Directory ip-route-add@vrf10.service.d - "{{ REMOTE.ETC.SYSTEMD.SYSTEM.IP_ROUTE_ADD_VRF10_D.PATH }}"
+  ansible.builtin.file:
+    path: "{{ REMOTE.ETC.SYSTEMD.SYSTEM.IP_ROUTE_ADD_VRF10_D.PATH }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  tags:
+    systemd.services
+    systemd.services.ip-route-add
+    systemd.services.ip-route-add.vrf10
+    systemd.services.ip-route-add.vrf10-d
+
+- name: Create Directory ip-route-add@end0.service.d - "{{ REMOTE.ETC.SYSTEMD.SYSTEM.IP_ROUTE_ADD_END0_D.PATH }}"
+  ansible.builtin.file:
+    path: "{{ REMOTE.ETC.SYSTEMD.SYSTEM.IP_ROUTE_ADD_END0_D.PATH }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  tags:
+    systemd.services
+    systemd.services.ip-route-add
+    systemd.services.ip-route-add.end0
+    systemd.services.ip-route-add.end0-d
+
+### Create Service Requires Directories ### -
+- name: Create Directory ip-route-add@server.service.requires - "{{ REMOTE.ETC.SYSTEMD.SYSTEM.IP_ROUTE_ADD_SERVER_D_REQUIRES.PATH }}"
+  ansible.builtin.file:
+    path: "{{ REMOTE.ETC.SYSTEMD.SYSTEM.IP_ROUTE_ADD_SERVER_D_REQUIRES.PATH }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  tags:
+    systemd.services
+    systemd.services.ip-route-add
+    systemd.services.ip-route-add.server
+    systemd.services.ip-route-add.server.requires
+
+- name: Create Directory ip-route-add@agent-remote.service.requires - "{{ REMOTE.ETC.SYSTEMD.SYSTEM.IP_ROUTE_ADD_AGENT_REMOTE_D_REQUIRES.PATH }}"
+  ansible.builtin.file:
+    path: "{{ REMOTE.ETC.SYSTEMD.SYSTEM.IP_ROUTE_ADD_AGENT_REMOTE_D_REQUIRES.PATH }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  tags:
+    systemd.services
+    systemd.services.ip-route-add
+    systemd.services.ip-route-add.agent-remote
+    systemd.services.ip-route-add.agent-remote.requires
+
+- name: Create Directory ip-route-add@cluster.service.requires - "{{ REMOTE.ETC.SYSTEMD.SYSTEM.IP_ROUTE_ADD_CLUSTER_D_REQUIRES.PATH }}"
+  ansible.builtin.file:
+    path: "{{ REMOTE.ETC.SYSTEMD.SYSTEM.IP_ROUTE_ADD_CLUSTER_D_REQUIRES.PATH }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  tags:
+    systemd.services
+    systemd.services.ip-route-add
+    systemd.services.ip-route-add.cluster
+    systemd.services.ip-route-add.cluster.requires

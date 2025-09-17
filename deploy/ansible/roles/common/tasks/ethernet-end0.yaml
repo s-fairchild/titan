@@ -1,0 +1,72 @@
+---
+- name: Create Directory end0.network.d in {{ REMOTE.ETC.SYSTEMD.NETWORK.END0.PATH }}
+  ansible.builtin.file:
+    path: "{{ REMOTE.ETC.SYSTEMD.NETWORK.END0.PATH }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  tags:
+    - systemd-networkd
+    - systemd-networkd.end0
+
+- name: Copy end0 ethernet configuration
+  ansible.builtin.copy:
+    content: |
+      [Match]
+      Name=end0
+
+      [Network]
+      Address={{ ansible_host }}/24
+      Gateway={{ NETWORKS.CLUSTER.SUBNETS.LAN.GATEWAY }}
+      DNS={{ NETWORKS.CLUSTER.SUBNETS.LAN.DNS }}
+      IPv4Forwarding=yes
+      # IPv4AcceptLocal=yes
+      # IPv4RouteLocalnet=true
+      IPv4ProxyARP=true
+      IPv6Forwarding=false
+      DHCP=no
+      DNSSEC=no
+    dest: /etc/systemd/network/end0.network
+    owner: root
+    group: root
+    mode: '0644'
+  tags:
+    - systemd-networkd
+    - systemd-networkd.end0
+
+- name: Copy routes.conf into "{{ REMOTE.ETC.SYSTEMD.NETWORK.END0.PATH }}"
+  ansible.builtin.copy:
+    content: |
+      [Route]
+      Source={{ NETWORKS.CLUSTER.SUBNETS.SERVER.SUBNET }}
+      Destination={{ K3S.NETWORKS.VRF10.AGENT.SUBNET }}
+      Scope=global
+      Table=main
+      NextHop=1
+
+      [Route]
+      Source={{ NETWORKS.CLUSTER.SUBNETS.AGENT.SUBNET }}
+      Destination={{ K3S.NETWORKS.VRF10.AGENT.SUBNET }}
+      Scope=global
+      Table=main
+      NextHop=1
+
+      [Route]
+      Source={{ NETWORKS.CLUSTER.SUBNETS.SERVICE.SUBNET }}
+      Destination={{ K3S.NETWORKS.VRF10.AGENT.SUBNET }}
+      Scope=global
+      Table=main
+      NextHop=1
+
+      [NextHop]
+      Id=1
+      Gateway={{ K3S.NETWORKS.VRF10.AGENT.GATEWAY }}
+    dest: "{{ REMOTE.ETC.SYSTEMD.NETWORK.END0.FILES.ROUTES }}"
+    owner: root
+    group: root
+    mode: '0644'
+  tags:
+    - systemd-networkd
+    - systemd-networkd.end0
+    - systemd-networkd.end0.routes

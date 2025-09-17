@@ -27,7 +27,6 @@ spec:
           secure: true
           sameSite: none
           maxAge: 42  
-      strategy: RoundRobin
       weight: 40
       nativeLB: true
   tls: {}

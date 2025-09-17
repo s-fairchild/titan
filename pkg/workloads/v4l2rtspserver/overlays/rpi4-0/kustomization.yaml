@@ -1,10 +1,7 @@
 ---
 resources:
 - ../../base
-- servers_transport/servers-transport-tcp.yaml
 - ingressroutes/ingressroute-rtsp-hls.yaml
-- ingressroutes/ingressroute-rtsp-tcp.yaml
-- ingressroutes/ingressroute-rtsp-udp.yaml
 
 patches:
   - path: deployment.yaml

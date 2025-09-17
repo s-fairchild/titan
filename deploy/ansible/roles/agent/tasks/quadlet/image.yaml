@@ -1,0 +1,20 @@
+---
+- name: Copy k3s.image podman quadlet file from "{{ LOCAL.BASE.ETC.QUADLET.IMAGES.K3S.FILES.IMAGE }}"
+  ansible.builtin.copy:
+    src: "{{ LOCAL.BASE.ETC.QUADLET.IMAGES.K3S.FILES.IMAGE }}"
+    dest: "{{ REMOTE.ETC.QUADLET.IMAGES.K3S.FILES.IMAGE }}"
+    owner: root
+    group: root
+    mode: '0644'
+  tags:
+    - quadlet
+    - quadlet.images
+
+- name: Create drop-ins directory k3s.image.d
+  ansible.builtin.file:
+    path: "{{ REMOTE.ETC.QUADLET.IMAGES.K3S.DROP_INS.PATH }}"
+    state: directory
+    mode: '0755'
+  tags:
+    - quadlet
+    - quadlet.images

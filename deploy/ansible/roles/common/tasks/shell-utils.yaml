@@ -1,0 +1,22 @@
+---
+- name: Copy shell-utils/usr/local/lib/utils.sh to /usr/local/lib
+  ansible.builtin.copy:
+    src: "{{ LOCAL.SHELL_UTILS.USR.LOCAL.LIB.FILES.UTILS }}"
+    dest: "{{ REMOTE.USR.LOCAL.LIB.PATH }}"
+    owner: root
+    group: root
+    mode: '0644'
+  tags:
+    - shell-utils
+    - shell-utils.utils
+
+- name: Copy shell-utils/usr/local/lib/utils-network.sh to /usr/local/lib
+  ansible.builtin.copy:
+    src: "{{ LOCAL.SHELL_UTILS.USR.LOCAL.LIB.FILES.UTILS_NETWORK }}"
+    dest: "{{ REMOTE.USR.LOCAL.LIB.PATH }}"
+    owner: root
+    group: root
+    mode: '0644'
+  tags:
+    - shell-utils
+    - shell-utils.utils-network

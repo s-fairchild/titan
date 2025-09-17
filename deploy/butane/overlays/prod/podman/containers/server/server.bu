@@ -13,8 +13,6 @@ storage:
       target: /etc/containers/systemd/k3s-server@.container
 
   directories:
-    - path: /etc/containers/systemd/k3s-server@.container.d
-      overwrite: true
     - path: /etc/containers/systemd/k3s-server@0.container.d
       overwrite: true
     - path: /etc/containers/systemd/k3s-server@1.container.d

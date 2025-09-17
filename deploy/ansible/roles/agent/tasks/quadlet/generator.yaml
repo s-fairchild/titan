@@ -1,0 +1,15 @@
+---
+# TODO move to roles/common/tasks
+- name: Run podman-systemd-generator
+  ansible.builtin.command:
+    argv:
+      - /usr/lib/podman/quadlet
+      - /run/systemd/generator/
+  register: generator_output
+  changed_when: generator_output.rc == 0
+  tags:
+    - quadlet
+    - quadlet.images
+    - quadlet.containers
+    - quadlet.networks
+    - quadlet.generator

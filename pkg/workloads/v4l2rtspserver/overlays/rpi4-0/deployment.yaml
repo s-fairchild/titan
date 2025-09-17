@@ -31,10 +31,10 @@ spec:
                     - "0"
       containers:
       - name: rtsp0
+        # TODO Add IngressRouteTCP and IngressRouteUDP for rtsp ports
+        #    This allows rtsp to be accessed via traefik rather than directly
         # TODO setup muticast network once motion is deployed
         args:
-          - -P
-          - "554"
           - -p
           - "8085"
           - -u

@@ -1,0 +1,11 @@
+---
+- name: Reload systemd-networkd configs
+  ansible.builtin.command:
+    argv:
+      - networkctl
+      - reload
+  register: reload_output
+  changed_when: reload_output.rc == 0
+  tags:
+    - systemd-networkd
+    - systemd-networkd.reload

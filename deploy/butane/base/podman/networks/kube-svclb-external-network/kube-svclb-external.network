@@ -9,6 +9,9 @@ NetworkName=kube-svclb-external
 IPv6=false
 Label=cluster=${CLUSTER}
 Label=app=k3s
+# https://docs.podman.io/en/latest/markdown/podman-systemd.unit.5.html#ipamdriver
+Driver=macvlan
+IPAMDriver=host-local
 
 [Install]
 WantedBy=default.target

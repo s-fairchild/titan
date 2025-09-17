@@ -1,0 +1,50 @@
+---
+- name: Standup K3S Agent Nodes
+  hosts: raspberry_pis
+  remote_user: root
+  tasks:
+    - name: Remove Previous Configurations in /etc/systemd/network
+      ansible.builtin.import_tasks:
+        file: roles/common/tasks/cleanup-systemd-networkd-config.yaml
+
+    - name: Run tasks in playbook netfilter-sysctl.yaml to configure static kernel sysctl
+      ansible.builtin.import_tasks:
+        file: roles/common/tasks/netfilter-sysctl.yaml
+
+    # TODO move this to base setup once it's created
+    - name: Copy shell-utils/utils.sh to /usr/local/sbin
+      ansible.builtin.import_tasks:
+        file: roles/common/tasks/shell-utils.yaml
+
+    - name: Run tasks in playbook ethernet-end0.yaml to setup end0 ethernet interface
+      ansible.builtin.import_tasks:
+        file: roles/common/tasks/ethernet-end0.yaml
+
+    - name: Run tasks in playbook vrf-vrf10.yaml to setup vrf10 interface
+      ansible.builtin.import_tasks:
+        file: roles/common/tasks/vrf-vrf10.yaml
+
+    - name: Run networkctl reload task to read previously created/updated changed systemd-networkd files
+      ansible.builtin.import_tasks:
+        file: roles/common/tasks/reload-networkd.yaml
+
+    - name: Run tasks in playbook ip-route-add.yaml
+      ansible.builtin.import_tasks:
+        file: roles/common/tasks/network/ip-route-add.yaml
+
+    - name: Run tasks in playbook ip-route-add-dirs.yaml
+      ansible.builtin.import_tasks:
+        file: roles/agent/tasks/network/ip-route-add-dirs.yaml
+
+    # TODO rename this file prefix
+    - name: Run tasks in playbook ip-route-add-services.yaml
+      ansible.builtin.import_tasks:
+        file: roles/agent/tasks/network/ip-route-add-services.yaml
+
+    - name: Run tasks in playbook ip-route-add-symlinks.yaml
+      ansible.builtin.import_tasks:
+        file: roles/agent/tasks/network/ip-route-add-symlinks.yaml
+
+    - name: Run tasks in playbook ip-route-add-enable.yaml
+      ansible.builtin.import_tasks:
+        file: roles/agent/tasks/network/ip-route-add-enable.yaml
