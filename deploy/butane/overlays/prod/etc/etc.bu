@@ -34,3 +34,5 @@ storage:
       local: butane/overlays/prod/etc/security/limits.d
     - path: /etc/sysctl.d
       local: butane/overlays/prod/etc/sysctl.d
+    - path: /etc/modprobe.d
+      local: butane/overlays/prod/etc/modprobe.d
