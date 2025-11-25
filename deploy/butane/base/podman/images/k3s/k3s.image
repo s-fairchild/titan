@@ -1,13 +1,13 @@
 # TODO Set the k3s image version as a variable
 [Unit]
-Description=Pull image docker.io/rancher/k3s:v1.33.3-k3s1
+Description=Pull image docker.io/rancher/k3s
 
 [Service]
 Restart=on-failure
 RestartSec=30
 
 [Image]
-Image=docker.io/rancher/k3s:v1.33.3-k3s1
+Image=docker.io/rancher/k3s:v1.34.2-k3s1
 
 [Install]
 WantedBy=default.target
