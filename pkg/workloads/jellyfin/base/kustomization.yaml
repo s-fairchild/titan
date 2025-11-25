@@ -7,6 +7,11 @@ resources:
 - service.yaml
 - namespace.yaml
 - middleware/headers.yaml
-- persistentvolumeclaims/data-pvc.yaml
-- persistentvolumeclaims/config-pvc.yaml
-- persistentvolumeclaims/config-plugins-pvc.yaml
+- pvc/cache-pvc.yaml
+- pvc/config-plugins-pvc.yaml
+- pvc/config-pvc.yaml
+- pvc/data-pvc.yaml
+- pvc/images-pvc.yaml
+- pvc/media-pvc.yaml
+- pvc/metadata-pvc.yaml
+- pvc/transcodes-pvc.yaml

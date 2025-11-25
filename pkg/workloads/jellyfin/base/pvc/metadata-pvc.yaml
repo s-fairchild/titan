@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: media-pvc
+  name: metadata-pvc
   namespace: jellyfin
   annotations:
     volumeType: hostPath
@@ -10,7 +10,6 @@ spec:
   volumeMode: Filesystem
   accessModes:
     - ReadWriteOnce
-  storageClassName: local-path-appdata
   resources:
     requests:
-      storage: 3.9T
+      storage: 5Gi

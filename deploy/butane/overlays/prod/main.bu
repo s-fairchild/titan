@@ -14,7 +14,6 @@ ignition:
       - inline: deploy/butane/base/podman/networks/kube-svclb-external-network/kube-svclb-external-network.bu
       - inline: deploy/butane/base/podman/networks/kube-server-network/kube-server-network.bu
       - inline: deploy/butane/base/podman/networks/kube-agent-network/kube-agent-network.bu
-      - inline: deploy/butane/base/podman/volumes/local-path-default/local-path-default.bu
       - inline: deploy/butane/base/podman/containers/agent/agent.bu
       - inline: deploy/butane/base/podman/containers/server/server.bu
       - inline: deploy/butane/base/podman/containers/api-server-lb/api-server-lb.bu
@@ -33,7 +32,7 @@ ignition:
       - inline: deploy/butane/overlays/prod/usr/local/etc.bu
       - inline: deploy/butane/overlays/prod/podman/volumes/local-path-appdata/local-path-appdata.bu
       - inline: deploy/butane/overlays/prod/podman/volumes/local-path-cctv/local-path-cctv.bu
-      - inline: deploy/butane/overlays/prod/podman/volumes/local-path-nvme/local-path-nvme.bu
+      - inline: deploy/butane/overlays/prod/podman/volumes/local-path-default/local-path-default.bu
       - inline: deploy/butane/overlays/prod/podman/containers/agent/agent.bu
       - inline: deploy/butane/overlays/prod/podman/containers/server/server.bu
       - inline: deploy/butane/overlays/prod/podman/containers/api-server-lb/api-server-lb.bu

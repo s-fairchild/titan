@@ -22,21 +22,21 @@ fullnameOverride: ""
 
 ## For creating the StorageClass automatically:
 storageClass:
-  create: true
+  create: false
 
   ## Set a provisioner name. If unset, a name will be generated.
   provisionerName: rancher.io/local-path
 
   ## Set StorageClass as the default StorageClass
   ## Ignored if storageClass.create is false
-  defaultClass: true
+  # defaultClass: true
 
   ## The default volume type this storage class creates, can be "local" or "hostPath"
   defaultVolumeType: hostPath
 
   ## Set a StorageClass name
   ## Ignored if storageClass.create is false
-  name: local-path-default
+  # name: local-path-default
 
   ## ReclaimPolicy field of the class, which can be either Delete or Retain
   reclaimPolicy: Retain
@@ -62,7 +62,7 @@ storageClass:
 nodePathMap:
   - node: DEFAULT_PATH_FOR_NON_LISTED_NODES
     paths:
-      - /mnt/local-path/default
+      - /mnt/local-path
 
 # `sharedFileSystemPath` allows the provisioner to use a filesystem that is mounted on all
 # nodes at the same time. In this case all access modes are supported: `ReadWriteOnce`,
@@ -76,6 +76,7 @@ nodePathMap:
 # Each storage class must have a unique name, and contains the same fields as shown above for
 # a single storage class setup, EXCEPT for the provisionerName, which is the same for all
 # storage classes, and name, which is the key of the map.
+# TODO Set pathPattern in storageclasses
 storageClassConfigs:
   local-path-default:
     storageClass:
@@ -83,22 +84,32 @@ storageClassConfigs:
       defaultClass: true
       defaultVolumeType: hostPath
       reclaimPolicy: Retain
-    nodePathMap: [{"node":"DEFAULT_PATH_FOR_NON_LISTED_NODES"}, "paths":["/mnt/local-path/appdata"]]
+      volumeBindingMode: WaitForFirstConsumer
+    nodePathMap: [{"node":"k3s-agent-0", "paths":["/mnt/local-path/default"]}]
+  local-path-nvme:
+    storageClass:
+      create: true
+      defaultClass: false
+      defaultVolumeType: hostPath
+      reclaimPolicy: Retain
+      volumeBindingMode: WaitForFirstConsumer
+    nodePathMap: [{"node":"k3s-agent-0", "paths":["/mnt/local-path/nvme"]}]
   local-path-appdata:
     storageClass:
       create: true
       defaultClass: false
       defaultVolumeType: hostPath
       reclaimPolicy: Retain
-    nodePathMap: [{"node":"k3s-agent-0"}, "paths":["/mnt/local-path/appdata"]]
+      volumeBindingMode: WaitForFirstConsumer
+    nodePathMap: [{"node":"k3s-agent-0", "paths":["/mnt/local-path/appdata"]}]
   local-path-cctv:
     storageClass:
       create: true
       defaultClass: false
       defaultVolumeType: hostPath
       reclaimPolicy: Retain
-    # sharedFileSystemPath: ""
-    nodePathMap: [{"node":"k3s-agent-0"}, "paths":["/mnt/local-path/cctv"]]
+      volumeBindingMode: WaitForFirstConsumer
+    nodePathMap: [{"node":"k3s-agent-0", "paths":["/mnt/local-path/cctv"]}]
 
 rbac:
   # Specifies whether RBAC resources should be created

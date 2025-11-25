@@ -4,9 +4,16 @@ kind: Kustomization
 
 resources:
 - ../../base
-- persistentvolumeclaims/media-pvc.yaml
 - ingressroute.yaml
 - certificate.yaml
+# - pvc/cache-pvc.yaml
+# - pvc/config-plugins-pvc.yaml
+# - pvc/config-pvc.yaml
+# - pvc/data-pvc.yaml
+# - pvc/images-pvc.yaml
+# - pvc/media-pvc.yaml
+# - pvc/metadata-pvc.yaml
+# - pvc/transcodes-pvc.yaml
 
 secretGenerator:
 - name: web-password
@@ -17,6 +24,14 @@ secretGenerator:
 patches:
 - path: deployment.yaml
 - path: middleware/headers.yaml
+- path: pvc/cache-pvc.yaml
+- path: pvc/config-plugins-pvc.yaml
+- path: pvc/config-pvc.yaml
+- path: pvc/data-pvc.yaml
+- path: pvc/images-pvc.yaml
+- path: pvc/media-pvc.yaml
+- path: pvc/metadata-pvc.yaml
+- path: pvc/transcodes-pvc.yaml
 
 patchesStrategicMerge:
 - ingressroute.yaml

@@ -72,25 +72,32 @@ spec:
           mountPath: /config/data/transcodes
         - name: media
           mountPath: /media
+        - name: images
+          mountPath: /config/cache/images
         - name: config
           mountPath: /config
         - name: config-plugins
           mountPath: /config/data/plugins
         - name: data
           mountPath: /config/data
+        - name: transcodes
+          mountPath: /config/cache/transcodes
+        - name: metadata
+          mountPath: /config/data/metadata
       volumes:
       - name: cache
-        emptyDir:
-          medium: Memory
-          sizeLimit: 5Gi
+        persistentVolumeClaim:
+          claimName: cache-pvc
+      - name: images
+        persistentVolumeClaim:
+          claimName: images-pvc
       - name: logs
         emptyDir:
           medium: Memory
           sizeLimit: 500Mi
       - name: transcodes
-        emptyDir:
-          medium: Memory
-          sizeLimit: 20Gi
+        persistentVolumeClaim:
+          claimName: transcodes-pvc
       - name: media
         persistentVolumeClaim:
           claimName: media-pvc
@@ -100,3 +107,6 @@ spec:
       - name: data
         persistentVolumeClaim:
           claimName: data-pvc
+      - name: metadata
+        persistentVolumeClaim:
+          claimName: metadata-pvc
