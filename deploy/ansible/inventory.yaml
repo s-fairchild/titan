@@ -36,7 +36,6 @@ raspberry_pis:
           # https://www.raspberrypi.com/documentation/computers/camera_software.html#device-nodes-when-using-libcamera
           VIDEO_0: /dev/video0
           VIDEO_1: /dev/video0
-          VIDEO_11: /dev/video11
           VIDEO_30: /dev/video30
         V4L:
           PATH: /dev/v4l/by-id/

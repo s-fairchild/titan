@@ -53,6 +53,8 @@ spec:
         volumeMounts:
           - name: video0
             mountPath: /dev/video0
+          - name: video1
+            mountPath: /dev/video1
           - name: video30
             mountPath: /dev/video30
           - name: snd0
@@ -84,15 +86,17 @@ spec:
         - containerPort: 8085
           name: rtsp-hls
         volumeMounts:
-        # Used to find sound capture device for alsa stream
         - name: video0
           mountPath: /dev/video0
-        # Compressed video (v4l2loopback) capture device
+        - name: video1
+          mountPath: /dev/video1
         - name: video30
           mountPath: /dev/video30
         - name: snd0
           mountPath: /dev/snd
         env:
+        # Variable holding the rtsp server password
+        # Will differ for each overlay
         - name: RTSP_PASSWORD
           valueFrom:
             secretKeyRef:
@@ -108,7 +112,6 @@ spec:
             cpu: "2000m"
       securityContext:
         # TODO map video group to k3s-agent
-        # Create v4l2 user
         # runAsGroup: 985
         runAsUser: 0
       volumes:
@@ -116,12 +119,18 @@ spec:
         hostPath:
           path: /dev/snd
           type: Directory
-      # Capture device
+      # ffmpeg capture devices
+      # v4l2rtspserver audio devices
       - name: video0
         hostPath: 
           path: /dev/video0
           type: CharDevice
-      # v4l2loopback device
+      - name: video1
+        hostPath: 
+          path: /dev/video1
+          type: CharDevice
+      # ffmpeg loopback output device
+      # v4l2rtspserver capture device
       - name: video30
         hostPath: 
           path: /dev/video30

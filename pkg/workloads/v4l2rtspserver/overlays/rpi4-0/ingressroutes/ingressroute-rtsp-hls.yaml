@@ -8,6 +8,8 @@ spec:
   entryPoints:
     - websecure
   routes:
+  # TODO troubelshoot this route to get it working
+  # it maybe the rtsp server itself rather than traefik
   - match: Host(`rtsp0-hls.app.rick.expresso.lan`)
     kind: Rule
     priority: 30

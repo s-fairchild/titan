@@ -35,19 +35,19 @@ spec:
         #    This allows rtsp to be accessed via traefik rather than directly
         # TODO setup muticast network once motion is deployed
         args:
-          - -p
-          - "8085"
-          - -u
-          - ""
-          - -fH264
-          - -W 1280
-          - -H 720
-          - -F 30
-          - -S60
-          - -A
-          - "48000"
-          - -C
-          - "1"
-          - -a
-          - S16_LE
-          - "/dev/video30,/dev/video0"
+        - -p
+        - "8085"
+        - -u
+        - ""
+        - -fH264
+        - -W 1280
+        - -H 720
+        - -F 30
+        - -S60
+        - -A
+        - "48000"
+        - -C
+        - "1"
+        - -a
+        - S16_LE
+        - "/dev/video30,/dev/video0"

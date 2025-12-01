@@ -72,7 +72,6 @@
       # https://www.raspberrypi.com/documentation/computers/camera_software.html#device-nodes-when-using-libcamera
       AddDevice=-{{ REMOTE.DEVICE.V4L.FILES.VIDEO_0 }}:{{ REMOTE.DEVICE.FILES.VIDEO_0 }}:rwm
       AddDevice=-{{ REMOTE.DEVICE.V4L.FILES.VIDEO_1 }}:{{ REMOTE.DEVICE.FILES.VIDEO_1 }}:rwm
-      AddDevice=-{{ REMOTE.DEVICE.FILES.VIDEO_11 }}:{{ REMOTE.DEVICE.FILES.VIDEO_11 }}:rwm
       AddDevice=-{{ REMOTE.DEVICE.FILES.VIDEO_30 }}:{{ REMOTE.DEVICE.FILES.VIDEO_30 }}:rwm
     dest: "{{ REMOTE.ETC.QUADLET.PATH }}/k3s-agent@{{ K3S.INSTANCE }}.container.d/devices.conf"
     owner: root
