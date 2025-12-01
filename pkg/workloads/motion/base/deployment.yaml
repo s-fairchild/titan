@@ -21,6 +21,8 @@ spec:
       restartPolicy: Always
       containers:
       - name: motion
+        # https://github.com/Motion-Project/motion/releases/tag/release-4.7.1
+        # https://motion-project.github.io/4.6.0/motion_config.html
         image: docker.io/steve51516/motion:v4.7.1
         ports:
         - containerPort: 8081
