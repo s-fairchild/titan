@@ -7,7 +7,6 @@ metadata:
   labels:
     app: motion
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: motion
@@ -30,10 +29,29 @@ spec:
       containers:
       - name: motion
         volumeMounts:
-        - name: camera1
+        - name: camera1-conf
           mountPath: /etc/motion/conf.d/
           readOnly: true
+        - name: renderd128
+          mountPath: /dev/dri/renderd128
+        - name: card1
+          mountPath: /dev/dri/card1
+        resources:
+          requests:
+            memory: "10G"
+            cpu: "100m"
+          limits:
+            memory: "10G"
+            cpu: "100m"
       volumes:
-      - name: camera1
+      - name: camera1-conf
         configMap:
-          name: camera1-conf
+          name: camera1-conf-cm
+      - name: renderd128
+        hostPath:
+          path: /dev/dri/renderD128
+          type: CharDevice
+      - name: card1
+        hostPath:
+          path: /dev/dri/card1
+          type: CharDevice

@@ -18,60 +18,33 @@ spec:
       labels:
         app: motion
     spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                - key: app
-                  operator: In
-                  values:
-                    - compute
+      restartPolicy: Always
       containers:
       - name: motion
-        image: docker.io/steve51516/motion:release-4.7.0
+        image: docker.io/steve51516/motion:v4.7.1
         ports:
         - containerPort: 8081
           name: stream
           protocol: TCP
         securityContext:
           privileged: true
-          # capabilities:
-            # drop:
-            # - CAP_MKNOD
-            # - CAP_NET_RAW
-            # - CAP_AUDIT_WRITE
         volumeMounts:
-        - name: primary-config
+        - name: motion-conf
           mountPath: /root/.motion/
           readOnly: true
-        - name: target-dir
+        - name: media
           mountPath: /var/motion/
-        - name: dev-dri
-          mountPath: /dev/dri/renderD128
-        - name: card1
-          mountPath: /dev/dri/card1
         resources:
           requests:
-            memory: "10G"
-            cpu: "1000m"
+            memory: "1G"
+            cpu: "500m"
           limits:
-            memory: "10G"
-            cpu: "1000m"
+            memory: "1G"
+            cpu: "500m"
       volumes:
-      - name: primary-config
+      - name: motion-conf
         configMap:
-          name: motion-conf
-      - name: target-dir
+          name: motion-conf-cm
+      - name: media
         persistentVolumeClaim:
-          claimName: target-dir-pvc
-      - name: dev-dri
-        hostPath:
-          path: /dev/dri/renderD128
-          type: CharDevice
-      - name: card1
-        hostPath:
-          path: /dev/dri/card1
-          type: CharDevice
-      dnsPolicy: ClusterFirst
-      restartPolicy: Always
+          claimName: media-pvc

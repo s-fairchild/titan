@@ -1,6 +1,13 @@
 ---
 resources:
-- config-map-motion.yaml
-- deployment.yaml
 - namespace.yaml
-- pvc.yaml
+- deployment.yaml
+- pvc/media-pvc.yaml
+
+configMapGenerator:
+  - name: motion-conf-cm
+    namespace: motion
+    files:
+      - configmap/motion.conf
+    options:
+      disableNameSuffixHash: true

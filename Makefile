@@ -161,8 +161,8 @@ container-build-rpicam-apps:
 container-build-motion:
 	podman build \
 			--format=docker \
-			-t motion:v${MOTION_VERSION} \
-			--build-arg=MOTION_VERSION=${MOTION_VERSION} \
+			-t motion:v$${MOTION_VERSION:-"4.7.1"} \
+			--build-arg=MOTION_VERSION=$${MOTION_VERSION:-"4.7.1"} \
 			-f pkg/containers/motion/Containerfile
 
 motion_version := "v${MOTION_VERSION}"

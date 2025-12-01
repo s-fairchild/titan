@@ -1,7 +1,15 @@
 ---
 resources:
   - ../../base
-  - config-map-camera1.yaml
 
 patches:
   - path: deployment.yaml
+  - path: pvc/media-pvc.yaml
+
+configMapGenerator:
+  - name: camera1-conf-cm
+    namespace: motion
+    files:
+    - configmap/camera1.conf
+    options:
+      disableNameSuffixHash: true
