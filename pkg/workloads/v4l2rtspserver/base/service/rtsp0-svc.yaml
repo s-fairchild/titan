@@ -9,13 +9,15 @@ metadata:
 spec:
   selector:
     app: rtsp0
+  trafficDistribution: PreferClose
+  sessionAffinity: ClientIP
   ports:
   - name: rtsp-tcp
-    port: 8555
+    port: 555
     targetPort: rtsp-tcp
     protocol: TCP
   - name: rtsp-udp
-    port: 8554
+    port: 554
     targetPort: rtsp-udp
     protocol: UDP
   type: LoadBalancer

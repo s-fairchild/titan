@@ -8,9 +8,7 @@ spec:
   entryPoints:
     - websecure
   routes:
-  # TODO troubelshoot this route to get it working
-  # it maybe the rtsp server itself rather than traefik
-  - match: Host(`rtsp0-hls.app.rick.expresso.lan`)
+  - match: Path(`/rtsp0`)
     kind: Rule
     priority: 30
     services:
@@ -30,5 +28,6 @@ spec:
           sameSite: none
           maxAge: 42  
       weight: 40
-      nativeLB: true
+      nativeLB: false
+      nodePortLB: true
   tls: {}

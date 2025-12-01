@@ -13,6 +13,6 @@ spec:
   - name: rtsp-hls-web
     port: 8086
     targetPort: rtsp-hls
-  type: ClusterIP
+  type: LoadBalancer
   sessionAffinity: ClientIP
-  internalTrafficPolicy: Local
+  internalTrafficPolicy: Cluster

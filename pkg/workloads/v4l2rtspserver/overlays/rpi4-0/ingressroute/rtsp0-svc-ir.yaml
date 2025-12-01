@@ -1,0 +1,50 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRouteTCP
+metadata:
+  name: ingressroutetcpfoo
+  namespace: apps
+
+spec:
+  entryPoints:
+    - footcp
+  routes:
+  - match: HostSNI(`rtsp-tcp.tcp.rtsp0-svc.v4l2rtspserver.svc.cluster.local`)
+    entryPoints: traefik-internal
+    priority: 10
+    # middlewares:
+    # - name: middleware1
+      # namespace: default
+    services:
+    - name: rtsp0-svc
+      port: rtsp-tcp
+      weight: 10
+      serversTransport: transport
+      nativeLB: false
+      nodePortLB: true
+  - match: HostSNI(`app.rick.expresso.lan/rtsp0`) || HostSNI(`rtsp0.app.rick.expresso.lan`)
+    entryPoints: traefik
+    priority: 10
+    # middlewares:
+    # - name: middleware1
+      # namespace: default
+    services:
+    - name: rtsp0-svc
+      port: rtsp-tcp
+      weight: 10
+      serversTransport: transport
+      nativeLB: false
+      nodePortLB: true
+
+  tls: {}
+  # tls:
+    # secretName: supersecret
+    # options:
+      # name: opt
+      # namespace: default
+    # certResolver: foo
+    # domains:
+    # - main: example.net
+      # sans:                       
+      # - a.example.net
+      # - b.example.net
+    # passthrough: false
