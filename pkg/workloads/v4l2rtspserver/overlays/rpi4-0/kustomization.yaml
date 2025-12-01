@@ -1,7 +1,7 @@
 ---
 resources:
 - ../../base
-- ingressroutes/ingressroute-rtsp-hls.yaml
+- ingressroute/rtsp0-hls-ir.yaml
 
 patches:
   - path: deployment.yaml
