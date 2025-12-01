@@ -235,10 +235,6 @@ copy_authorized_keys() {
     sudo chown -R 1000:1000 "$alarm_ssh_dir"
 }
 
-debug_enabled() {
-    if [ "$DEBUG" = "true" ]; then
-        return 0
-    fi
-
-    return 1
+is_debug() {
+    [ "$DEBUG" = "true" ] || return 1
 }
