@@ -6,6 +6,8 @@ metadata:
   namespace: jellyfin
 spec:
   secretName: default
+  privateKey:
+    rotationPolicy: Always
   dnsNames:
     - "jellyfin.app.rick.expresso.lan"
   issuerRef:

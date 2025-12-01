@@ -17,7 +17,8 @@ storage:
       mount_options:
         - compress=zstd:1,x-systemd.device-timeout=0
     - device: /dev/mapper/appdata.raid10.1
-      path: /var/local/lib/k3s/agent/local-path-appdata
+      # This path MUST match the btrfs subvolume create path in local-path-appdata.volume
+      path: /var/local/lib/k3s/agent/local-path-appdata-volume
       format: btrfs
       wipe_filesystem: false
       with_mount_unit: true
@@ -37,7 +38,8 @@ storage:
         - compress=zstd:1,x-systemd.device-timeout=0
         - degraded
     - device: /dev/mapper/cctv.raid10.1
-      path: /var/local/lib/k3s/agent/local-path-cctv
+      # This path MUST match the btrfs subvolume create path in local-path-cctv.volume
+      path: /var/local/lib/k3s/agent/local-path-cctv-volume
       format: btrfs
       wipe_filesystem: false
       with_mount_unit: true

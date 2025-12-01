@@ -8,7 +8,7 @@ resources:
 - namespace.yaml
 - middleware/headers.yaml
 - pvc/cache-pvc.yaml
-- pvc/config-plugins-pvc.yaml
+- pvc/plugins-pvc.yaml
 - pvc/config-pvc.yaml
 - pvc/data-pvc.yaml
 - pvc/images-pvc.yaml

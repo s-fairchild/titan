@@ -76,7 +76,7 @@ spec:
           mountPath: /config/cache/images
         - name: config
           mountPath: /config
-        - name: config-plugins
+        - name: plugins
           mountPath: /config/data/plugins
         - name: data
           mountPath: /config/data

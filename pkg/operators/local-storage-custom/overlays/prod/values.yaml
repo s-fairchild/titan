@@ -81,34 +81,32 @@ storageClassConfigs:
   local-path-default:
     storageClass:
       create: true
+      provisionerName: rancher.io/local-path
       defaultClass: true
       defaultVolumeType: hostPath
       reclaimPolicy: Retain
       volumeBindingMode: WaitForFirstConsumer
+      pathPattern: "{{ .PVC.Namespace }}/{{ .PVC.Name }}"
     nodePathMap: [{"node":"k3s-agent-0", "paths":["/mnt/local-path/default"]}]
-  local-path-nvme:
-    storageClass:
-      create: true
-      defaultClass: false
-      defaultVolumeType: hostPath
-      reclaimPolicy: Retain
-      volumeBindingMode: WaitForFirstConsumer
-    nodePathMap: [{"node":"k3s-agent-0", "paths":["/mnt/local-path/nvme"]}]
   local-path-appdata:
     storageClass:
       create: true
+      provisionerName: rancher.io/local-path
       defaultClass: false
       defaultVolumeType: hostPath
       reclaimPolicy: Retain
       volumeBindingMode: WaitForFirstConsumer
+      pathPattern: "{{ .PVC.Namespace }}/{{ .PVC.Name }}"
     nodePathMap: [{"node":"k3s-agent-0", "paths":["/mnt/local-path/appdata"]}]
   local-path-cctv:
     storageClass:
       create: true
+      provisionerName: rancher.io/local-path
       defaultClass: false
       defaultVolumeType: hostPath
       reclaimPolicy: Retain
       volumeBindingMode: WaitForFirstConsumer
+      pathPattern: "{{ .PVC.Namespace }}/{{ .PVC.Name }}"
     nodePathMap: [{"node":"k3s-agent-0", "paths":["/mnt/local-path/cctv"]}]
 
 rbac:
@@ -145,6 +143,8 @@ configmap:
   # specify the config map name
   name: local-path-config
   # specify the custom script for setup and teardown
+  # TODO update this script to create btrfs subvolumes
+  #    * Create helper container image with btrfs-progs to do this
   setup: |-
     #!/bin/sh
     set -eu

@@ -18,7 +18,7 @@ BTRFS_LOG_OUTPUT="journal"
 # nested subvolumes, all have to be listed in this variable.
 # (Colon separated paths)
 # TODO Add user backups subvolume located on appdata filesystem
-BTRFS_DEFRAG_PATHS="/;/var;/var/lib/containers/storage/volumes/local-path-appdata/_data;/var/lib/containers/storage/volumes/local-path-cctv/_data;/var/lib/containers/storage/volumes/local-path-nvme/_data;/var/lib/containers/storage/volumes/local-path-default/_data"
+BTRFS_DEFRAG_PATHS="/;/var;/var/local/lib/k3s/agent/local-path-appdata-volume;/var/local/lib/k3s/agent/local-path-cctv-volume;/var/local/lib/k3s/local-path/default/"
 
 ## Path:           System/File systems/btrfs
 ## Type:           string(none,daily,weekly,monthly)

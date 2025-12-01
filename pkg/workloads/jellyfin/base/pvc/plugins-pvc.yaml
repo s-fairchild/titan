@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: config-plugins-pvc
+  name: plugins-pvc
   namespace: jellyfin
   annotations:
     volumeType: hostPath
