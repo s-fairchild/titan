@@ -8,7 +8,9 @@ resources:
 - service/web-svc-service.yaml
 - certificate/web-svc-certificate.yaml
 - ingressroute/web-svc-ingressroute.yaml
-- middleware/web-svc-headers-middleware.yaml
+- middleware/web-svc-secured.yaml
+- middleware/web-svc-headers.yaml
+- middleware/web-svc-https-redirect.yaml
 - pvc/cache-pvc.yaml
 - pvc/plugins-pvc.yaml
 - pvc/config-pvc.yaml

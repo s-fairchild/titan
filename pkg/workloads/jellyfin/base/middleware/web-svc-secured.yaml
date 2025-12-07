@@ -1,0 +1,11 @@
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: web-svc-secured
+  namespace: jellyfin
+spec:
+  chain:
+    middlewares:
+    - name: web-svc-https-redirect
+    - name: web-svc-headers

@@ -11,7 +11,7 @@ spec:
   - match: Host(`jellyfin.app.rick.expresso.lan`)
     kind: Rule
     middlewares:
-    - name: web-svc-headers-middleware
+    - name: web-svc-secured
     services:
     - name: web-svc
       namespace: jellyfin

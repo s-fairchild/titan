@@ -25,4 +25,4 @@ patches:
 patchesStrategicMerge:
 - certificate/web-svc-certificate.yaml
 - ingressroute/web-svc-ingressroute.yaml
-- middleware/web-svc-headers-middleware.yaml
+- middleware/web-svc-headers.yaml
