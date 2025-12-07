@@ -8,4 +8,4 @@ spec:
   set:
     global.systemDefaultRegistry: ""
   targetNamespace:  traefik-system
-  chart: https://%{KUBERNETES_API}%/static/charts/traefik-crd-34.2.1+up34.2.0.tgz
+  chart: https://%{KUBERNETES_API}%/static/charts/traefik-crd-37.1.1+up37.1.0.tgz

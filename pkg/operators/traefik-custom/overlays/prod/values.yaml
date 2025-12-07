@@ -2,8 +2,10 @@
 # https://doc.traefik.io/traefik-hub/api-gateway/reference/install/ref-helm
 # yaml-language-server: $schema=https://raw.githubusercontent.com/traefik/traefik-helm-chart/refs/heads/master/traefik/values.schema.json
 #
-# Human readable values: https://github.com/traefik/traefik-helm-chart/blob/master/traefik/values.yaml
-# Values Markdown: https://github.com/traefik/traefik-helm-chart/blob/master/traefik/VALUES.md
+# HelmChart Documentation:
+#  * https://github.com/k3s-io/k3s-charts/blob/main/charts/traefik/37.1.1%2Bup37.1.0/values.yaml
+#  * https://github.com/k3s-io/k3s-charts/blob/main/charts/traefik/37.1.1%2Bup37.1.0/VALUES.md
+
 deployment:
   podAnnotations:
     prometheus.io/port: "8082"
@@ -33,7 +35,9 @@ nodeSelector:
 image:
   registry: docker.io
   repository: "rancher/mirrored-library-traefik"
-  tag: "3.3.2"
+  # -- defaults to appVersion. It's used for version checking, even prefixed with experimental- or latest-.
+  # When a digest is required, `versionOverride` can be used to set the version.
+  tag: "3.5.1"
   pullPolicy: IfNotPresent
 tolerations:
 - key: "CriticalAddonsOnly"
@@ -62,13 +66,6 @@ ports:
     exposedPort: 80
     targetPort: web
     protocol: TCP
-    # Added in 2.2, you can make permanent redirects via entrypoints.
-    # https://docs.traefik.io/routing/entrypoints/#redirection
-    redirections:
-      entryPoint:
-        to: websecure
-        scheme: https
-        permanent: false
     # Trust forwarded  headers information (X-Forwarded-*).
     forwardedHeaders:
       trustedIPs: ["10.50.0.0/24"]
@@ -136,7 +133,6 @@ service:
       - 10.11.0.0/16
       - 10.10.0.0/16
       - 10.16.0.0/16
-      - 10.100.0.0/16
 logs:
   general:
     # format: json
