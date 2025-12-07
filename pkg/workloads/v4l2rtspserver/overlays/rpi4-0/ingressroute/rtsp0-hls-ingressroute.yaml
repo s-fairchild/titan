@@ -2,7 +2,7 @@
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
-  name: rtsp0-hls-ir
+  name: rtsp0-hls-ingressroute
   namespace: v4l2rtspserver
 spec:
   entryPoints:
@@ -16,7 +16,7 @@ spec:
       name: rtsp0-hls-svc
       namespace: v4l2rtspserver
       passHostHeader: true
-      port: rtsp-hls-web
+      port: hls-web
       responseForwarding:
         flushInterval: 1ms
       scheme: http

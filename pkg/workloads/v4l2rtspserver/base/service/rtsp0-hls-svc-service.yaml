@@ -10,9 +10,9 @@ spec:
   selector:
     app: rtsp0
   ports:
-  - name: rtsp-hls-web
+  - name: hls-web
     port: 8086
-    targetPort: rtsp-hls
+    targetPort: hls
   type: LoadBalancer
   sessionAffinity: ClientIP
   internalTrafficPolicy: Cluster

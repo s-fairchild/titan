@@ -2,5 +2,5 @@
 resources:
 - namespace.yaml
 - deployment.yaml
-- service/rtsp0-hls-svc.yaml
-- service/rtsp0-svc.yaml
+- service/rtsp0-hls-svc-service.yaml
+- service/rtsp0-svc-service.yaml

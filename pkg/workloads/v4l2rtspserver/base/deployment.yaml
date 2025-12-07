@@ -85,7 +85,7 @@ spec:
           name: rtsp-udp
           protocol: UDP
         - containerPort: 8085
-          name: rtsp-hls
+          name: hls
         volumeMounts:
         - name: video0
           mountPath: /dev/video0
