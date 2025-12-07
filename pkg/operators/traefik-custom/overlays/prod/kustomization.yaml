@@ -4,8 +4,6 @@ kind: Kustomization
 
 resources:
 - ../../base
-- tls-store.yaml
-- certificate.yaml
 
 secretGenerator:
 - name: traefik-values

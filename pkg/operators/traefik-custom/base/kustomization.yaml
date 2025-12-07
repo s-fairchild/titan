@@ -6,3 +6,5 @@ resources:
 - namespace.yaml
 - helmcharts/traefik-crd.yaml
 - helmcharts/traefik.yaml
+- certificate/default-certificate.yaml
+- tlsstore/default.yaml
