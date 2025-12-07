@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: web-client
+  name: web-svc
   namespace: jellyfin
   labels:
     app: jellyfin
@@ -13,7 +13,7 @@ spec:
     - name: web
       protocol: TCP
       port: 8085
-      targetPort: web
+      targetPort: web-client
   type: ClusterIP
   sessionAffinity: ClientIP
   internalTrafficPolicy: Local

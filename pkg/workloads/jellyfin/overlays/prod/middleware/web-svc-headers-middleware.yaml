@@ -1,0 +1,9 @@
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: web-svc-headers-middleware
+  namespace: jellyfin
+spec:
+  headers:
+    customFrameOptionsValue: 'allow-from https://jellyfin.app.rick.expresso.lan'

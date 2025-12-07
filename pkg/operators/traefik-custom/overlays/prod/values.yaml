@@ -10,6 +10,29 @@ deployment:
   podAnnotations:
     prometheus.io/port: "8082"
     prometheus.io/scrape: "true"
+
+image:
+  registry: docker.io
+  repository: "rancher/mirrored-library-traefik"
+  # -- defaults to appVersion. It's used for version checking, even prefixed with experimental- or latest-.
+  # When a digest is required, `versionOverride` can be used to set the version.
+  tag: "3.5.1"
+  pullPolicy: IfNotPresent
+tolerations:
+- key: "CriticalAddonsOnly"
+  operator: "Exists"
+- key: "node-role.kubernetes.io/control-plane"
+  operator: "Exists"
+  effect: "NoSchedule"
+- key: "node-role.kubernetes.io/master"
+  operator: "Exists"
+  effect: "NoSchedule"
+
+priorityClassName: "system-cluster-critical"
+
+nodeSelector:
+  node-role.kubernetes.io/control-plane: "true"
+
 providers:
   kubernetesCRD:
     enabled: true
@@ -29,25 +52,7 @@ providers:
     nativeLBByDefault: true
     # -- Defines whether to make prefix matching strictly comply with the Kubernetes Ingress specification.
     strictPrefixMatching: false
-priorityClassName: "system-cluster-critical"
-nodeSelector:
-  node-role.kubernetes.io/control-plane: "true"
-image:
-  registry: docker.io
-  repository: "rancher/mirrored-library-traefik"
-  # -- defaults to appVersion. It's used for version checking, even prefixed with experimental- or latest-.
-  # When a digest is required, `versionOverride` can be used to set the version.
-  tag: "3.5.1"
-  pullPolicy: IfNotPresent
-tolerations:
-- key: "CriticalAddonsOnly"
-  operator: "Exists"
-- key: "node-role.kubernetes.io/control-plane"
-  operator: "Exists"
-  effect: "NoSchedule"
-- key: "node-role.kubernetes.io/master"
-  operator: "Exists"
-  effect: "NoSchedule"
+
 ports:
   traefik:
     port: 9000
@@ -102,6 +107,7 @@ ports:
       default: false
     exposedPort: 9100
     protocol: TCP
+
 service:
   annotations: {}
   labels: {}
@@ -124,7 +130,9 @@ service:
       enabled: true
       labels: {}
       annotations: {}
-      spec: {}
+      spec:
+        trafficDistribution: PreferClose
+        sessionAffinity: ClientIP
       single: false
       ipFamilyPolicy: "SingleStack"
       ipFamilies:
@@ -133,6 +141,24 @@ service:
       - 10.11.0.0/16
       - 10.10.0.0/16
       - 10.16.0.0/16
+
+# -- Only dashboard & healthcheck IngressRoute are supported. It's recommended to create workloads CR outside of this Chart.
+ingressRoute:
+  dashboard:
+    enabled: true
+    matchRule: PathPrefix(`/dashboard`) || PathPrefix(`/api`)
+    services:
+      - name: api@internal
+        kind: TraefikService
+    entryPoints: ["traefik"]
+  healthcheck:
+    enabled: true
+    matchRule: PathPrefix(`/ping`)
+    services:
+      - name: ping@internal
+        kind: TraefikService
+    entryPoints: ["traefik"]
+
 logs:
   general:
     # format: json
@@ -144,12 +170,15 @@ logs:
     fields:
       headers:
         defaultmode: keep
+
 hostNetwork: false
+
 rbac:
   enabled: true
   # If set to false, installs ClusterRole and ClusterRoleBinding so Traefik can be used across namespaces.
   # If set to true, installs Role and RoleBinding. Providers will only watch target namespace.
   namespaced: false
+
 # -- The service account the pods will use to interact with the Kubernetes API
 serviceAccount:
   # If set, an existing service account is used

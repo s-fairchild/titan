@@ -42,14 +42,14 @@ spec:
           initialDelaySeconds: 120
           httpGet: 
             path: /health
-            port: web
+            port: web-client
             scheme: HTTP
         image: docker.io/linuxserver/jellyfin:10.11.2
         env:
         - name: DISABLE_SERVER_SELECTION
           value: "1"
         ports:
-        - name: web
+        - name: web-client
           containerPort: 8096
           protocol: TCP
         securityContext:

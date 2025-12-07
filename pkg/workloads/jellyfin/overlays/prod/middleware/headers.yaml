@@ -1,9 +1,0 @@
----
-apiVersion: traefik.io/v1alpha1
-kind: Middleware
-metadata:
-  name: mw-headers
-  namespace: jellyfin
-spec:
-  headers:
-    customFrameOptionsValue: 'allow-from https://app.jellyfin.expresso.lan'

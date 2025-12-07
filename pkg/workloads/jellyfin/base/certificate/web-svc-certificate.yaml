@@ -2,14 +2,14 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: default
+  name: web-svc-certificate
   namespace: jellyfin
 spec:
-  secretName: default
+  secretName: web-svc-certificate
   privateKey:
-    rotationPolicy: Always
+    rotationPolicy: Never
   dnsNames:
-    - "jellyfin.app.rick.expresso.lan"
+    - "jellyfin.app.expresso.lan"
   issuerRef:
     name: my-ca-issuer
     kind: ClusterIssuer

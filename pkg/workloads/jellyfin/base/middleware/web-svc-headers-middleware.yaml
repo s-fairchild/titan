@@ -2,7 +2,7 @@
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
-  name: mw-headers
+  name: web-svc-headers-middleware
   namespace: jellyfin
 spec:
   headers:
@@ -10,6 +10,7 @@ spec:
       X-Robots-Tag: noindex,nofollow,nosnippet,noarchive,notranslate,noimageindex
       X-XSS-PROTECTION: "1"
       X-Forwarded-Proto: "https"
+    customFrameOptionsValue: 'allow-from https://app.jellyfin.expresso.lan'
     stsSeconds: 315360000
     stsIncludeSubdomains: true
     stsPreload: true

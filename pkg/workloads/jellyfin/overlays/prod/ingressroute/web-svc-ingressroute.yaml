@@ -1,0 +1,33 @@
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: web-svc-ingressroute
+  namespace: jellyfin
+spec:
+  entryPoints:
+    - websecure
+  routes:
+  - match: Host(`jellyfin.app.rick.expresso.lan`)
+    kind: Rule
+    middlewares:
+    - name: web-svc-headers-middleware
+    services:
+    - name: web-svc
+      namespace: jellyfin
+      kind: Service
+      port: web
+      passHostHeader: true
+      responseForwarding:
+        flushInterval: 1ms
+      sticky:
+        cookie:
+          httpOnly: true
+          name: cookie
+          secure: true
+          sameSite: none
+          maxAge: 42
+  tls:
+    domains:
+    - main: jellyfin.app.rick.expresso.lan
+    secretName: web-svc-certificate
